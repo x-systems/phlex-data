@@ -1,0 +1,85 @@
+{
+	"name" : "x-systems/phlex-data",
+	"type" : "library",
+	"description" : "Phlex Data - Data Source Abstraction Framework",
+	"keywords" : [
+		"framework",
+		"orm",
+		"query",
+		"active record",
+		"sql",
+		"builder",
+		"nosql",
+		"mongodb",
+		"mysql",
+		"oracle",
+		"postgresql"
+	],
+	"homepage" : "https://github.com/x-systems/phlex-data",
+	"license" : "MIT",
+	"authors" : [{
+			"name" : "Romans Malinovskis",
+			"email" : "romans@agiletoolkit.org",
+			"homepage" : "https://nearly.guru/"
+		}, {
+			"name" : "Imants Horsts",
+			"homepage" : "https://darkside.lv/"
+		}, {
+			"name" : "Michael Voříšek",
+			"homepage" : "https://mvorisek.cz/"
+		}, {
+			"name" : "Georgi Hristov",
+			"homepage" : "https://xsystems.io"
+		}
+	],
+	"version" : "dev-develop",
+	"minimum-stability" : "dev",
+	"prefer-stable" : true,
+	"config" : {
+		"sort-packages" : true
+	},
+	"require" : {
+		"php" : ">=7.3.0",
+		"ext-intl" : "*",
+		"atk4/dsql" : "dev-develop",
+		"x-systems/phlex-core" : "dev-develop"
+	},
+	"require-release" : {
+		"php" : ">=7.3.0",
+		"ext-intl" : "*",
+		"atk4/dsql" : "~2.3.0",
+		"mahalux/atk4-hintable" : "^1.1.4"
+	},
+	"require-dev" : {
+		"friendsofphp/php-cs-fixer" : "^2.17",
+		"johnkary/phpunit-speedtrap" : "^3.2",
+		"phpstan/phpstan" : "^0.12.82",
+		"phpunit/phpcov" : "*",
+		"phpunit/phpunit" : ">=9.0"
+	},
+	"require-dev-release" : {
+		"friendsofphp/php-cs-fixer" : "^2.17",
+		"johnkary/phpunit-speedtrap" : "^3.2",
+		"phpstan/phpstan" : "^0.12.58",
+		"phpunit/phpcov" : "*",
+		"phpunit/phpunit" : ">=9.0"
+	},
+	"conflict" : {
+		"atk4/schema" : "*"
+	},
+	"autoload" : {
+		"psr-4" : {
+			"Phlex\\Data\\" : "src/",
+			"Phlex\\Schema\\" : "src-schema/"
+		},
+		"files" : [
+			"bootstrap-phlex-types.php"
+		]
+	},
+	"autoload-dev" : {
+		"psr-4" : {
+			"Phlex\\Data\\Tests\\" : "tests/",
+			"Phlex\\Schema\\Tests\\" : "tests-schema/"
+		}
+	}
+}

@@ -1,0 +1,53 @@
+includes:
+    - vendor/x-systems/phlex-core/phpstan-ext.neon
+
+parameters:
+    level: 5
+    paths:
+        - ./
+    excludes_analyse:
+        - cache/
+        - build/
+        - vendor/
+
+    # TODO review once we drop PHP 7.x support
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        - '~^Unsafe usage of new static\(\)\.$~'
+
+        # TODO these rules are generated, this ignores should be fixed in the code
+        # for src-schema/PhpunitTestCase.php
+        - '~^Access to an undefined property Phlex\\Data\\Persistence\:\:\$connection\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:dsql\(\)\.$~'
+        # for src/FieldSqlExpression.php
+        - '~^Call to an undefined method Phlex\\Data\\Model\:\:expr\(\)\.$~'
+        # for src/Model.php
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:update\(\)\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:insert\(\)\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:export\(\)\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:prepareIterator\(\)\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:delete\(\)\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:action\(\)\.$~'
+        # for src/Model/ReferencesTrait.php (in context of class Phlex\Data\Model)
+        - '~^Call to an undefined method Phlex\\Data\\Reference\:\:refLink\(\)\.$~'
+        # for src/Persistence/Sql.php
+        - '~^Call to an undefined method Phlex\\Dsql\\Query\:\:sequence\(\)\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:expr\(\)\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:exprNow\(\)\.$~'
+        # for src/Persistence/Sql/Join.php
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:initQuery\(\)\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:lastInsertId\(\)\.$~'
+        # for src/Reference/HasMany.php
+        - '~^Call to an undefined method Phlex\\Data\\Model\:\:dsql\(\)\.$~'
+        # for tests/FieldTest.php
+        - '~^Call to an undefined method Phlex\\Data\\Reference\\HasOne\:\:addTitle\(\)\.$~'
+        # for tests/JoinSqlTest.php
+        - '~^Call to an undefined method Phlex\\Data\\Reference\\HasOne\:\:addField\(\)\.$~'
+        # for tests/LookupSqlTest.php
+        - '~^Call to an undefined method Phlex\\Data\\Reference\\HasOne\:\:withTitle\(\)\.$~'
+        # for tests/PersistentArrayTest.php
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\:\:applyScope\(\)\.$~'
+        # for tests/ReferenceSqlTest.php
+        - '~^Call to an undefined method Phlex\\Data\\Reference\\HasOne\:\:addFields\(\)\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Reference\:\:addTitle\(\)\.$~'

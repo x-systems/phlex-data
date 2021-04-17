@@ -1740,38 +1740,7 @@ class Model implements \IteratorAggregate
 
         // prepare array with field names
         if ($fields === null) {
-            $fields = [];
-
-            if ($this->only_fields) {
-                // Add requested fields first
-                foreach ($this->only_fields as $field) {
-                    $f_object = $this->getField($field);
-                    if (!$f_object->interactsWithPersistence()) {
-                        continue;
-                    }
-                    $fields[$field] = true;
-                }
-
-                // now add system fields, if they were not added
-                foreach ($this->getFields() as $field => $f_object) {
-                    if (!$f_object->interactsWithPersistence) {
-                        continue;
-                    }
-                    if ($f_object->system && !isset($fields[$field])) {
-                        $fields[$field] = true;
-                    }
-                }
-
-                $fields = array_keys($fields);
-            } else {
-                // Add all model fields
-                foreach ($this->getFields() as $field => $f_object) {
-                    if (!$f_object->interactsWithPersistence()) {
-                        continue;
-                    }
-                    $fields[] = $field;
-                }
-            }
+            $fields = array_keys($this->getFields(self::FIELD_FILTER_PERSIST, false));
         }
 
         // add key_field to array if it's not there

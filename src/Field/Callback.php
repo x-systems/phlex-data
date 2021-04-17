@@ -23,19 +23,9 @@ class Callback extends \Phlex\Data\Field
      */
     public $expr;
 
-    /**
-     * Expressions are always read_only.
-     *
-     * @var bool
-     */
-    public $read_only = true;
+    public $access = self::ACCESS_GET;
 
-    /**
-     * Never persist this field.
-     *
-     * @var bool
-     */
-    public $never_persist = true;
+    public $persist = self::PERSIST_NONE;
 
     /**
      * Initialization.

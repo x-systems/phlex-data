@@ -293,42 +293,12 @@ class Sql extends Persistence
             return;
         }
 
-        // init fields
-        if (is_array($fields)) {
-            // Set of fields is strictly defined for purposes of export,
-            // so we will ignore even system fields.
-            foreach ($fields as $fieldName) {
-                $this->initField($query, $model->getField($fieldName));
-            }
-        } elseif ($model->only_fields) {
-            $addedFields = [];
+        if (!is_array($fields)) {
+            $fields = array_keys($model->getFields(Model::FIELD_FILTER_PERSIST, false));
+        }
 
-            // Add requested fields first
-            foreach ($model->only_fields as $fieldName) {
-                $field = $model->getField($fieldName);
-                if ($field->never_persist) {
-                    continue;
-                }
-                $this->initField($query, $field);
-                $addedFields[$fieldName] = true;
-            }
-
-            // now add system fields, if they were not added
-            foreach ($model->getFields() as $fieldName => $field) {
-                if ($field->never_persist) {
-                    continue;
-                }
-                if ($field->system && !isset($addedFields[$fieldName])) {
-                    $this->initField($query, $field);
-                }
-            }
-        } else {
-            foreach ($model->getFields() as $fieldName => $field) {
-                if ($field->never_persist) {
-                    continue;
-                }
-                $this->initField($query, $field);
-            }
+        foreach ($fields as $fieldName) {
+            $this->initField($query, $model->getField($fieldName));
         }
     }
 
@@ -728,7 +698,7 @@ class Sql extends Persistence
             $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
             $st = $insert->execute();
         } catch (DsqlException $e) {
-            throw (new Exception('Unable to execute insert query', 0, $e))
+            throw (new Exception('Unable to execute insert query' . $insert->getDebugQuery(), 0, $e))
                 ->addMoreInfo('query', $insert->getDebugQuery())
                 ->addMoreInfo('message', $e->getMessage())
                 ->addMoreInfo('model', $model)

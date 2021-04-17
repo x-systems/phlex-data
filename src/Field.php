@@ -27,11 +27,12 @@ class Field implements Expressionable
 
     public $persist = self::PERSIST_SAVE | self::PERSIST_LOAD;
 
-    public const PERMISSION_NONE = 0;
-    public const PERMISSION_GET = 1;
-    public const PERMISSION_SET = 2;
+    public const ACCESS_NONE = 0;
+    public const ACCESS_GET = 1;
+    public const ACCESS_SET = 2;
 
-    public $access = self::PERMISSION_GET | self::PERMISSION_SET;
+    /** @var int */
+    public $access = self::ACCESS_GET | self::ACCESS_SET;
 
     // {{{ Properties
 
@@ -92,33 +93,6 @@ class Field implements Expressionable
      * @var bool
      */
     public $system = false;
-
-    /**
-     * Setting this to true will never actually load or store
-     * the field in the database. It will action as normal,
-     * but will be skipped by load/iterate/update/insert.
-     *
-     * @var bool
-     */
-    public $never_persist = false;
-
-    /**
-     * Setting this to true will never actually store
-     * the field in the database. It will action as normal,
-     * but will be skipped by update/insert.
-     *
-     * @var bool
-     */
-    public $never_save = false;
-
-    /**
-     * Is field read only?
-     * Field value may not be changed. It'll never be saved.
-     * For example, expressions are read only.
-     *
-     * @var bool
-     */
-    public $read_only = false;
 
     /**
      * Defines a label to go along with this field. Use getCaption() which
@@ -499,6 +473,15 @@ class Field implements Expressionable
         return $this;
     }
 
+    public function setReadOnly($value = true): self
+    {
+        $value ?
+        $this->denyAccess(self::ACCESS_SET) :
+        $this->grantAccess(self::ACCESS_SET);
+
+        return $this;
+    }
+
     /**
      * Compare new value of the field with existing one without retrieving.
      * In the trivial case it's same as ($value == $model->get($name)) but this method can be used for:
@@ -598,7 +581,7 @@ class Field implements Expressionable
      */
     public function isEditable(): bool
     {
-        return $this->ui['editable'] ?? !$this->read_only && !$this->never_persist && !$this->system;
+        return $this->ui['editable'] ?? $this->checkSetAccess() && $this->interactsWithPersistence() && !$this->system;
     }
 
     /**
@@ -627,30 +610,100 @@ class Field implements Expressionable
 
     // }}}
 
+    public function grantGetAccess()
+    {
+        return $this->grantAccess(self::ACCESS_GET);
+    }
+
+    public function grantSetAccess()
+    {
+        return $this->grantAccess(self::ACCESS_SET);
+    }
+
     public function assertGetAccess(): void
     {
-        $this->assertAccess(static::PERMISSION_GET);
+        $this->assertAccess(self::ACCESS_GET);
     }
 
     public function assertSetAccess(): void
     {
-        $this->assertAccess(static::PERMISSION_SET);
+        $this->assertAccess(self::ACCESS_SET);
     }
 
-    public function assertAccess($action): void
+    public function checkGetAccess(): bool
     {
-        if (!$this->checkAccess($action)) {
-            throw (new Exception('Attempting to access field without permission'))
+        return $this->checkAccess(self::ACCESS_GET);
+    }
+
+    public function checkSetAccess(): bool
+    {
+        return $this->checkAccess(self::ACCESS_SET);
+    }
+
+    public function assertAccess(int $permission): void
+    {
+        if (!$this->checkAccess($permission)) {
+            throw (new Exception('Attempting to access field without permission' . $this->short_name))
                 ->addMoreInfo('field', $this)
                 ->addMoreInfo('model', $this->owner);
         }
     }
 
-    public function checkAccess(int $action): bool
+    public function checkAccess(int $permission): bool
     {
-        $access = is_callable($this->access) ? ($this->access)($this) : $this->access;
+        return (bool) ($this->access & $permission);
+    }
 
-        return (bool) ($access & $action);
+    public function grantAccess(int $permission)
+    {
+        $this->access |= $permission;
+
+        return $this;
+    }
+
+    public function denyAccess(int $permission)
+    {
+        $this->access &= ~$permission;
+
+        return $this;
+    }
+
+    public function setNeverPersist($value = true)
+    {
+        $this->persist = $value ? self::PERSIST_NONE : (self::PERSIST_LOAD | self::PERSIST_SAVE);
+
+        return $this;
+    }
+
+    public function setNeverSave($value = true)
+    {
+        if ($value) {
+            $this->persist &= ~self::PERSIST_SAVE;
+        } else {
+            $this->persist |= self::PERSIST_SAVE;
+        }
+
+        return $this;
+    }
+
+    public function loadsFromPersistence(): bool
+    {
+        return $this->checkPersisting(self::PERSIST_LOAD);
+    }
+
+    public function savesToPersistence(): bool
+    {
+        return $this->checkPersisting(self::PERSIST_SAVE);
+    }
+
+    public function interactsWithPersistence(): bool
+    {
+        return (bool) $this->persist;
+    }
+
+    public function checkPersisting(int $action): bool
+    {
+        return (bool) ($this->persist & $action);
     }
 
     /**

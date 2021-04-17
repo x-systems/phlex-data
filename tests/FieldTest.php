@@ -184,7 +184,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     public function testReadOnly1()
     {
         $m = new Model();
-        $m->addField('foo', ['access' => Field::PERMISSION_GET]);
+        $m->addField('foo', ['access' => Field::ACCESS_GET]);
         $this->expectException(Exception::class);
         $m->set('foo', 'bar');
     }
@@ -308,7 +308,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
 
         $m->reload();
         $this->assertSame('Smith', $m->get('surname'));
-        $m->getField('surname')->never_save = false;
+        $m->getField('surname')->setNeverSave(false);
         $m->set('surname', 'Stalker');
         $m->save();
         $dbData['item'][1]['surname'] = 'Stalker';
@@ -888,5 +888,49 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
         $this->assertFalse($m->get('is_vip_3'));
         $m->set('is_vip_3', true);
         $this->assertTrue($m->get('is_vip_3'));
+    }
+
+    public function testPersistence()
+    {
+        $m = new Model();
+        $m->addField('normal');
+        $m->addField('never_save', ['never_save' => true]);
+        $m->addField('never_persist', ['never_persist' => true]);
+
+        $this->assertTrue($m->getField('normal')->interactsWithPersistence());
+        $this->assertTrue($m->getField('never_save')->interactsWithPersistence());
+        $this->assertFalse($m->getField('never_save')->savesToPersistence());
+        $this->assertFalse($m->getField('never_persist')->interactsWithPersistence());
+        $this->assertFalse($m->getField('never_persist')->savesToPersistence());
+        $this->assertFalse($m->getField('never_persist')->loadsFromPersistence());
+
+        $m->getField('normal')->setNeverSave();
+        $this->assertFalse($m->getField('normal')->savesToPersistence());
+        $this->assertTrue($m->getField('normal')->interactsWithPersistence());
+
+        $m->getField('never_save')->setNeverSave(false);
+        $this->assertTrue($m->getField('never_save')->savesToPersistence());
+    }
+
+    public function testAccess()
+    {
+        $m = new Model();
+        $m->addField('normal');
+        $m->addField('read_only', ['read_only' => true]);
+
+        $this->assertTrue($m->getField('normal')->checkAccess(Field::ACCESS_GET | Field::ACCESS_SET));
+        $this->assertFalse($m->getField('read_only')->checkAccess(Field::ACCESS_SET));
+
+        $m->getField('read_only')->grantAccess(Field::ACCESS_SET);
+        $this->assertTrue($m->getField('read_only')->checkAccess(Field::ACCESS_SET));
+
+        $m->getField('read_only')->denyAccess(Field::ACCESS_SET);
+        $this->assertFalse($m->getField('read_only')->checkAccess(Field::ACCESS_SET));
+
+        $m->getField('read_only')->setReadOnly(false);
+        $this->assertTrue($m->getField('read_only')->checkAccess(Field::ACCESS_SET));
+
+        $m->getField('normal')->denyAccess(Field::ACCESS_SET);
+        $this->assertFalse($m->getField('normal')->checkAccess(Field::ACCESS_SET));
     }
 }

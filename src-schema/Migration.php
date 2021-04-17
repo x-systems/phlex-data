@@ -205,7 +205,7 @@ class Migration
         $this->table($model->table);
 
         foreach ($model->getFields() as $field) {
-            if ($field->never_persist || $field instanceof FieldSqlExpression) {
+            if (!$field->interactsWithPersistence() || $field instanceof FieldSqlExpression) {
                 continue;
             }
 

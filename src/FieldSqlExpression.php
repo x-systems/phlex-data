@@ -20,12 +20,8 @@ class FieldSqlExpression extends FieldSql
      */
     public $expr;
 
-    /**
-     * Expressions are always read_only.
-     *
-     * @var bool
-     */
-    public $read_only = true;
+    // Expressions are always read_only.
+    public $access = self::ACCESS_GET;
 
     /**
      * Specifies how to aggregate this.

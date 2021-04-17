@@ -79,6 +79,19 @@ class Model implements \IteratorAggregate
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
     /** @const string */
+    public const FIELD_FILTER_SYSTEM = 'system';
+    /** @const string */
+    public const FIELD_FILTER_NOT_SYSTEM = 'not system';
+    /** @const string */
+    public const FIELD_FILTER_VISIBLE = 'visible';
+    /** @const string */
+    public const FIELD_FILTER_EDITABLE = 'editable';
+    /** @const string */
+    public const FIELD_FILTER_PERSIST = 'persist';
+    /** @const string */
+    public const FIELD_FILTER_ONLY_FIELDS = 'only fields';
+
+    /** @const string */
     protected const ID_LOAD_ONE = self::class . '@idLoadOne';
     /** @const string */
     protected const ID_LOAD_ANY = self::class . '@idLoadAny';
@@ -612,6 +625,11 @@ class Model implements \IteratorAggregate
         }
     }
 
+    public function isOnlyFieldsField(string $fieldName): bool
+    {
+        return !$this->only_fields || in_array($fieldName, $this->only_fields, true);
+    }
+
     /**
      * Will return true if specified field is dirty.
      */
@@ -631,35 +649,54 @@ class Model implements \IteratorAggregate
      *
      * @return Field[]
      */
-    public function getFields($filter = null): array
+    public function getFields($filters = null, bool $onlyFields = null): array
     {
-        if ($filter === null) {
-            return $this->fields;
-        } elseif (is_string($filter)) {
-            $filter = [$filter];
+        if ($filters === null) {
+            return $onlyFields ? $this->getFields(self::FIELD_FILTER_ONLY_FIELDS) : $this->fields;
+        } elseif (!is_array($filters)) {
+            $filters = [$filters];
         }
 
-        return array_filter($this->fields, function (Field $field, $name) use ($filter) {
-            // do not return fields outside of "only_fields" scope
-            if ($this->only_fields && !in_array($name, $this->only_fields, true)) {
+        $onlyFields = $onlyFields ?? true;
+
+        return array_filter($this->fields, function (Field $field, $name) use ($filters, $onlyFields) {
+            if ($onlyFields && !$this->isOnlyFieldsField($field->short_name)) {
                 return false;
             }
-            foreach ($filter as $f) {
-                if (
-                    ($f === 'system' && $field->system)
-                    || ($f === 'not system' && !$field->system)
-                    || ($f === 'editable' && $field->isEditable())
-                    || ($f === 'visible' && $field->isVisible())
-                ) {
+
+            foreach ($filters as $filter) {
+                if ($this->fieldMatchesFilter($field, $filter)) {
                     return true;
-                } elseif (!in_array($f, ['system', 'not system', 'editable', 'visible'], true)) {
-                    throw (new Exception('Filter is not supported'))
-                        ->addMoreInfo('filter', $f);
                 }
             }
 
             return false;
         }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    protected function fieldMatchesFilter(Field $field, string $filter): bool
+    {
+        switch ($filter) {
+            case self::FIELD_FILTER_SYSTEM:
+                return $field->system;
+            case self::FIELD_FILTER_NOT_SYSTEM:
+                return !$field->system;
+            case self::FIELD_FILTER_EDITABLE:
+                return $field->isEditable();
+            case self::FIELD_FILTER_VISIBLE:
+                return $field->isVisible();
+            case self::FIELD_FILTER_ONLY_FIELDS:
+                return $this->isOnlyFieldsField($field->short_name);
+            case self::FIELD_FILTER_PERSIST:
+                if (!$field->interactsWithPersistence()) {
+                    return false;
+                }
+
+                return $field->system || $this->isOnlyFieldsField($field->short_name);
+            default:
+                throw (new Exception('Filter is not supported'))
+                    ->addMoreInfo('filter', $filter);
+        }
     }
 
     /**
@@ -1514,7 +1551,7 @@ class Model implements \IteratorAggregate
                     }
 
                     $field = $this->getField($name);
-                    if ($field->read_only || $field->never_persist || $field->never_save) {
+                    if (!$field->checkSetAccess() || !$field->interactsWithPersistence() || !$field->savesToPersistence()) {
                         continue;
                     }
 
@@ -1550,7 +1587,7 @@ class Model implements \IteratorAggregate
                     }
 
                     $field = $this->getField($name);
-                    if ($field->read_only || $field->never_persist || $field->never_save) {
+                    if (!$field->checkSetAccess() || !$field->interactsWithPersistence() || !$field->savesToPersistence()) {
                         continue;
                     }
 
@@ -1709,7 +1746,7 @@ class Model implements \IteratorAggregate
                 // Add requested fields first
                 foreach ($this->only_fields as $field) {
                     $f_object = $this->getField($field);
-                    if ($f_object->never_persist) {
+                    if (!$f_object->interactsWithPersistence()) {
                         continue;
                     }
                     $fields[$field] = true;
@@ -1717,7 +1754,7 @@ class Model implements \IteratorAggregate
 
                 // now add system fields, if they were not added
                 foreach ($this->getFields() as $field => $f_object) {
-                    if ($f_object->never_persist) {
+                    if (!$f_object->interactsWithPersistence) {
                         continue;
                     }
                     if ($f_object->system && !isset($fields[$field])) {
@@ -1729,7 +1766,7 @@ class Model implements \IteratorAggregate
             } else {
                 // Add all model fields
                 foreach ($this->getFields() as $field => $f_object) {
-                    if ($f_object->never_persist) {
+                    if (!$f_object->interactsWithPersistence()) {
                         continue;
                     }
                     $fields[] = $field;

@@ -706,74 +706,74 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function set(string $field, $value)
+    public function set(string $fieldName, $value)
     {
-        $this->checkOnlyFieldsField($field);
+        $this->checkOnlyFieldsField($fieldName);
 
-        $f = $this->getField($field);
+        $field = $this->getField($fieldName);
 
         try {
-            $value = $f->normalize($value);
+            $value = $field->normalize($value);
         } catch (Exception $e) {
-            $e->addMoreInfo('field', $field);
+            $e->addMoreInfo('fieldName', $fieldName);
             $e->addMoreInfo('value', $value);
-            $e->addMoreInfo('f', $f);
+            $e->addMoreInfo('field', $field);
 
             throw $e;
         }
 
         // do nothing when value has not changed
-        $currentValue = array_key_exists($field, $this->data)
-            ? $this->data[$field]
-            : (array_key_exists($field, $this->dirty) ? $this->dirty[$field] : $f->default);
-        if (!$value instanceof \Atk4\Dsql\Expression && $f->compare($value, $currentValue)) {
+        $currentValue = array_key_exists($fieldName, $this->data)
+            ? $this->data[$fieldName]
+            : (array_key_exists($fieldName, $this->dirty) ? $this->dirty[$fieldName] : $field->default);
+        if (!$value instanceof \Atk4\Dsql\Expression && $field->compare($value, $currentValue)) {
             return $this;
         }
 
         // perform bunch of standard validation here. This can be re-factored in the future.
-        $f->assertSetAccess();
+        $field->assertSetAccess();
 
         // enum property support
-        if (isset($f->enum) && $f->enum && $f->type !== 'boolean') {
+        if (isset($field->enum) && $field->enum && get_class($field->getType()) !== Model\Field\Type\Boolean::class) {
             if ($value === '') {
                 $value = null;
             }
-            if ($value !== null && !in_array($value, $f->enum, true)) {
+            if ($value !== null && !in_array($value, $field->enum, true)) {
                 throw (new Exception('This is not one of the allowed values for the field'))
-                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('fieldName', $fieldName)
                     ->addMoreInfo('model', $this)
                     ->addMoreInfo('value', $value)
-                    ->addMoreInfo('enum', $f->enum);
+                    ->addMoreInfo('enum', $field->enum);
             }
         }
 
         // values property support
-        if ($f->values) {
+        if ($field->values) {
             if ($value === '') {
                 $value = null;
             } elseif ($value === null) {
                 // all is good
             } elseif (!is_string($value) && !is_int($value)) {
                 throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
-                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('field', $fieldName)
                     ->addMoreInfo('model', $this)
                     ->addMoreInfo('value', $value)
-                    ->addMoreInfo('values', $f->values);
-            } elseif (!array_key_exists($value, $f->values)) {
+                    ->addMoreInfo('values', $field->values);
+            } elseif (!array_key_exists($value, $field->values)) {
                 throw (new Exception('This is not one of the allowed values for the field'))
-                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('field', $fieldName)
                     ->addMoreInfo('model', $this)
                     ->addMoreInfo('value', $value)
-                    ->addMoreInfo('values', $f->values);
+                    ->addMoreInfo('values', $field->values);
             }
         }
 
-        if (array_key_exists($field, $this->dirty) && $f->compare($this->dirty[$field], $value)) {
-            unset($this->dirty[$field]);
-        } elseif (!array_key_exists($field, $this->dirty)) {
-            $this->dirty[$field] = array_key_exists($field, $this->data) ? $this->data[$field] : $f->default;
+        if (array_key_exists($fieldName, $this->dirty) && $field->compare($this->dirty[$fieldName], $value)) {
+            unset($this->dirty[$fieldName]);
+        } elseif (!array_key_exists($fieldName, $this->dirty)) {
+            $this->dirty[$fieldName] = array_key_exists($fieldName, $this->data) ? $this->data[$fieldName] : $field->default;
         }
-        $this->data[$field] = $value;
+        $this->data[$fieldName] = $value;
 
         return $this;
     }

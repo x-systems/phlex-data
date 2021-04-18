@@ -374,8 +374,8 @@ class Sql extends Persistence
         // work only on copied value not real one !!!
         $v = is_object($value) ? clone $value : $value;
 
-        switch ($field->type) {
-            case 'boolean':
+        switch (get_class($field->getType())) {
+            case Model\Field\Type\Boolean::class:
                 // if enum is not set, then simply cast value to integer
                 if (!isset($field->enum) || !$field->enum) {
                     $v = (int) $v;
@@ -394,18 +394,24 @@ class Sql extends Persistence
                 $v = $v ? $field->enum[1] : $field->enum[0];
 
                 break;
-            case 'date':
-            case 'datetime':
-            case 'time':
+            case Model\Field\Type\Date::class:
+                $type = 'date';
+                // no break
+            case Model\Field\Type\DateTime::class:
+                $type = $type ?? 'datetime';
+                // no break
+            case Model\Field\Type\Time::class:
+                $type = $type ?? 'time';
+
                 $dt_class = $field->dateTimeClass ?? \DateTime::class;
                 $tz_class = $field->dateTimeZoneClass ?? \DateTimeZone::class;
 
                 if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
                     $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
-                    $format = $field->persist_format ?: $format[$field->type];
+                    $format = $field->persist_format ?: $format[$type];
 
                     // datetime only - set to persisting timezone
-                    if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+                    if ($type === 'datetime' && isset($field->persist_timezone)) {
                         $v = new \DateTime($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                         $v->setTimezone(new $tz_class($field->persist_timezone));
                     }
@@ -413,8 +419,8 @@ class Sql extends Persistence
                 }
 
                 break;
-            case 'array':
-            case 'object':
+            case Model\Field\Type\Array_::class:
+            case Model\Field\Type\Object_::class:
                 // don't encode if we already use some kind of serialization
                 $v = $field->serialize ? $v : $this->jsonEncode($field, $v);
 
@@ -437,24 +443,25 @@ class Sql extends Persistence
         // work only on copied value not real one !!!
         $v = is_object($value) ? clone $value : $value;
 
-        switch ($field->type) {
-            case 'string':
-            case 'text':
+        switch (get_class($field->getType())) {
+            case Model\Field\Type\Generic::class:
+            case Model\Field\Type\Line::class:
+            case Model\Field\Type\Text::class:
                 // do nothing - it's ok as it is
                 break;
-            case 'integer':
+            case Model\Field\Type\Integer::class:
                 $v = (int) $v;
 
                 break;
-            case 'float':
+            case Model\Field\Type\Numeric::class:
                 $v = (float) $v;
 
                 break;
-            case 'money':
+            case Model\Field\Type\Money::class:
                 $v = round((float) $v, 4);
 
                 break;
-            case 'boolean':
+            case Model\Field\Type\Boolean::class:
                 if (is_array($field->enum ?? null)) {
                     if (isset($field->enum[0]) && $v === $field->enum[0]) {
                         $v = false;
@@ -470,9 +477,15 @@ class Sql extends Persistence
                 }
 
                 break;
-            case 'date':
-            case 'datetime':
-            case 'time':
+            case Model\Field\Type\Date::class:
+                $type = 'date';
+                // no break
+            case Model\Field\Type\DateTime::class:
+                $type = $type ?? 'datetime';
+                // no break
+            case Model\Field\Type\Time::class:
+                $type = $type ?? 'time';
+
                 $dt_class = $field->dateTimeClass ?? \DateTime::class;
                 $tz_class = $field->dateTimeZoneClass ?? \DateTimeZone::class;
 
@@ -484,14 +497,14 @@ class Sql extends Persistence
                     if ($field->persist_format) {
                         $format = $field->persist_format;
                     } else {
-                        $format = $format[$field->type];
+                        $format = $format[$type];
                         if (strpos($v, '.') !== false) { // time possibly with microseconds, otherwise invalid format
                             $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
                         }
                     }
 
                     // datetime only - set from persisting timezone
-                    if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+                    if ($type === 'datetime' && isset($field->persist_timezone)) {
                         $v = $dt_class::createFromFormat($format, $v, new $tz_class($field->persist_timezone));
                         if ($v !== false) {
                             $v->setTimezone(new $tz_class(date_default_timezone_get()));
@@ -515,12 +528,12 @@ class Sql extends Persistence
                 }
 
                 break;
-            case 'array':
+            case Model\Field\Type\Array_::class:
                 // don't decode if we already use some kind of serialization
                 $v = $field->serialize ? $v : $this->jsonDecode($field, $v, true);
 
                 break;
-            case 'object':
+            case Model\Field\Type\Object_::class:
                 // don't decode if we already use some kind of serialization
                 $v = $field->serialize ? $v : $this->jsonDecode($field, $v, false);
 

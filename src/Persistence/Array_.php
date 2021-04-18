@@ -230,16 +230,16 @@ class Array_ extends Persistence
     {
         $table = $table ?? $model->table;
 
-        $type = $model->id_field ? $model->getField($model->id_field)->type : 'integer';
+        $type = $model->id_field ? get_class($model->getField($model->id_field)->getType()) : Model\Field\Type\Integer::class;
 
         switch ($type) {
-            case 'integer':
+            case Model\Field\Type\Integer::class:
                 $ids = $model->id_field ? array_keys($this->data[$table]) : [count($this->data[$table])];
 
                 $id = $ids ? max($ids) + 1 : 1;
 
                 break;
-            case 'string':
+            case Model\Field\Type\Line::class:
                 $id = uniqid();
 
                 break;

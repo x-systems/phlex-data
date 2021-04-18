@@ -24,6 +24,15 @@ class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
         ]);
     }
 
+    public function testFielTypeSeedResolving()
+    {
+        $this->assertSame([Model\Field\Type\Line::class], Model\Field\Type::resolve('string'));
+
+        $this->assertSame([Model\Field\Type\Generic::class], Model\Field\Type::resolve(null));
+
+        $this->assertSame([Model\Field\Type\Line::class, 'maxLength' => 5], Model\Field\Type::resolve(['string', 'maxLength' => 5]));
+    }
+
     public function testEmailBasic()
     {
         $m = new Model($this->pers);

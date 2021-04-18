@@ -23,6 +23,6 @@ class Time extends DateTime
     {
         $value = $this->normalize($value);
 
-        return $value ? $value->format('H:i:s' . ($value->format('u') > 0 ? '.u' : '')) : $value;
+        return $value ? $value->format('H:i:s' . ($value->format('u') > 0 ? '.u' : '')) : '';
     }
 }

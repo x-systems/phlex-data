@@ -263,10 +263,10 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
         $i->load('1');
 
         // type was set explicitly
-        $this->assertSame('money', $i->getField('total_vat')->type);
+        $this->assertSame(Model\Field\Type\Money::class, get_class($i->getField('total_vat')->getType()));
 
         // type was not set and is not inherited
-        $this->assertNull($i->getField('total_net')->type);
+        $this->assertSame(Model\Field\Type\Generic::class, get_class($i->getField('total_net')->getType()));
 
         $this->assertEquals(40, $i->get('total_net'));
         $this->assertEquals(9.2, $i->get('total_vat'));

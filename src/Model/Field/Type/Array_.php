@@ -16,6 +16,10 @@ class Array_ extends \Phlex\Data\Model\Field\Type
 
     public function normalize($value)
     {
+        if ($value === null || $value === '') {
+            return;
+        }
+
         if (is_string($value)) {
             try {
                 $value = json_decode($value, true);
@@ -28,7 +32,7 @@ class Array_ extends \Phlex\Data\Model\Field\Type
             throw new ValidationException('Must be an array');
         }
 
-        if (array_diff($value, array_keys($this->values))) {
+        if ($this->values !== null && array_diff($value, array_keys($this->values))) {
             throw new ValidationException('Must be one of the associated values');
         }
 

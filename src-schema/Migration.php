@@ -11,9 +11,9 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 use Phlex\Core\Exception;
-use Phlex\Data\Model\Field;
 use Phlex\Data\FieldSqlExpression;
 use Phlex\Data\Model;
+use Phlex\Data\Model\Field;
 use Phlex\Data\Persistence;
 use Phlex\Data\Reference\HasOne;
 

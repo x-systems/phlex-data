@@ -22,6 +22,6 @@ class Date extends DateTime
     {
         $date = $this->normalize($value);
 
-        return $date ? $date->format('Y-m-d') : $date;
+        return $date ? $date->format('Y-m-d') : '';
     }
 }

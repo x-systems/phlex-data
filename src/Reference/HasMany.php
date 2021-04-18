@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Reference;
 
 use Phlex\Data\Exception;
-use Phlex\Data\Field;
 use Phlex\Data\Model;
 use Phlex\Data\Reference;
 
@@ -56,7 +55,7 @@ class HasMany extends Reference
     /**
      * Returns our field or id field.
      */
-    protected function referenceOurValue(): Field
+    protected function referenceOurValue(): Model\Field
     {
         $ourModel = $this->getOurModel();
 
@@ -97,7 +96,7 @@ class HasMany extends Reference
      * Adds field as expression to our model.
      * Used in aggregate strategy.
      */
-    public function addField(string $fieldName, array $defaults = []): Field
+    public function addField(string $fieldName, array $defaults = []): Model\Field
     {
         if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
             throw (new Exception('Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()'))

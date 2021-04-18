@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Field;
 
-use Phlex\Data\Field;
-use Phlex\Data\ValidationException;
+use Phlex\Data\Model\Field;
+use Phlex\Data\Model\Field\ValidationException;
 
 /**
  * Stores valid email(s) as per configuration.

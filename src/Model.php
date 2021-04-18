@@ -107,7 +107,7 @@ class Model implements \IteratorAggregate
      *
      * @var string|array
      */
-    public $_default_seed_addField = [Field::class];
+    public $_default_seed_addField = [Model\Field::class];
 
     /**
      * The class used by addField() method.
@@ -485,7 +485,7 @@ class Model implements \IteratorAggregate
      */
     public function add(object $obj, array $defaults = []): object
     {
-        if ($obj instanceof Field) {
+        if ($obj instanceof Model\Field) {
             throw new Exception('You should always use addField() for adding fields, not add()');
         }
 
@@ -497,7 +497,7 @@ class Model implements \IteratorAggregate
      *
      * @param array|object $seed
      */
-    public function addField(string $name, $seed = []): Field
+    public function addField(string $name, $seed = []): Model\Field
     {
         if (is_object($seed)) {
             $field = $seed;
@@ -511,7 +511,7 @@ class Model implements \IteratorAggregate
     /**
      * Given a field seed, return a field object.
      */
-    public function fieldFactory(array $seed = null): Field
+    public function fieldFactory(array $seed = null): Model\Field
     {
         $seed = Factory::mergeSeeds(
             $seed,
@@ -519,7 +519,7 @@ class Model implements \IteratorAggregate
             $this->_default_seed_addField
         );
 
-        return Field::fromSeed($seed);
+        return Model\Field::fromSeed($seed);
     }
 
     protected $typeToFieldSeed = [
@@ -576,7 +576,7 @@ class Model implements \IteratorAggregate
         return $this->_hasInCollection($name, 'fields');
     }
 
-    public function getField(string $name): Field
+    public function getField(string $name): Model\Field
     {
         try {
             return $this->_getFromCollection($name, 'fields');
@@ -647,7 +647,7 @@ class Model implements \IteratorAggregate
     /**
      * @param string|array|null $filter
      *
-     * @return Field[]
+     * @return Model\Field[]
      */
     public function getFields($filters = null, bool $onlyFields = null): array
     {
@@ -659,7 +659,7 @@ class Model implements \IteratorAggregate
 
         $onlyFields = $onlyFields ?? true;
 
-        return array_filter($this->fields, function (Field $field, $name) use ($filters, $onlyFields) {
+        return array_filter($this->fields, function (Model\Field $field, $name) use ($filters, $onlyFields) {
             if ($onlyFields && !$this->isOnlyFieldsField($field->short_name)) {
                 return false;
             }
@@ -674,7 +674,7 @@ class Model implements \IteratorAggregate
         }, ARRAY_FILTER_USE_BOTH);
     }
 
-    protected function fieldMatchesFilter(Field $field, string $filter): bool
+    protected function fieldMatchesFilter(Model\Field $field, string $filter): bool
     {
         switch ($filter) {
             case self::FIELD_FILTER_SYSTEM:
@@ -1535,7 +1535,7 @@ class Model implements \IteratorAggregate
 
         return $this->atomic(function () {
             if (($errors = $this->validate('save')) !== []) {
-                throw new ValidationException($errors, $this);
+                throw new Model\Field\ValidationException($errors, $this);
             }
             $is_update = $this->loaded();
             if ($this->hook(self::HOOK_BEFORE_SAVE, [$is_update]) === false) {
@@ -1937,7 +1937,7 @@ class Model implements \IteratorAggregate
         }
 
         /** @var Field\Callback */
-        $field = Field::fromSeed($this->_default_seed_addExpression, $expression);
+        $field = Model\Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);
 

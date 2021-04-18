@@ -8,7 +8,6 @@ use Phlex\Core\DiContainerTrait;
 use Phlex\Core\InitializerTrait;
 use Phlex\Core\TrackableTrait;
 use Phlex\Data\Exception;
-use Phlex\Data\Field;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 use Phlex\Data\Reference;

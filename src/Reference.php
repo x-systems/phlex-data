@@ -174,7 +174,7 @@ class Reference
         return $this->addToPersistence($theirModel, $defaults);
     }
 
-    protected function getOurField(): Field
+    protected function getOurField(): Model\Field
     {
         return $this->getOurModel()->getField($this->getOurFieldName());
     }

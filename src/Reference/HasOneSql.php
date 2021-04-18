@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Reference;
 
 use Phlex\Data\Exception;
-use Phlex\Data\Field;
 use Phlex\Data\FieldSqlExpression;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
@@ -20,7 +19,7 @@ class HasOneSql extends HasOne
      *
      * Returns Expression in case you want to do something else with it.
      *
-     * @param string|Field|array $ourFieldName or [$field, ..defaults]
+     * @param string|Model\Field|array $ourFieldName or [$field, ..defaults]
      */
     public function addField($ourFieldName, string $theirFieldName = null): FieldSqlExpression
     {

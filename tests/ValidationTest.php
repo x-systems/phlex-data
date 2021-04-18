@@ -6,8 +6,8 @@ namespace Phlex\Data\Tests;
 
 use Atk4\Core\AtkPhpunit;
 use Phlex\Data\Model;
+use Phlex\Data\Model\Field\ValidationException;
 use Phlex\Data\Persistence;
-use Phlex\Data\ValidationException;
 
 class ValidationTest
 {

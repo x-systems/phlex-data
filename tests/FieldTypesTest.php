@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Data\Field;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence\Static_ as Persistence_Static;
-use Phlex\Data\ValidationException;
 
 /**
  * Test various Field.
@@ -29,7 +27,7 @@ class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
     public function testEmailBasic()
     {
         $m = new Model($this->pers);
-        $m->addField('email', [Field\Email::class]);
+        $m->addField('email', [\Phlex\Data\Field\Email::class]);
 
         // null value
         $m->set('email', null);
@@ -47,7 +45,7 @@ class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
         $this->assertSame('foo@example.com', $m->get('email'));
 
         // no domain - go to hell :)
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $this->expectExceptionMessage('does not have domain');
         $m->set('email', 'qq');
     }
@@ -55,13 +53,13 @@ class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
     public function testEmailMultipleValues()
     {
         $m = new Model($this->pers);
-        $m->addField('email', [Field\Email::class]);
-        $m->addField('emails', [Field\Email::class, 'allow_multiple' => true]);
+        $m->addField('email', [\Phlex\Data\Field\Email::class]);
+        $m->addField('emails', [\Phlex\Data\Field\Email::class, 'allow_multiple' => true]);
 
         $m->set('emails', 'bar@exampe.com, foo@example.com');
         $this->assertSame('bar@exampe.com, foo@example.com', $m->get('emails'));
 
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $this->expectExceptionMessage('a single email');
         $m->set('email', 'bar@exampe.com, foo@example.com');
     }
@@ -69,11 +67,11 @@ class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
     public function testEmailValidateDns()
     {
         $m = new Model($this->pers);
-        $m->addField('email', [Field\Email::class, 'dns_check' => true]);
+        $m->addField('email', [\Phlex\Data\Field\Email::class, 'dns_check' => true]);
 
         $m->set('email', ' foo@gmail.com');
 
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $this->expectExceptionMessage('domain does not exist');
         $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
@@ -81,16 +79,16 @@ class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
     public function testEmailWithName()
     {
         $m = new Model($this->pers);
-        $m->addField('email_name', [Field\Email::class, 'include_names' => true]);
-        $m->addField('email_names', [Field\Email::class, 'include_names' => true, 'allow_multiple' => true, 'dns_check' => true, 'separator' => [',', ';']]);
-        $m->addField('email_idn', [Field\Email::class, 'dns_check' => true]);
-        $m->addField('email', [Field\Email::class]);
+        $m->addField('email_name', [\Phlex\Data\Field\Email::class, 'include_names' => true]);
+        $m->addField('email_names', [\Phlex\Data\Field\Email::class, 'include_names' => true, 'allow_multiple' => true, 'dns_check' => true, 'separator' => [',', ';']]);
+        $m->addField('email_idn', [\Phlex\Data\Field\Email::class, 'dns_check' => true]);
+        $m->addField('email', [\Phlex\Data\Field\Email::class]);
 
         $m->set('email_name', 'Romans <me@gmail.com>');
         $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans Žlutý Kůň <me3@gmail.com>');
         $m->set('email_idn', 'test@háčkyčárky.cz'); // official IDN test domain
 
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $this->expectExceptionMessage('format is invalid');
         $m->set('email', 'Romans <me@gmail.com>');
     }

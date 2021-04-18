@@ -8,7 +8,6 @@ use Atk4\Dsql\Expression;
 use Atk4\Dsql\Expressionable;
 use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Data\Exception;
-use Phlex\Data\Field;
 use Phlex\Data\Model;
 
 class Condition extends AbstractScope
@@ -92,7 +91,7 @@ class Condition extends AbstractScope
     {
         if ($key instanceof AbstractScope) {
             throw new Exception('Only Scope can contain another conditions');
-        } elseif ($key instanceof Field) { // for BC
+        } elseif ($key instanceof Model\Field) { // for BC
             $key = $key->short_name;
         } elseif (!is_string($key) && !($key instanceof Expression) && !($key instanceof Expressionable)) {
             throw new Exception('Field must be a string or an instance of Expression');
@@ -152,7 +151,7 @@ class Condition extends AbstractScope
                     $field = $model->getField($field);
                 }
 
-                if ($field instanceof Field) {
+                if ($field instanceof Model\Field) {
                     $field->system = true;
                     $field->default = $this->value;
                 }
@@ -201,7 +200,7 @@ class Condition extends AbstractScope
             }
 
             // handle the query arguments using field
-            if ($field instanceof Field) {
+            if ($field instanceof Model\Field) {
                 [$field, $operator, $value] = $field->getQueryArguments($operator, $value);
             }
 
@@ -291,7 +290,7 @@ class Condition extends AbstractScope
             }
         }
 
-        if ($field instanceof Field) {
+        if ($field instanceof Model\Field) {
             $words[] = $field->getCaption();
         } elseif ($field instanceof Expression) {
             $words[] = "expression '{$field->getDebugQuery()}'";
@@ -321,7 +320,7 @@ class Condition extends AbstractScope
         }
 
         if (is_object($value)) {
-            if ($value instanceof Field) {
+            if ($value instanceof Model\Field) {
                 return $value->getOwner()->getModelCaption() . ' ' . $value->getCaption();
             }
 

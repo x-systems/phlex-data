@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field\Type;
 
-use Phlex\Data\ValidationException;
+use Phlex\Data\Model;
 
 /**
  * Stores valid email(s) as per configuration.
@@ -17,7 +17,7 @@ use Phlex\Data\ValidationException;
  *
  * Various options can also be combined.
  */
-class Email extends \Phlex\Data\Model\Field\Type
+class Email extends Model\Field\Type
 {
     /**
      * @var bool Enable lookup for MX record for email addresses stored
@@ -52,7 +52,7 @@ class Email extends \Phlex\Data\Model\Field\Type
         $emails = preg_split('/[' . implode('', array_map('preg_quote', $this->separator)) . ']+/', (string) $value, -1, PREG_SPLIT_NO_EMPTY);
 
         if (!$this->allow_multiple && count($emails) > 1) {
-            throw new ValidationException([$this->name => 'Only a single email can be entered']);
+            throw new Model\Field\ValidationException([$this->name => 'Only a single email can be entered']);
         }
 
         // now normalize each email
@@ -68,12 +68,12 @@ class Email extends \Phlex\Data\Model\Field\Type
             $user = $p[0] ?? null;
             $domain = $p[1] ?? null;
             if (!filter_var($user . '@' . $this->idn_to_ascii($domain), FILTER_VALIDATE_EMAIL)) {
-                throw new ValidationException([$this->name => 'Email format is invalid']);
+                throw new Model\Field\ValidationException([$this->name => 'Email format is invalid']);
             }
 
             if ($this->dns_check) {
                 if (!checkdnsrr($this->idn_to_ascii($domain), 'MX')) {
-                    throw new ValidationException([$this->name => 'Email domain does not exist']);
+                    throw new Model\Field\ValidationException([$this->name => 'Email domain does not exist']);
                 }
             }
 

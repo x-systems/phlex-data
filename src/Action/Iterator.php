@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Action;
 
 use Phlex\Data\Exception;
-use Phlex\Data\Field;
 use Phlex\Data\Model;
 
 /**
@@ -126,7 +125,7 @@ class Iterator
                 $operator = '=';
             }
 
-            if (!is_a($field, Field::class)) {
+            if (!is_a($field, Model\Field::class)) {
                 throw (new Exception('Persistence\Array_ driver condition unsupported format'))
                     ->addMoreInfo('reason', 'Unsupported object instance ' . get_class($field))
                     ->addMoreInfo('condition', $condition);

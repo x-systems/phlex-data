@@ -6,7 +6,6 @@ namespace Phlex\Data\Tests;
 
 use Atk4\Core\AtkPhpunit;
 use Phlex\Data\Exception;
-use Phlex\Data\Field;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 use Phlex\Data\Tests\Model\Client;
@@ -25,7 +24,7 @@ class BusinessModelTest extends AtkPhpunit\TestCase
         $f = $m->getField('name');
         $this->assertSame('name', $f->short_name);
 
-        $m->addField('surname', new Field());
+        $m->addField('surname', new Model\Field());
         $f = $m->getField('surname');
         $this->assertSame('surname', $f->short_name);
     }

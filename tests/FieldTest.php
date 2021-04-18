@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Phlex\Data\Exception;
-use Phlex\Data\Field;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
-use Phlex\Data\ValidationException;
 
 class FieldTest extends \Phlex\Schema\PhpunitTestCase
 {
@@ -62,7 +60,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
         $m->set('foo', '');
 
         /* known bug, see https://github.com/x-systems/phlex-data/issues/575, fix in https://github.com/x-systems/phlex-data/issues/576
-        $this->expectException(ValidationException::class);*/
+        $this->expectException(Model\Field\ValidationException::class);*/
         $m->set('foo', null);
 
         $this->assertTrue(true); // no exceptions
@@ -73,7 +71,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['required' => true]);
 
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', '');
     }
 
@@ -82,7 +80,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
         $m = new Model();
         $m->addField('foo', ['required' => true]);
 
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', null);
     }
 
@@ -184,7 +182,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     public function testReadOnly1()
     {
         $m = new Model();
-        $m->addField('foo', ['access' => Field::ACCESS_GET]);
+        $m->addField('foo', ['access' => Model\Field::ACCESS_GET]);
         $this->expectException(Exception::class);
         $m->set('foo', 'bar');
     }
@@ -606,7 +604,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'string']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', []);
     }
 
@@ -614,7 +612,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'text']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', []);
     }
 
@@ -622,7 +620,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'integer']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', []);
     }
 
@@ -630,7 +628,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'money']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', []);
     }
 
@@ -638,7 +636,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'float']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', []);
     }
 
@@ -646,7 +644,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'date']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', []);
     }
 
@@ -654,7 +652,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'datetime']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', []);
     }
 
@@ -662,7 +660,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'time']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', []);
     }
 
@@ -670,7 +668,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'integer']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', '123---456');
     }
 
@@ -678,7 +676,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'money']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', '123---456');
     }
 
@@ -686,7 +684,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'float']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', '123---456');
     }
 
@@ -694,7 +692,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'array']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', 'ABC');
     }
 
@@ -702,7 +700,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'object']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', 'ABC');
     }
 
@@ -710,7 +708,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $m = new Model(null, ['strict_types' => true]);
         $m->addField('foo', ['type' => 'boolean']);
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', 'ABC');
     }
 
@@ -753,7 +751,7 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     {
         $this->expectException(Exception::class);
         $model = new Model();
-        $model->add(new Field(), ['test']);
+        $model->add(new Model\Field(), ['test']);
     }
 
     public function testGetFields()
@@ -918,19 +916,19 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
         $m->addField('normal');
         $m->addField('read_only', ['read_only' => true]);
 
-        $this->assertTrue($m->getField('normal')->checkAccess(Field::ACCESS_GET | Field::ACCESS_SET));
-        $this->assertFalse($m->getField('read_only')->checkAccess(Field::ACCESS_SET));
+        $this->assertTrue($m->getField('normal')->checkAccess(Model\Field::ACCESS_GET | Model\Field::ACCESS_SET));
+        $this->assertFalse($m->getField('read_only')->checkAccess(Model\Field::ACCESS_SET));
 
-        $m->getField('read_only')->grantAccess(Field::ACCESS_SET);
-        $this->assertTrue($m->getField('read_only')->checkAccess(Field::ACCESS_SET));
+        $m->getField('read_only')->grantAccess(Model\Field::ACCESS_SET);
+        $this->assertTrue($m->getField('read_only')->checkAccess(Model\Field::ACCESS_SET));
 
-        $m->getField('read_only')->denyAccess(Field::ACCESS_SET);
-        $this->assertFalse($m->getField('read_only')->checkAccess(Field::ACCESS_SET));
+        $m->getField('read_only')->denyAccess(Model\Field::ACCESS_SET);
+        $this->assertFalse($m->getField('read_only')->checkAccess(Model\Field::ACCESS_SET));
 
         $m->getField('read_only')->setReadOnly(false);
-        $this->assertTrue($m->getField('read_only')->checkAccess(Field::ACCESS_SET));
+        $this->assertTrue($m->getField('read_only')->checkAccess(Model\Field::ACCESS_SET));
 
-        $m->getField('normal')->denyAccess(Field::ACCESS_SET);
-        $this->assertFalse($m->getField('normal')->checkAccess(Field::ACCESS_SET));
+        $m->getField('normal')->denyAccess(Model\Field::ACCESS_SET);
+        $this->assertFalse($m->getField('normal')->checkAccess(Model\Field::ACCESS_SET));
     }
 }

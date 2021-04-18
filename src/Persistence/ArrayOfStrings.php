@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence;
 
-use Phlex\Data\Field;
+use Phlex\Data\Model\Field;
 
 /**
  * Array persistence which will always typecast all values to strings.

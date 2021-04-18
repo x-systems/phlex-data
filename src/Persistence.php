@@ -190,7 +190,7 @@ abstract class Persistence
 
             // check null values for mandatory fields
             if ($value === null && $field->mandatory) {
-                throw new ValidationException([$fieldName => 'Mandatory field value cannot be null'], $model);
+                throw new Model\Field\ValidationException([$fieldName => 'Mandatory field value cannot be null'], $model);
             }
 
             // Expression and null cannot be converted.
@@ -276,7 +276,7 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function typecastSaveField(Field $f, $value)
+    public function typecastSaveField(Model\Field $f, $value)
     {
         try {
             // use $f->typecast = [typecast_save_callback, typecast_load_callback]
@@ -305,7 +305,7 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function typecastLoadField(Field $f, $value)
+    public function typecastLoadField(Model\Field $f, $value)
     {
         try {
             // use $f->typecast = [typecast_save_callback, typecast_load_callback]
@@ -340,7 +340,7 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function _typecastSaveField(Field $f, $value)
+    public function _typecastSaveField(Model\Field $f, $value)
     {
         return $value;
     }
@@ -353,7 +353,7 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function _typecastLoadField(Field $f, $value)
+    public function _typecastLoadField(Model\Field $f, $value)
     {
         return $value;
     }
@@ -366,7 +366,7 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function serializeSaveField(Field $f, $value)
+    public function serializeSaveField(Model\Field $f, $value)
     {
         try {
             // use $f->serialize = [encode_callback, decode_callback]
@@ -390,7 +390,7 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function serializeLoadField(Field $f, $value)
+    public function serializeLoadField(Model\Field $f, $value)
     {
         try {
             // use $f->serialize = [encode_callback, decode_callback]
@@ -413,7 +413,7 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function _serializeSaveField(Field $f, $value)
+    public function _serializeSaveField(Model\Field $f, $value)
     {
         switch ($f->serialize === true ? 'serialize' : $f->serialize) {
         case 'serialize':
@@ -438,7 +438,7 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function _serializeLoadField(Field $f, $value)
+    public function _serializeLoadField(Model\Field $f, $value)
     {
         switch ($f->serialize === true ? 'serialize' : $f->serialize) {
         case 'serialize':
@@ -455,7 +455,7 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function jsonDecode(Field $f, string $json, bool $assoc = true)
+    public function jsonDecode(Model\Field $f, string $json, bool $assoc = true)
     {
         return json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
     }
@@ -465,7 +465,7 @@ abstract class Persistence
      *
      * @param mixed $value
      */
-    public function jsonEncode(Field $f, $value): string
+    public function jsonEncode(Model\Field $f, $value): string
     {
         return json_encode($value, JSON_THROW_ON_ERROR, 512);
     }

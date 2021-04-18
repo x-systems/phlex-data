@@ -341,7 +341,7 @@ class RandomTest extends \Phlex\Schema\PhpunitTestCase
 
         $m = new Model_Rate($db);
         $m->addField('x1', new \Phlex\Data\FieldSql());
-        $m->addField('x2', new \Phlex\Data\Field());
+        $m->addField('x2', new \Phlex\Data\Model\Field());
         $m->load(1);
 
         $this->assertEquals(3.4, $m->get('bid'));
@@ -542,6 +542,6 @@ class RandomTest extends \Phlex\Schema\PhpunitTestCase
     }
 }
 
-class CustomField extends \Phlex\Data\Field
+class CustomField extends \Phlex\Data\Model\Field
 {
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Reference;
 
-use Phlex\Data\Field;
 use Phlex\Data\Model;
 use Phlex\Data\Reference;
 
@@ -185,7 +184,7 @@ class HasOne extends Reference
     /**
      * Returns our field or id field.
      */
-    protected function referenceOurValue(): Field
+    protected function referenceOurValue(): Model\Field
     {
         $this->getOurModel()->persistence_data['use_table_prefixes'] = true;
 

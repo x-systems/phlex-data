@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Phlex\Data\Field;
 
 use Phlex\Core\InitializerTrait;
-use Phlex\Data\ValidationException;
+use Phlex\Data\Model\Field\ValidationException;
 
 /**
  * Your favorite nullable binary type.
  */
-class Boolean extends \Phlex\Data\Field
+class Boolean extends \Phlex\Data\Model\Field
 {
     use InitializerTrait {
         init as _init;

@@ -10,7 +10,7 @@ use Atk4\Dsql\Expressionable;
 /**
  * @property Persistence\Sql\Join $join
  */
-class FieldSql extends Field implements Expressionable
+class FieldSql extends Model\Field implements Expressionable
 {
     /**
      * SQL fields are allowed to have expressions inside of them.

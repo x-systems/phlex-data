@@ -10,7 +10,6 @@ use Atk4\Dsql\Expression;
 use Atk4\Dsql\Query;
 use Doctrine\DBAL\Platforms;
 use Phlex\Data\Exception;
-use Phlex\Data\Field;
 use Phlex\Data\FieldSqlExpression;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
@@ -276,7 +275,7 @@ class Sql extends Persistence
     /**
      * Adds Field in Query.
      */
-    public function initField(Query $query, Field $field)
+    public function initField(Query $query, Model\Field $field)
     {
         $query->field($field, $field->useAlias() ? $field->short_name : null);
     }
@@ -370,7 +369,7 @@ class Sql extends Persistence
      *
      * @return mixed
      */
-    public function _typecastSaveField(Field $field, $value)
+    public function _typecastSaveField(Model\Field $field, $value)
     {
         // work only on copied value not real one !!!
         $v = is_object($value) ? clone $value : $value;
@@ -433,7 +432,7 @@ class Sql extends Persistence
      *
      * @return mixed
      */
-    public function _typecastLoadField(Field $field, $value)
+    public function _typecastLoadField(Model\Field $field, $value)
     {
         // work only on copied value not real one !!!
         $v = is_object($value) ? clone $value : $value;
@@ -826,7 +825,7 @@ class Sql extends Persistence
         }
     }
 
-    public function getFieldSqlExpression(Field $field, Expression $expression)
+    public function getFieldSqlExpression(Model\Field $field, Expression $expression)
     {
         if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {
             $mask = '{{}}.{}';

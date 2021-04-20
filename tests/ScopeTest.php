@@ -71,7 +71,7 @@ class STicket extends Model
     }
 }
 
-class ScopeTest extends \Phlex\Schema\PhpunitTestCase
+class ScopeTest extends SQL\TestCase
 {
     protected $user;
     protected $country;

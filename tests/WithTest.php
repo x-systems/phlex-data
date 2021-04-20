@@ -9,7 +9,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class WithTest extends \Phlex\Schema\PhpunitTestCase
+class WithTest extends SQL\TestCase
 {
     public function testWith()
     {

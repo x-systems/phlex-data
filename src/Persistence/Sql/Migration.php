@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Schema;
+namespace Phlex\Data\Persistence\Sql;
 
 use Atk4\Dsql\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;

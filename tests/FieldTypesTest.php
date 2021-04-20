@@ -10,7 +10,7 @@ use Phlex\Data\Persistence\Static_ as Persistence_Static;
 /**
  * Test various Field.
  */
-class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
+class FieldTypesTest extends SQL\TestCase
 {
     public $pers;
 

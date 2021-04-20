@@ -33,7 +33,7 @@ class MyDateTime extends \DateTime
     }
 }
 
-class TypecastingTest extends \Phlex\Schema\PhpunitTestCase
+class TypecastingTest extends SQL\TestCase
 {
     public function testType()
     {

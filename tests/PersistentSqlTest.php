@@ -7,7 +7,7 @@ namespace Phlex\Data\Tests;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 
-class PersistentSqlTest extends \Phlex\Schema\PhpunitTestCase
+class PersistentSqlTest extends SQL\TestCase
 {
     /**
      * Test constructor.

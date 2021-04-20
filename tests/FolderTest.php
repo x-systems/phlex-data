@@ -27,7 +27,7 @@ class Folder extends Model
     }
 }
 
-class FolderTest extends \Phlex\Schema\PhpunitTestCase
+class FolderTest extends SQL\TestCase
 {
     public function testRate()
     {

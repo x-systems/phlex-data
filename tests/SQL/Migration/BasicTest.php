@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Schema\Tests;
+namespace Phlex\Data\Tests\SQL\Migration;
 
-use Phlex\Schema\PhpunitTestCase;
-
-class BasicTest extends PhpunitTestCase
+class BasicTest extends \Phlex\Data\Tests\SQL\TestCase
 {
     /**
      * Test constructor.

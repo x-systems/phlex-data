@@ -11,7 +11,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class JoinSqlTest extends \Phlex\Schema\PhpunitTestCase
+class JoinSqlTest extends SQL\TestCase
 {
     public function testDirection()
     {

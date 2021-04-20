@@ -8,7 +8,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class FieldTest extends \Phlex\Schema\PhpunitTestCase
+class FieldTest extends SQL\TestCase
 {
     public function testDirty1()
     {

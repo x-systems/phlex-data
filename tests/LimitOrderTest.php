@@ -7,7 +7,7 @@ namespace Phlex\Data\Tests;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 
-class LimitOrderTest extends \Phlex\Schema\PhpunitTestCase
+class LimitOrderTest extends SQL\TestCase
 {
     public function testBasic()
     {

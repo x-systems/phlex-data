@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Schema\Tests;
+namespace Phlex\Data\Tests\SQL\Migration;
 
 use Phlex\Data\Model;
-use Phlex\Schema\PhpunitTestCase;
 
-class ModelTest extends PhpunitTestCase
+class ModelTest extends \Phlex\Data\Tests\SQL\TestCase
 {
     /**
      * @doesNotPerformAssertions

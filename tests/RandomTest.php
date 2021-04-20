@@ -66,7 +66,7 @@ class Model_Item3 extends Model
     }
 }
 
-class RandomTest extends \Phlex\Schema\PhpunitTestCase
+class RandomTest extends SQL\TestCase
 {
     public function testRate()
     {

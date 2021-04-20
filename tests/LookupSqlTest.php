@@ -137,7 +137,7 @@ class LFriend extends Model
 /**
  * ATK Data has an option to lookup ID values if their "lookup" values are specified.
  */
-class LookupSqlTest extends \Phlex\Schema\PhpunitTestCase
+class LookupSqlTest extends SQL\TestCase
 {
     protected function setUp(): void
     {

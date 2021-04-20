@@ -6,7 +6,7 @@ namespace Phlex\Data\Tests;
 
 use Phlex\Data\Model;
 
-class DefaultTest extends \Phlex\Schema\PhpunitTestCase
+class DefaultTest extends SQL\TestCase
 {
     public function testDefaultValue()
     {

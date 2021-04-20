@@ -137,7 +137,7 @@ class DcPayment extends Model
 /**
  * Implements various tests for deep copying objects.
  */
-class DeepCopyTest extends \Phlex\Schema\PhpunitTestCase
+class DeepCopyTest extends SQL\TestCase
 {
     protected function setUp(): void
     {

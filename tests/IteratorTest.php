@@ -8,7 +8,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class IteratorTest extends \Phlex\Schema\PhpunitTestCase
+class IteratorTest extends SQL\TestCase
 {
     /**
      * If first argument is array, then second argument should not be used.

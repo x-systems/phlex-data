@@ -48,11 +48,15 @@ class Email extends Model\Field\Type
      */
     public function normalize($value)
     {
+        if ($value === null || $value === '') {
+            return;
+        }
+
         // split value by any number of separator characters
         $emails = preg_split('/[' . implode('', array_map('preg_quote', $this->separator)) . ']+/', (string) $value, -1, PREG_SPLIT_NO_EMPTY);
 
         if (!$this->allow_multiple && count($emails) > 1) {
-            throw new Model\Field\ValidationException([$this->name => 'Only a single email can be entered']);
+            throw new ValidationException('Only a single email can be entered');
         }
 
         // now normalize each email
@@ -67,13 +71,14 @@ class Email extends Model\Field\Type
             $p = explode('@', $email);
             $user = $p[0] ?? null;
             $domain = $p[1] ?? null;
+
             if (!filter_var($user . '@' . $this->idn_to_ascii($domain), FILTER_VALIDATE_EMAIL)) {
-                throw new Model\Field\ValidationException([$this->name => 'Email format is invalid']);
+                throw new ValidationException('Email format is invalid');
             }
 
             if ($this->dns_check) {
                 if (!checkdnsrr($this->idn_to_ascii($domain), 'MX')) {
-                    throw new Model\Field\ValidationException([$this->name => 'Email domain does not exist']);
+                    throw new ValidationException('Email domain does not exist');
                 }
             }
 
@@ -92,6 +97,6 @@ class Email extends Model\Field\Type
      */
     protected function idn_to_ascii(?string $domain): ?string
     {
-        return idn_to_ascii($domain, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46);
+        return isset($domain) ? idn_to_ascii($domain, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) : null;
     }
 }

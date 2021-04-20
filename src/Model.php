@@ -114,7 +114,7 @@ class Model implements \IteratorAggregate
      *
      * @var string|array
      */
-    public $_default_seed_addExpression = [Field\Callback::class];
+    public $_default_seed_addExpression = [Model\Field\Callback::class];
 
     /**
      * @var array Collection containing Field Objects - using key as the field system name
@@ -1921,7 +1921,7 @@ class Model implements \IteratorAggregate
      *
      * @param string|array|\Atk4\Dsql\Expression|\Closure $expression
      *
-     * @return Field\Callback
+     * @return Model\Field\Callback
      */
     public function addExpression(string $name, $expression)
     {
@@ -1945,7 +1945,7 @@ class Model implements \IteratorAggregate
      *
      * @param string|array|\Closure $expression
      *
-     * @return Field\Callback
+     * @return Model\Field\Callback
      */
     public function addCalculatedField(string $name, $expression)
     {
@@ -1956,7 +1956,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        $field = new Field\Callback($expression);
+        $field = new Model\Field\Callback($expression);
 
         $this->addField($name, $field);
 

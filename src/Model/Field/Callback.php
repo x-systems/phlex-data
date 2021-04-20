@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Field;
+namespace Phlex\Data\Model\Field;
 
 use Phlex\Core\InitializerTrait;
 use Phlex\Data\Model;
@@ -10,7 +10,7 @@ use Phlex\Data\Model;
 /**
  * Evaluate php expression after load.
  */
-class Callback extends \Phlex\Data\Model\Field
+class Callback extends Model\Field
 {
     use InitializerTrait {
         init as _init;
@@ -27,9 +27,6 @@ class Callback extends \Phlex\Data\Model\Field
 
     public $persist = self::PERSIST_NONE;
 
-    /**
-     * Initialization.
-     */
     protected function init(): void
     {
         $this->_init();

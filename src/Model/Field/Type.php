@@ -20,6 +20,7 @@ class Type
         'money' => [Type\Money::class],
         'text' => [Type\Text::class],
         'string' => [Type\Line::class],
+        'email' => [Type\Email::class],
         'datetime' => [Type\DateTime::class],
         'date' => [Type\Date::class],
         'time' => [Type\Time::class],

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Expressionable;
 use Phlex\Core\DiContainerTrait;
 use Phlex\Core\Factory;
 use Phlex\Core\ReadableCaptionTrait;
@@ -16,7 +14,7 @@ use Phlex\Data\Model;
 /**
  * @method Model getOwner()
  */
-class Field implements Expressionable
+class Field
 {
     use DiContainerTrait;
     use JoinLinkTrait;
@@ -526,20 +524,6 @@ class Field implements Expressionable
     public function checkPersisting(int $action): bool
     {
         return (bool) ($this->persist & $action);
-    }
-
-    /**
-     * When field is used as expression, this method will be called.
-     * Universal way to convert ourselves to expression. Off-load implementation into persistence.
-     */
-    public function getDsqlExpression(Expression $expression): Expression
-    {
-        if (!$this->getOwner()->persistence || !$this->getOwner()->persistence instanceof \Phlex\Data\Persistence\Sql) {
-            throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
-                ->addMoreInfo('persistence', $this->getOwner()->persistence ?? null);
-        }
-
-        return $this->getOwner()->persistence->getFieldSqlExpression($this, $expression);
     }
 
     // {{{ Debug Methods

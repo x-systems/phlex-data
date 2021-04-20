@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Reference;
 
 use Phlex\Data\Exception;
-use Phlex\Data\FieldSqlExpression;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
@@ -21,7 +20,7 @@ class HasOneSql extends HasOne
      *
      * @param string|Model\Field|array $ourFieldName or [$field, ..defaults]
      */
-    public function addField($ourFieldName, string $theirFieldName = null): FieldSqlExpression
+    public function addField($ourFieldName, string $theirFieldName = null): Persistence\Sql\Field\Expression
     {
         if (is_array($ourFieldName)) {
             $defaults = $ourFieldName;
@@ -44,7 +43,7 @@ class HasOneSql extends HasOne
         // if caption is not defined in $defaults -> get it directly from the linked model field $theirFieldName
         $defaults['caption'] = $defaults['caption'] ?? $ourModel->refModel($this->link)->getField($theirFieldName)->getCaption();
 
-        /** @var FieldSqlExpression $fieldExpression */
+        /** @var Persistence\Sql\Field\Expression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
             [
                 function (Model $ourModel) use ($theirFieldName) {
@@ -172,7 +171,7 @@ class HasOneSql extends HasOne
      *
      * This method returns newly created expression field.
      */
-    public function addTitle(array $defaults = []): FieldSqlExpression
+    public function addTitle(array $defaults = []): Persistence\Sql\Field\Expression
     {
         $ourModel = $this->getOurModel();
 
@@ -183,7 +182,7 @@ class HasOneSql extends HasOne
                 ->addMoreInfo('field', $fieldName);
         }
 
-        /** @var FieldSqlExpression $fieldExpression */
+        /** @var Persistence\Sql\Field\Expression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($fieldName, array_replace_recursive(
             [
                 function (Model $ourModel) {

@@ -10,7 +10,6 @@ use Atk4\Dsql\Expression;
 use Atk4\Dsql\Query;
 use Doctrine\DBAL\Platforms;
 use Phlex\Data\Exception;
-use Phlex\Data\FieldSqlExpression;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
@@ -41,7 +40,7 @@ class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_addField = [\Phlex\Data\FieldSql::class];
+    public $_default_seed_addField = [Sql\Field::class];
 
     /**
      * Default class when adding hasOne field.
@@ -62,7 +61,7 @@ class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_addExpression = [FieldSqlExpression::class];
+    public $_default_seed_addExpression = [Sql\Field\Expression::class];
 
     /**
      * Default class when adding join.
@@ -590,7 +589,7 @@ class Sql extends Persistence
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($field, $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
+                } elseif ($field instanceof Sql\Field\Expression) {
                     $query->reset('field')->field($field, $field->short_name);
                 } else {
                     $query->reset('field')->field($field);
@@ -625,7 +624,7 @@ class Sql extends Persistence
 
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
+                } elseif ($field instanceof Sql\Field\Expression) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->short_name);
                 } else {
                     $query->reset('field')->field($query->expr($expr, [$field]));

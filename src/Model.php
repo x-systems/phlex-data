@@ -515,7 +515,8 @@ class Model implements \IteratorAggregate
     {
         $seed = Factory::mergeSeeds(
             $seed,
-            $this->_default_seed_addField
+            $this->_default_seed_addField,
+            $this->persistence ? ($this->persistence->_default_seed_addField ?? null) : null
         );
 
         return Model\Field::fromSeed($seed);

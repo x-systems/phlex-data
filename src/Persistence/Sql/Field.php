@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data;
+namespace Phlex\Data\Persistence\Sql;
 
 use Atk4\Dsql\Expression;
 use Atk4\Dsql\Expressionable;
@@ -10,8 +10,10 @@ use Atk4\Dsql\Expressionable;
 /**
  * @property Persistence\Sql\Join $join
  */
-class FieldSql extends Model\Field implements Expressionable
+class Field extends \Phlex\Data\Model\Field implements Expressionable
 {
+    use Field\ExpressionableTrait;
+
     /**
      * SQL fields are allowed to have expressions inside of them.
      *

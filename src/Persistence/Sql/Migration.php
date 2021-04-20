@@ -11,7 +11,6 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 use Phlex\Core\Exception;
-use Phlex\Data\FieldSqlExpression;
 use Phlex\Data\Model;
 use Phlex\Data\Model\Field;
 use Phlex\Data\Persistence;
@@ -205,7 +204,7 @@ class Migration
         $this->table($model->table);
 
         foreach ($model->getFields() as $field) {
-            if (!$field->interactsWithPersistence() || $field instanceof FieldSqlExpression) {
+            if (!$field->interactsWithPersistence() || $field instanceof Persistence\Sql\Field\Expression) {
                 continue;
             }
 

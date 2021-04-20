@@ -22,6 +22,10 @@ class Boolean extends \Phlex\Data\Model\Field\Type
 
     public function normalize($value)
     {
+        if ($value === null || $value === '') {
+            return;
+        }
+
         if (is_bool($value)) {
             return $value;
         }

@@ -250,8 +250,6 @@ class TypecastingTest extends SQL\TestCase
                     'date' => '2013-02-20',
                     'datetime' => '2013-02-20 20:00:12.235689',
                     'time' => '12:00:50.235689',
-                    'b1' => 'Y',
-                    'b2' => 'N',
                     'integer' => '2940',
                     'money' => '8.20',
                     'float' => '8.202343',
@@ -269,8 +267,6 @@ class TypecastingTest extends SQL\TestCase
         $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
         $m->addField('datetime', ['type' => 'datetime', 'dateTimeClass' => MyDateTime::class]);
         $m->addField('time', ['type' => 'time', 'dateTimeClass' => MyTime::class]);
-        $m->addField('b1', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
-        $m->addField('b2', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
@@ -289,9 +285,6 @@ class TypecastingTest extends SQL\TestCase
         $this->assertSame('2013-02-21 05:00:12.235689', (string) $mm->get('datetime'));
         $this->assertSame('2013-02-20', (string) $mm->get('date'));
         $this->assertSame('12:00:50.235689', (string) $mm->get('time'));
-
-        $this->assertTrue($mm->get('b1'));
-        $this->assertFalse($mm->get('b2'));
 
         (clone $m)/*->duplicate()*/ ->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
         $m->delete(1);
@@ -388,16 +381,6 @@ class TypecastingTest extends SQL\TestCase
 
         $m->addCondition('date', $d)->loadAny();
         $this->assertTrue($m->loaded());
-    }
-
-    public function testTypecastBoolean()
-    {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'job']);
-
-        $f = $m->addField('closed', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
-
-        $this->assertSame('N', $db->typecastSaveField($f, 'N'));
     }
 
     public function testTypecastTimezone()

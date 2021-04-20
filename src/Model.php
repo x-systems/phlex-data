@@ -515,16 +515,11 @@ class Model implements \IteratorAggregate
     {
         $seed = Factory::mergeSeeds(
             $seed,
-            isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
             $this->_default_seed_addField
         );
 
         return Model\Field::fromSeed($seed);
     }
-
-    protected $typeToFieldSeed = [
-        'boolean' => [Field\Boolean::class],
-    ];
 
     /**
      * Adds multiple fields into model.

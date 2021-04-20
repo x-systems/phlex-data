@@ -203,7 +203,7 @@ class Migration
         $this->table($model->table);
 
         foreach ($model->getFields() as $field) {
-            if (!$field->interactsWithPersistence() || $field instanceof Persistence\Sql\Field\Expression) {
+            if (!$field->savesToPersistence()) {
                 continue;
             }
 

@@ -21,6 +21,9 @@ class Expression extends \Phlex\Data\Persistence\Sql\Field
      */
     public $expr;
 
+    // Expressions can only load from persistence.
+    public $persist = self::PERSIST_LOAD;
+
     // Expressions are always read_only.
     public $access = self::ACCESS_GET;
 

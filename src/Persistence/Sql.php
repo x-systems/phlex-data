@@ -47,14 +47,14 @@ class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_hasOne = [\Phlex\Data\Reference\HasOneSql::class];
+    public $_default_seed_hasOne = [Sql\Reference\HasOne::class];
 
     /**
      * Default class when adding hasMany field.
      *
      * @var array
      */
-    public $_default_seed_hasMany; // [\Phlex\Data\Reference\HasMany::class];
+    public $_default_seed_hasMany; // [Sql\Reference\HasMany::class];
 
     /**
      * Default class when adding Expression field.

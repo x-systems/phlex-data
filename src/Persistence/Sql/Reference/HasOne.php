@@ -2,16 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Reference;
+namespace Phlex\Data\Persistence\Sql\Reference;
 
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-/**
- * Reference\HasOneSql class.
- */
-class HasOneSql extends HasOne
+class HasOne extends \Phlex\Data\Reference\HasOne
 {
     /**
      * Creates expression which sub-selects a field inside related model.

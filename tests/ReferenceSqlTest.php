@@ -490,7 +490,7 @@ class ReferenceSqlTest extends SQL\TestCase
     }
 
     /**
-     * Few tests to test Reference\HasOneSql addTitle() method.
+     * Few tests to test Reference\Sql\HasOne addTitle() method.
      */
     public function testAddTitle()
     {

@@ -10,7 +10,6 @@ use Phlex\Core\TrackableTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
-use Phlex\Data\Reference;
 
 /**
  * Provides generic functionality for joining data.

@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data;
+namespace Phlex\Data\Model;
 
 use Phlex\Core\Factory;
+use Phlex\Data\Exception;
+use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 /**
  * Reference implements a link between one model and another. The basic components for

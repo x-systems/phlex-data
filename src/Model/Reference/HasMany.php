@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Reference;
+namespace Phlex\Data\Model\Reference;
 
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
-use Phlex\Data\Reference;
 
 /**
  * Reference\HasMany class.
  */
-class HasMany extends Reference
+class HasMany extends Model\Reference
 {
     public function getTheirFieldName(): string
     {

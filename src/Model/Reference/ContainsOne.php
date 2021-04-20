@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Reference;
+namespace Phlex\Data\Model\Reference;
 
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
-use Phlex\Data\Reference;
 
 /**
  * ContainsOne reference.
  */
-class ContainsOne extends Reference
+class ContainsOne extends Model\Reference
 {
     /**
      * Field type.

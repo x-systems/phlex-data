@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Reference;
+namespace Phlex\Data\Model\Reference;
 
 use Phlex\Data\Model;
-use Phlex\Data\Reference;
 
 /**
  * Reference\HasOne class.
  */
-class HasOne extends Reference
+class HasOne extends Model\Reference
 {
     use Model\JoinLinkTrait;
 

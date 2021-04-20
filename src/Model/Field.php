@@ -69,7 +69,7 @@ class Field
      *
      * It's used more in x-systems/phlex-ui repository. See there.
      *
-     * @var \Phlex\Data\Reference|null
+     * @var Reference|null
      */
     public $reference;
 

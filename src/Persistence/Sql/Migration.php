@@ -14,7 +14,6 @@ use Phlex\Core\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Model\Field;
 use Phlex\Data\Persistence;
-use Phlex\Data\Reference\HasOne;
 
 class Migration
 {
@@ -231,10 +230,10 @@ class Migration
 
     protected function getReferenceField(Field $field): ?Field
     {
-        if ($field->reference instanceof HasOne) {
+        if ($field->reference instanceof Model\Reference\HasOne) {
             $referenceTheirField = \Closure::bind(function () use ($field) {
                 return $field->reference->their_field;
-            }, null, \Phlex\Data\Reference::class)();
+            }, null, Model\Reference::class)();
 
             $referenceField = $referenceTheirField ?? $field->reference->getOwner()->id_field;
 

@@ -837,33 +837,6 @@ class Sql extends Persistence
         }
     }
 
-    public function getFieldSqlExpression(Model\Field $field, Expression $expression)
-    {
-        if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {
-            $mask = '{{}}.{}';
-            $prop = [
-                $field->hasJoin()
-                    ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->short_name)
-                    : ($field->getOwner()->table_alias ?: $field->getOwner()->table),
-                $field->getPersistenceName(),
-            ];
-        } else {
-            // references set flag use_table_prefixes, so no need to check them here
-            $mask = '{}';
-            $prop = [
-                $field->getPersistenceName(),
-            ];
-        }
-
-        // If our Model has expr() method (inherited from Persistence\Sql) then use it
-        if ($field->getOwner()->hasMethod('expr')) {
-            return $field->getOwner()->expr($mask, $prop);
-        }
-
-        // Otherwise call method from expression
-        return $expression->expr($mask, $prop);
-    }
-
     private function getIdSequenceName(Model $model): ?string
     {
         $sequenceName = $model->sequence ?: null;

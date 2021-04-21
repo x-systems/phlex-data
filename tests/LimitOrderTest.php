@@ -21,7 +21,7 @@ class LimitOrderTest extends SQL\TestCase
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
-        $i->getField($i->idFieldName)->system = false;
+        $i->getPrimaryKeyField()->system = false;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);
@@ -44,7 +44,7 @@ class LimitOrderTest extends SQL\TestCase
 
         $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
-        $ii->getField($ii->idFieldName)->system = false;
+        $ii->getPrimaryKeyField()->system = false;
 
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross' => 'desc']);
@@ -94,7 +94,7 @@ class LimitOrderTest extends SQL\TestCase
         ]);
 
         $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['net', 'vat']);
-        $ii->getField($ii->idFieldName)->system = false;
+        $ii->getPrimaryKeyField()->system = false;
 
         // pass parameters as array elements [field,order]
         $i = clone $ii;
@@ -140,7 +140,7 @@ class LimitOrderTest extends SQL\TestCase
         // order by expression field
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['code', 'net', 'vat']);
         $i->addExpression('gross', '[net]+[vat]');
-        $i->getField($i->idFieldName)->system = false;
+        $i->getPrimaryKeyField()->system = false;
 
         $i->setOrder('gross');
         $i->onlyFields(['gross']);
@@ -220,7 +220,7 @@ class LimitOrderTest extends SQL\TestCase
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
-        $i->getField($i->idFieldName)->system = false;
+        $i->getPrimaryKeyField()->system = false;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);

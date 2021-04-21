@@ -21,7 +21,7 @@ class HasMany extends Model\Reference
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel();
-        $theirFieldName = $ourModel->table . '_' . $ourModel->idFieldName;
+        $theirFieldName = $ourModel->table . '_' . $ourModel->primaryKey;
         if (!$this->createTheirModel()->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
                 ->addMoreInfo('their_fallback_field', $theirFieldName);

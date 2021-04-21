@@ -207,7 +207,7 @@ class Migration
                 continue;
             }
 
-            if ($field->short_name === $model->idFieldName) {
+            if ($field->short_name === $model->primaryKey) {
                 $refype = self::REF_TYPE_PRIMARY;
                 $persistField = $field;
             } else {
@@ -235,7 +235,7 @@ class Migration
                 return $field->reference->theirFieldName;
             }, null, Model\Reference::class)();
 
-            $referenceField = $referenceTheirField ?? $field->reference->getOwner()->idFieldName;
+            $referenceField = $referenceTheirField ?? $field->reference->getOwner()->primaryKey;
 
             $modelSeed = is_array($field->reference->model)
                 ? $field->reference->model

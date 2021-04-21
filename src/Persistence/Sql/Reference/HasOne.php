@@ -66,7 +66,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
                 $theirModel = $this->createTheirModel();
 
                 $theirModel->addCondition($theirFieldName, $ourModel->get($ourFieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->idFieldName]));
+                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->primaryKey]));
                 $ourModel->_unset($ourFieldName);
             }
         }, [], 21);
@@ -121,7 +121,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         $theirModel = $this->createTheirModel($defaults);
 
         $theirModel->addCondition(
-            $this->theirFieldName ?: $theirModel->idFieldName,
+            $this->theirFieldName ?: $theirModel->primaryKey,
             $this->referenceOurValue()
         );
 
@@ -140,23 +140,23 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
             return $theirModel;
         }
 
-        $theirField = $this->theirFieldName ?: $theirModel->idFieldName;
+        $theirFieldName = $this->theirFieldName ?: $theirModel->primaryKey;
         $ourField = $this->getOurField();
 
         // At this point the reference
-        // if ourFieldName is the idFieldName and is being used in the reference
+        // if ourFieldName is the primaryKey and is being used in the reference
         // we should persist the relation in condtition
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->loaded() && !$theirModel->loaded()) {
-            if ($ourModel->idFieldName === $this->getOurFieldName()) {
-                return $theirModel->addCondition($theirField, $this->getOurFieldValue());
+            if ($ourModel->primaryKey === $this->getOurFieldName()) {
+                return $theirModel->addCondition($theirFieldName, $this->getOurFieldValue());
             }
         }
 
         // handles the deep traversal using an expression
         $ourFieldExpression = $ourModel->action('field', [$ourField]);
 
-        return $theirModel->addCondition($theirField, $ourFieldExpression);
+        return $theirModel->addCondition($theirFieldName, $ourFieldExpression);
     }
 
     /**
@@ -172,7 +172,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
     {
         $ourModel = $this->getOurModel();
 
-        $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->idFieldName, '~') . '|id)$~', '', $this->link);
+        $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->primaryKey, '~') . '|id)$~', '', $this->link);
 
         if ($ourModel->hasField($fieldName)) {
             throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))
@@ -207,7 +207,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
                 $theirModel = $this->createTheirModel();
 
                 $theirModel->addCondition($theirModel->title_field, $ourModel->get($fieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->idFieldName]));
+                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->primaryKey]));
             }
         }, [], 20);
 

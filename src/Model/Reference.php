@@ -85,7 +85,7 @@ class Reference
 
     public function getTheirFieldName(): string
     {
-        return $this->theirFieldName ?? $this->model->idFieldName;
+        return $this->theirFieldName ?? $this->model->primaryKey;
     }
 
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -184,7 +184,7 @@ class Reference
 
     protected function getOurFieldName(): string
     {
-        return $this->ourFieldName ?: $this->getOurModel()->idFieldName;
+        return $this->ourFieldName ?: $this->getOurModel()->primaryKey;
     }
 
     protected function getOurFieldValue()
@@ -198,7 +198,7 @@ class Reference
             $ourModel = $this->getOurModel();
 
             $aliasFull = $this->link;
-            $alias = preg_replace('~_(' . preg_quote($ourModel->idFieldName, '~') . '|id)$~', '', $aliasFull);
+            $alias = preg_replace('~_(' . preg_quote($ourModel->primaryKey, '~') . '|id)$~', '', $aliasFull);
             $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
             if (isset($ourModel->table_alias)) {
                 $aliasFull = $ourModel->table_alias . '_' . $aliasFull;

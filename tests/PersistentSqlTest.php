@@ -53,7 +53,7 @@ class PersistentSqlTest extends SQL\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->addCondition($m->idFieldName, 1);
+        $mm = (clone $m)->addCondition($m->primaryKey, 1);
         $this->assertSame('John', (clone $mm)->load(1)->get('name'));
         $this->assertNull((clone $mm)->tryload(2)->get('name'));
         $this->assertSame('John', (clone $mm)->tryloadOne()->get('name'));

@@ -59,8 +59,8 @@ class Array_ extends Persistence
 
     private function saveRow(Model $model, array $row, $id, string $table): void
     {
-        if ($model->idFieldName) {
-            $idField = $model->getField($model->idFieldName);
+        if ($model->primaryKey) {
+            $idField = $model->getField($model->primaryKey);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$idColumnName], $id);
@@ -73,8 +73,8 @@ class Array_ extends Persistence
 
     private function addIdToLoadRow(Model $model, array &$row, $id): void
     {
-        if ($model->idFieldName) {
-            $idField = $model->getField($model->idFieldName);
+        if ($model->primaryKey) {
+            $idField = $model->getField($model->primaryKey);
             $idColumnName = $idField->getPersistenceName();
             if (array_key_exists($idColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$idColumnName], $id);
@@ -114,8 +114,8 @@ class Array_ extends Persistence
 
         $model = parent::add($model, $defaults);
 
-        if ($model->idFieldName && $model->hasField($model->idFieldName)) {
-            $f = $model->getField($model->idFieldName);
+        if ($model->primaryKey && $model->hasField($model->primaryKey)) {
+            $f = $model->getPrimaryKeyField();
             if (!$f->type) {
                 $f->type = 'integer';
             }
@@ -184,7 +184,7 @@ class Array_ extends Persistence
 
         $data = $this->typecastSaveRow($model, $data);
 
-        $id = $data[$model->idFieldName] ?? $this->generateNewId($model, $table);
+        $id = $data[$model->primaryKey] ?? $this->generateNewId($model, $table);
 
         $this->saveRow($model, $data, $id, $table);
 
@@ -230,11 +230,11 @@ class Array_ extends Persistence
     {
         $table = $table ?? $model->table;
 
-        $type = $model->idFieldName ? get_class($model->getField($model->idFieldName)->getType()) : Model\Field\Type\Integer::class;
+        $type = $model->primaryKey ? get_class($model->getField($model->primaryKey)->getType()) : Model\Field\Type\Integer::class;
 
         switch ($type) {
             case Model\Field\Type\Integer::class:
-                $ids = $model->idFieldName ? array_keys($this->data[$table]) : [count($this->data[$table])];
+                $ids = $model->primaryKey ? array_keys($this->data[$table]) : [count($this->data[$table])];
 
                 $id = $ids ? max($ids) + 1 : 1;
 

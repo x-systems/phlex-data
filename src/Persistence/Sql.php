@@ -159,16 +159,16 @@ class Sql extends Persistence
 
         // When we work without table, we can't have any IDs
         if ($model->table === false) {
-            $model->removeField($model->idFieldName);
-            $model->addExpression($model->idFieldName, '1');
+            $model->removeField($model->primaryKey);
+            $model->addExpression($model->primaryKey, '1');
             //} else {
             // SQL databases use ID of int by default
             //$m->getField($m->id_field)->type = 'integer';
         }
 
         // Sequence support
-        if ($model->sequence && $model->hasField($model->idFieldName)) {
-            $model->getField($model->idFieldName)->default = $this->dsql()->mode('seq_nextval')->sequence($model->sequence);
+        if ($model->sequence && $model->hasPrimaryKeyField()) {
+            $model->getPrimaryKeyField()->default = $this->dsql()->mode('seq_nextval')->sequence($model->sequence);
         }
 
         return $model;
@@ -598,7 +598,7 @@ class Sql extends Persistence
                 $this->setLimitOrder($model, $query);
 
                 if ($model->loaded()) {
-                    $query->where($model->getField($model->idFieldName), $model->getId());
+                    $query->where($model->getPrimaryKeyField(), $model->getId());
                 }
 
                 return $query;
@@ -650,11 +650,11 @@ class Sql extends Persistence
         $query = $model->action('select');
 
         if (!$noId) {
-            if (!$model->idFieldName) {
+            if (!$model->hasPrimaryKeyField()) {
                 throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
                     ->addMoreInfo('id', $id);
             }
-            $query->where($model->getField($model->idFieldName), $id);
+            $query->where($model->getPrimaryKeyField(), $id);
         }
         $query->limit($id === self::ID_LOAD_ANY ? 1 : 2);
 
@@ -666,7 +666,7 @@ class Sql extends Persistence
             } elseif (count($rowsRaw) !== 1) {
                 throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
                     ->addMoreInfo('model', $model)
-                    ->addMoreInfo('id_field', $model->idFieldName)
+                    ->addMoreInfo('id_field', $model->primaryKey)
                     ->addMoreInfo('id', $noId ? null : $id);
             }
             $data = $this->typecastLoadRow($model, $rowsRaw[0]);
@@ -678,10 +678,10 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->idFieldName && !isset($data[$model->idFieldName])) {
+        if ($model->primaryKey && !isset($data[$model->primaryKey])) {
             throw (new Exception('Model uses "id_field" but it was not available in the database'))
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('id_field', $model->idFieldName)
+                ->addMoreInfo('id_field', $model->primaryKey)
                 ->addMoreInfo('id', $noId ? null : $id)
                 ->addMoreInfo('data', $data);
         }
@@ -696,8 +696,8 @@ class Sql extends Persistence
     {
         $insert = $model->action('insert');
 
-        if ($model->idFieldName && !isset($data[$model->idFieldName])) {
-            unset($data[$model->idFieldName]);
+        if ($model->primaryKey && !isset($data[$model->primaryKey])) {
+            unset($data[$model->primaryKey]);
 
             $this->syncIdSequence($model);
         }
@@ -716,8 +716,8 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->idFieldName && isset($data[$model->idFieldName])) {
-            $id = (string) $data[$model->idFieldName];
+        if ($model->primaryKey && isset($data[$model->primaryKey])) {
+            $id = (string) $data[$model->primaryKey];
 
             $this->syncIdSequence($model);
         } else {
@@ -767,7 +767,7 @@ class Sql extends Persistence
      */
     public function update(Model $model, $id, array $data)
     {
-        if (!$model->idFieldName) {
+        if (!$model->primaryKey) {
             throw new Exception('id_field of a model is not set. Unable to update record.');
         }
 
@@ -778,7 +778,7 @@ class Sql extends Persistence
 
         // only apply fields that has been modified
         $update->set($data);
-        $update->where($model->getField($model->idFieldName), $id);
+        $update->where($model->getPrimaryKeyField(), $id);
 
         $st = null;
         try {
@@ -794,9 +794,9 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->idFieldName && isset($data[$model->idFieldName]) && $model->dirty[$model->idFieldName]) {
+        if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->dirty[$model->primaryKey]) {
             // ID was changed
-            $model->setId($data[$model->idFieldName]);
+            $model->setId($data[$model->primaryKey]);
         }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
@@ -817,13 +817,13 @@ class Sql extends Persistence
      */
     public function delete(Model $model, $id)
     {
-        if (!$model->idFieldName) {
+        if (!$model->primaryKey) {
             throw new Exception('id_field of a model is not set. Unable to delete record.');
         }
 
         $delete = $this->initQuery($model);
         $delete->mode('delete');
-        $delete->where($model->getField($model->idFieldName), $id);
+        $delete->where($model->getPrimaryKeyField(), $id);
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
@@ -845,7 +845,7 @@ class Sql extends Persistence
             // PostgreSQL uses sequence internally for PK autoincrement,
             // use default name if not set explicitly
             if ($this->connection instanceof \Atk4\Dsql\Postgresql\Connection) {
-                $sequenceName = $model->table . '_' . $model->idFieldName . '_seq';
+                $sequenceName = $model->table . '_' . $model->primaryKey . '_seq';
             }
         }
 
@@ -857,12 +857,12 @@ class Sql extends Persistence
         // TODO: Oracle does not support lastInsertId(), only for testing
         // as this does not support concurrent inserts
         if ($this->connection instanceof \Atk4\Dsql\Oracle\Connection) {
-            if (!$model->idFieldName) {
+            if (!$model->primaryKey) {
                 return ''; // TODO code should never call lastInsertId() if id field is not defined
             }
 
             $query = $this->connection->dsql()->table($model->table);
-            $query->field($query->expr('max({id_col})', ['id_col' => $model->idFieldName]), 'max_id');
+            $query->field($query->expr('max({id_col})', ['id_col' => $model->primaryKey]), 'max_id');
 
             return $query->getOne();
         }
@@ -876,7 +876,7 @@ class Sql extends Persistence
         if ($this->connection instanceof \Atk4\Dsql\Postgresql\Connection) {
             $this->connection->expr(
                 'select setval([], coalesce(max({}), 0) + 1, false) from {}',
-                [$this->getIdSequenceName($model), $model->idFieldName, $model->table]
+                [$this->getIdSequenceName($model), $model->primaryKey, $model->table]
             )->execute();
         }
     }

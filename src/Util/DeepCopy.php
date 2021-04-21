@@ -207,7 +207,7 @@ class DeepCopy
                 // foreach($destination->unique fields) { try load by
 
                 // if we still have id field, then remove it
-                unset($data[$source->idFieldName]);
+                unset($data[$source->primaryKey]);
 
                 // Copy fields as they are
                 foreach ($data as $key => $val) {

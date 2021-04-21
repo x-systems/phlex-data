@@ -293,6 +293,23 @@ class Field
         return $this;
     }
 
+    public function asPrimaryKey(): self
+    {
+        $model = $this->getOwner();
+
+        if ($model->hasPrimaryKeyField() && $model->primaryKey !== $this->short_name) {
+            throw (new Exception('Model already has different primaryKey set'))
+                ->addMoreInfo('existingPrimaryKey', $model->primaryKey)
+                ->addMoreInfo('attemptedPrimaryKey', $this->short_name);
+        }
+
+        $model->primaryKey = $this->short_name;
+        $this->required = true;
+        $this->system = true;
+
+        return $this;
+    }
+
     public function setReadOnly($value = true): self
     {
         $value ?

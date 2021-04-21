@@ -10,6 +10,25 @@ use Phlex\Data\Persistence;
 
 class FieldTest extends SQL\TestCase
 {
+    public function testExplicitPrimaryKey()
+    {
+        $m = new Model();
+        $m->addField('primary_key')->asPrimaryKey();
+
+        $this->assertSame('primary_key', $m->primaryKey);
+        $this->assertTrue($m->getPrimaryKeyField()->required);
+        $this->assertTrue($m->getPrimaryKeyField()->system);
+    }
+
+    public function testSecondPrimaryKeyException()
+    {
+        $m = new Model();
+        $m->addField('primary_key1')->asPrimaryKey();
+
+        $this->expectException(Exception::class);
+        $m->addField('primary_key2')->asPrimaryKey();
+    }
+
     public function testDirty1()
     {
         $m = new Model();

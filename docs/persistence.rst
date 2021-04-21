@@ -497,7 +497,7 @@ Start by creating a beforeSave handler for Order::
             if (
                 $this->newInstance()
                     ->addCondition('client_id', $this->get('client_id'))  // same client
-                    ->addCondition($this->idFieldName, '!=', $this->getId()) // has another order
+                    ->addCondition($this->primaryKey, '!=', $this->getId()) // has another order
                     ->tryLoadBy('ref', $this->get('ref'))                 // with same ref
                     ->loaded()
             ) {

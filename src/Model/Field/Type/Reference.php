@@ -102,7 +102,7 @@ class Reference
 
     protected function getOurFieldName(): string
     {
-        return $this->ourField ?: $this->getOurModel()->idFieldName;
+        return $this->ourField ?: $this->getOurModel()->primaryKey;
     }
 
     protected function getOurFieldValue()

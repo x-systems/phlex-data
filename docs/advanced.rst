@@ -433,7 +433,7 @@ inside your model are unique::
             foreach ($this->fields as $field) {
                 if ($m->dirty[$field]) {
                     $mm = clone $m;
-                    $mm->addCondition($mm->idFieldName != $this->id);
+                    $mm->addCondition($mm->primaryKey != $this->id);
                     $mm->tryLoadBy($field, $m->get($field));
 
                     if ($mm->loaded()) {

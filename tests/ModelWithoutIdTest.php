@@ -28,7 +28,7 @@ class ModelWithoutIdTest extends SQL\TestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $this->m = new Model($db, ['table' => 'user', 'idFieldName' => false]);
+        $this->m = new Model($db, ['table' => 'user', 'primaryKey' => false]);
 
         $this->m->addFields(['name', 'gender']);
     }

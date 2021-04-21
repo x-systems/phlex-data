@@ -2,17 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Reference;
+namespace Phlex\Data\Persistence\Sql\Reference;
 
 use Phlex\Data\Exception;
-use Phlex\Data\FieldSqlExpression;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-/**
- * Reference\HasOneSql class.
- */
-class HasOneSql extends HasOne
+class HasOne extends \Phlex\Data\Model\Reference\HasOne
 {
     /**
      * Creates expression which sub-selects a field inside related model.
@@ -21,7 +17,7 @@ class HasOneSql extends HasOne
      *
      * @param string|Model\Field|array $ourFieldName or [$field, ..defaults]
      */
-    public function addField($ourFieldName, string $theirFieldName = null): FieldSqlExpression
+    public function addField($ourFieldName, string $theirFieldName = null): Persistence\Sql\Field\Expression
     {
         if (is_array($ourFieldName)) {
             $defaults = $ourFieldName;
@@ -44,7 +40,7 @@ class HasOneSql extends HasOne
         // if caption is not defined in $defaults -> get it directly from the linked model field $theirFieldName
         $defaults['caption'] = $defaults['caption'] ?? $ourModel->refModel($this->link)->getField($theirFieldName)->getCaption();
 
-        /** @var FieldSqlExpression $fieldExpression */
+        /** @var Persistence\Sql\Field\Expression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
             [
                 function (Model $ourModel) use ($theirFieldName) {
@@ -64,13 +60,13 @@ class HasOneSql extends HasOne
 
         // Will try to execute last
         $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($ourFieldName, $theirFieldName) {
-            // if title field is changed, but reference ID field (our_field)
+            // if title field is changed, but reference ID field (ourFieldName)
             // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($ourFieldName) && !$ourModel->isDirty($this->our_field)) {
+            if ($ourModel->isDirty($ourFieldName) && !$ourModel->isDirty($this->ourFieldName)) {
                 $theirModel = $this->createTheirModel();
 
                 $theirModel->addCondition($theirFieldName, $ourModel->get($ourFieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->id_field]));
+                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->primaryKey]));
                 $ourModel->_unset($ourFieldName);
             }
         }, [], 21);
@@ -125,7 +121,7 @@ class HasOneSql extends HasOne
         $theirModel = $this->createTheirModel($defaults);
 
         $theirModel->addCondition(
-            $this->their_field ?: $theirModel->id_field,
+            $this->theirFieldName ?: $theirModel->primaryKey,
             $this->referenceOurValue()
         );
 
@@ -144,23 +140,23 @@ class HasOneSql extends HasOne
             return $theirModel;
         }
 
-        $theirField = $this->their_field ?: $theirModel->id_field;
+        $theirFieldName = $this->theirFieldName ?: $theirModel->primaryKey;
         $ourField = $this->getOurField();
 
         // At this point the reference
-        // if our_field is the id_field and is being used in the reference
+        // if ourFieldName is the primaryKey and is being used in the reference
         // we should persist the relation in condtition
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->loaded() && !$theirModel->loaded()) {
-            if ($ourModel->id_field === $this->getOurFieldName()) {
-                return $theirModel->addCondition($theirField, $this->getOurFieldValue());
+            if ($ourModel->primaryKey === $this->getOurFieldName()) {
+                return $theirModel->addCondition($theirFieldName, $this->getOurFieldValue());
             }
         }
 
         // handles the deep traversal using an expression
         $ourFieldExpression = $ourModel->action('field', [$ourField]);
 
-        return $theirModel->addCondition($theirField, $ourFieldExpression);
+        return $theirModel->addCondition($theirFieldName, $ourFieldExpression);
     }
 
     /**
@@ -172,18 +168,18 @@ class HasOneSql extends HasOne
      *
      * This method returns newly created expression field.
      */
-    public function addTitle(array $defaults = []): FieldSqlExpression
+    public function addTitle(array $defaults = []): Persistence\Sql\Field\Expression
     {
         $ourModel = $this->getOurModel();
 
-        $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $this->link);
+        $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->primaryKey, '~') . '|id)$~', '', $this->link);
 
         if ($ourModel->hasField($fieldName)) {
             throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))
                 ->addMoreInfo('field', $fieldName);
         }
 
-        /** @var FieldSqlExpression $fieldExpression */
+        /** @var Persistence\Sql\Field\Expression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($fieldName, array_replace_recursive(
             [
                 function (Model $ourModel) {
@@ -207,11 +203,11 @@ class HasOneSql extends HasOne
         $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
+            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->ourFieldName)) {
                 $theirModel = $this->createTheirModel();
 
                 $theirModel->addCondition($theirModel->title_field, $ourModel->get($fieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->id_field]));
+                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->primaryKey]));
             }
         }, [], 20);
 

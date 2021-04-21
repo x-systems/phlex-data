@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Schema;
+namespace Phlex\Data\Tests\SQL;
 
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -13,7 +13,7 @@ use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
 // NOTE: This class should stay here in this namespace because other repos rely on it. For example, Phlex\Data tests
-class PhpunitTestCase extends AtkPhpunit\TestCase
+class TestCase extends AtkPhpunit\TestCase
 {
     /** @var Persistence|Persistence\Sql Persistence instance */
     public $db;
@@ -49,7 +49,7 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
                     /** @var PhpunitTestCase */
                     public $testCase;
 
-                    public function __construct(PhpunitTestCase $testCase)
+                    public function __construct(TestCase $testCase)
                     {
                         $this->testCase = $testCase;
                     }
@@ -107,9 +107,9 @@ class PhpunitTestCase extends AtkPhpunit\TestCase
         $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
-    public function getMigrator(Model $model = null): Migration
+    public function getMigrator(Model $model = null): Persistence\Sql\Migration
     {
-        return new \Phlex\Schema\Migration($model ?: $this->db);
+        return new Persistence\Sql\Migration($model ?: $this->db);
     }
 
     /**

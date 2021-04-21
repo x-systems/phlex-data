@@ -7,7 +7,7 @@ namespace Phlex\Data\Tests;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class FieldHereditaryTest extends \Phlex\Schema\PhpunitTestCase
+class FieldHereditaryTest extends SQL\TestCase
 {
     public function testDirty1()
     {

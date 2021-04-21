@@ -52,7 +52,7 @@ class UaClient extends Model
 /**
  * Implements various tests for UserAction.
  */
-class UserActionTest extends \Phlex\Schema\PhpunitTestCase
+class UserActionTest extends SQL\TestCase
 {
     public $pers;
 

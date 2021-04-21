@@ -13,7 +13,7 @@ use Phlex\Data\Tests\Model\Smbo\Transfer;
 /**
  * Practical test contributed by Sortmybooks.com.
  */
-class SmboTransferTest extends \Phlex\Schema\PhpunitTestCase
+class SmboTransferTest extends SQL\TestCase
 {
     protected function setUp(): void
     {

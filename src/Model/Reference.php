@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data;
+namespace Phlex\Data\Model;
 
 use Phlex\Core\Factory;
+use Phlex\Data\Exception;
+use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 /**
  * Reference implements a link between one model and another. The basic components for
@@ -57,7 +60,7 @@ class Reference
      *
      * @var string
      */
-    protected $our_field;
+    protected $ourFieldName;
 
     /**
      * This is an optional property which can be used by your implementation
@@ -65,7 +68,7 @@ class Reference
      *
      * @var string
      */
-    protected $their_field;
+    protected $theirFieldName;
 
     /**
      * Caption of the reeferenced model. Can be used in UI components, for example.
@@ -82,7 +85,7 @@ class Reference
 
     public function getTheirFieldName(): string
     {
-        return $this->their_field ?? $this->model->id_field;
+        return $this->theirFieldName ?? $this->model->primaryKey;
     }
 
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -181,7 +184,7 @@ class Reference
 
     protected function getOurFieldName(): string
     {
-        return $this->our_field ?: $this->getOurModel()->id_field;
+        return $this->ourFieldName ?: $this->getOurModel()->primaryKey;
     }
 
     protected function getOurFieldValue()
@@ -195,7 +198,7 @@ class Reference
             $ourModel = $this->getOurModel();
 
             $aliasFull = $this->link;
-            $alias = preg_replace('~_(' . preg_quote($ourModel->id_field, '~') . '|id)$~', '', $aliasFull);
+            $alias = preg_replace('~_(' . preg_quote($ourModel->primaryKey, '~') . '|id)$~', '', $aliasFull);
             $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
             if (isset($ourModel->table_alias)) {
                 $aliasFull = $ourModel->table_alias . '_' . $aliasFull;
@@ -265,7 +268,7 @@ class Reference
     /**
      * List of properties to show in var_dump.
      */
-    protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
+    protected $__debug_fields = ['link', 'model', 'ourFieldName', 'theirFieldName'];
 
     /**
      * Returns array with useful debug info for var_dump.

@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Schema\Tests;
+namespace Phlex\Data\Tests\SQL;
 
-use Phlex\Schema\PhpunitTestCase;
-
-class PhpunitTestCaseTest extends PhpunitTestCase
+class TestCaseTest extends \Phlex\Data\Tests\SQL\TestCase
 {
     public function testInit()
     {

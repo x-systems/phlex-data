@@ -12,7 +12,7 @@ use Phlex\Data\Persistence;
 /**
  * Tests cases when model have to work with data that does not have ID field.
  */
-class ModelWithoutIdTest extends \Phlex\Schema\PhpunitTestCase
+class ModelWithoutIdTest extends SQL\TestCase
 {
     public $m;
 
@@ -28,7 +28,7 @@ class ModelWithoutIdTest extends \Phlex\Schema\PhpunitTestCase
         ]);
 
         $db = new Persistence\Sql($this->db->connection);
-        $this->m = new Model($db, ['table' => 'user', 'id_field' => false]);
+        $this->m = new Model($db, ['table' => 'user', 'primaryKey' => false]);
 
         $this->m->addFields(['name', 'gender']);
     }

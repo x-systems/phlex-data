@@ -172,7 +172,7 @@ with a foreign table.
 .. php:method:: hasMany
 
     same as :php:meth:`Model::hasMany` but condition for related model will be
-    based on foreign table field and :php:attr:`Reference::their_field` will be
+    based on foreign table field and :php:attr:`Reference::theirFieldName` will be
     set to $foreign_table.'_id'.
 
 .. php:method:: containsOne

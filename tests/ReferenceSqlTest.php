@@ -13,7 +13,7 @@ use Phlex\Data\Model;
  * also that the original model can be re-loaded with a different
  * value without making any condition stick.
  */
-class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
+class ReferenceSqlTest extends SQL\TestCase
 {
     public function testBasic()
     {
@@ -93,7 +93,7 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['currency', 'name']);
 
-        $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency', 'their_field' => 'currency']);
+        $u->hasMany('cur', ['model' => $c, 'ourFieldName' => 'currency', 'theirFieldName' => 'currency']);
 
         $cc = (clone $u)->load(1)->ref('cur');
         $cc->tryLoadAny();
@@ -109,7 +109,7 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['code', 'name']);
 
-        $u->hasMany('cur', ['model' => $c, 'our_field' => 'currency_code', 'their_field' => 'code']);
+        $u->hasMany('cur', ['model' => $c, 'ourFieldName' => 'currency_code', 'theirFieldName' => 'code']);
 
         $this->assertSameSql(
             'select "id","code","name" from "currency" where "code" = "user"."currency_code"',
@@ -263,10 +263,10 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
         $i->load('1');
 
         // type was set explicitly
-        $this->assertSame('money', $i->getField('total_vat')->type);
+        $this->assertSame(Model\Field\Type\Money::class, get_class($i->getField('total_vat')->getType()));
 
         // type was not set and is not inherited
-        $this->assertNull($i->getField('total_net')->type);
+        $this->assertSame(Model\Field\Type\Generic::class, get_class($i->getField('total_net')->getType()));
 
         $this->assertEquals(40, $i->get('total_net'));
         $this->assertEquals(9.2, $i->get('total_vat'));
@@ -373,7 +373,7 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
 
         $company = (new Model($this->db, ['table' => 'company']))->addFields(['name']);
 
-        $user->hasOne('Company', ['model' => $company, 'our_field' => 'company_id', 'their_field' => 'id']);
+        $user->hasOne('Company', ['model' => $company, 'ourFieldName' => 'company_id', 'theirFieldName' => 'id']);
 
         $order = new Model($this->db, ['table' => 'order']);
         $order->addField('company_id');
@@ -451,7 +451,7 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
     }
 
     /**
-     * test case hasOne::our_key == owner::id_field.
+     * test case hasOne::our_key == owner::primaryKey.
      */
     public function testIdFieldReferenceOurFieldCase()
     {
@@ -473,7 +473,7 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
         $s->addFields(['name']);
         $s->hasOne('player_id', ['model' => $p]);
 
-        $p->hasOne('Stadium', ['model' => $s, 'our_field' => 'id', 'their_field' => 'player_id']);
+        $p->hasOne('Stadium', ['model' => $s, 'ourFieldName' => 'id', 'theirFieldName' => 'player_id']);
 
         $p->load(2);
         $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
@@ -484,13 +484,13 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
     public function testModelProperty()
     {
         $user = new Model($this->db, ['table' => 'user']);
-        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'their_field' => 'id']);
+        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'theirFieldName' => 'id']);
         $o = $user->ref('Orders');
         $this->assertSame('order', $o->table);
     }
 
     /**
-     * Few tests to test Reference\HasOneSql addTitle() method.
+     * Few tests to test Reference\Sql\HasOne addTitle() method.
      */
     public function testAddTitle()
     {
@@ -582,7 +582,7 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
         // with custom title_field='last_name' and custom link name
         $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['model' => $u, 'ourFieldName' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o->load(1);
@@ -599,7 +599,7 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
         // with custom title_field='last_name' and custom link name
         $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['model' => $u, 'ourFieldName' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o->load(1);
@@ -642,7 +642,7 @@ class ReferenceSqlTest extends \Phlex\Schema\PhpunitTestCase
         $this->assertSame('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $order_user_ref = $o->hasOne('my_user', ['model' => $u, 'our_field' => 'user_id']);
+        $order_user_ref = $o->hasOne('my_user', ['model' => $u, 'ourFieldName' => 'user_id']);
         $order_user_ref->addField('user_last_name', 'last_name');
 
         $referenced_caption = $o->getField('user_last_name')->getCaption();

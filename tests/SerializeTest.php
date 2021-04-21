@@ -8,7 +8,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class SerializeTest extends \Phlex\Schema\PhpunitTestCase
+class SerializeTest extends SQL\TestCase
 {
     public function testBasicSerialize()
     {

@@ -11,6 +11,8 @@ class Type
     use DiContainerTrait;
 
     protected static $registry = [
+        'default' => [Type\Generic::class],
+        'generic' => [Type\Generic::class],
         'boolean' => [Type\Boolean::class],
         'float' => [Type\Numeric::class],
         'integer' => [Type\Integer::class],
@@ -18,6 +20,7 @@ class Type
         'money' => [Type\Money::class],
         'text' => [Type\Text::class],
         'string' => [Type\Line::class],
+        'email' => [Type\Email::class],
         'datetime' => [Type\DateTime::class],
         'date' => [Type\Date::class],
         'time' => [Type\Time::class],
@@ -29,14 +32,22 @@ class Type
      * Resolve field type to seed from Field::$registry.
      *
      * @param string $type
+     *
+     * @return array|object
      */
     public static function resolve($type)
     {
-        if (!is_string($type)) {
+        if (is_object($type)) {
             return $type;
         }
 
-        return self::$registry[$type] ?? null;
+        // using seed with alias e.g. ['string', 'maxLength' => 50]
+        // convert the alias to actual class name and proper seed array
+        if (is_array($type) && !class_exists($type[0])) {
+            return self::$registry[$type[0]] + $type;
+        }
+
+        return self::$registry[$type ?? 'default'];
     }
 
     /**
@@ -77,6 +88,11 @@ class Type
     public function compare($value1, $value2): bool
     {
         return $this->normalize($value1) === $this->normalize($value2);
+    }
+
+    protected function compareAsString($value1, $value2): bool
+    {
+        return $this->toString($value1) === $this->toString($value2);
     }
 
     /**

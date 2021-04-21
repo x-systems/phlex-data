@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Data\Exception;
 use Phlex\Data\Tests\ContainsOne\Country;
 use Phlex\Data\Tests\ContainsOne\Invoice;
 
@@ -21,7 +20,7 @@ use Phlex\Data\Tests\ContainsOne\Invoice;
  * ATK Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
  */
-class ContainsOneTest extends \Phlex\Schema\PhpunitTestCase
+class ContainsOneTest extends SQL\TestCase
 {
     protected function setUp(): void
     {

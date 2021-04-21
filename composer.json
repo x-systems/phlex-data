@@ -69,8 +69,7 @@
 	},
 	"autoload" : {
 		"psr-4" : {
-			"Phlex\\Data\\" : "src/",
-			"Phlex\\Schema\\" : "src-schema/"
+			"Phlex\\Data\\" : "src/"
 		},
 		"files" : [
 			"bootstrap-phlex-types.php"

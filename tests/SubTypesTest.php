@@ -135,7 +135,7 @@ class StTransaction_TransferIn extends StGenericTransaction
 /**
  * Implements various tests for deep copying objects.
  */
-class SubTypesTest extends \Phlex\Schema\PhpunitTestCase
+class SubTypesTest extends SQL\TestCase
 {
     protected function setUp(): void
     {

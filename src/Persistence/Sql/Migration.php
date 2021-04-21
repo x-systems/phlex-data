@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Schema;
+namespace Phlex\Data\Persistence\Sql;
 
 use Atk4\Dsql\Connection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -11,11 +11,9 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 use Phlex\Core\Exception;
-use Phlex\Data\Model\Field;
-use Phlex\Data\FieldSqlExpression;
 use Phlex\Data\Model;
+use Phlex\Data\Model\Field;
 use Phlex\Data\Persistence;
-use Phlex\Data\Reference\HasOne;
 
 class Migration
 {
@@ -205,11 +203,11 @@ class Migration
         $this->table($model->table);
 
         foreach ($model->getFields() as $field) {
-            if (!$field->interactsWithPersistence() || $field instanceof FieldSqlExpression) {
+            if (!$field->savesToPersistence()) {
                 continue;
             }
 
-            if ($field->short_name === $model->id_field) {
+            if ($field->short_name === $model->primaryKey) {
                 $refype = self::REF_TYPE_PRIMARY;
                 $persistField = $field;
             } else {
@@ -232,12 +230,12 @@ class Migration
 
     protected function getReferenceField(Field $field): ?Field
     {
-        if ($field->reference instanceof HasOne) {
+        if ($field->reference instanceof Model\Reference\HasOne) {
             $referenceTheirField = \Closure::bind(function () use ($field) {
-                return $field->reference->their_field;
-            }, null, \Phlex\Data\Reference::class)();
+                return $field->reference->theirFieldName;
+            }, null, Model\Reference::class)();
 
-            $referenceField = $referenceTheirField ?? $field->reference->getOwner()->id_field;
+            $referenceField = $referenceTheirField ?? $field->reference->getOwner()->primaryKey;
 
             $modelSeed = is_array($field->reference->model)
                 ? $field->reference->model

@@ -40,6 +40,10 @@ class DateTime extends \Phlex\Data\Model\Field\Type
 
     public function normalize($value)
     {
+        if ($value === null || $value === '') {
+            return;
+        }
+
         // we allow http://php.net/manual/en/datetime.formats.relative.php
         $class = $this->dateTimeClass ?? \DateTime::class;
 
@@ -52,10 +56,14 @@ class DateTime extends \Phlex\Data\Model\Field\Type
                 $value = new $class($value->format('Y-m-d H:i:s.u'), $value->getTimezone());
             } else {
                 if (is_object($value)) {
-                    throw new ValidationException(['must be a ' . static::class, 'class' => $class, 'value class' => get_class($value)]);
+                    throw (new ValidationException('Value must be a ' . static::class))
+                        ->addMoreInfo('class', $class)
+                        ->addMoreInfo('value class', get_class($value));
                 }
 
-                throw new ValidationException(['must be a ' . static::class, 'class' => $class, 'value type' => gettype($value)]);
+                throw (new ValidationException('Value must be a ' . static::class))
+                    ->addMoreInfo('class', $class)
+                    ->addMoreInfo('value type', gettype($value));
             }
         }
 
@@ -64,7 +72,7 @@ class DateTime extends \Phlex\Data\Model\Field\Type
 
     public function compare($value1, $value2): bool
     {
-        return $this->normalize($value1) === $this->normalize($value2);
+        return $this->compareAsString($value1, $value2);
     }
 
     public function toString($value): ?string
@@ -80,6 +88,6 @@ class DateTime extends \Phlex\Data\Model\Field\Type
             $datetime = $datetime->format($format);
         }
 
-        return $datetime;
+        return (string) $datetime;
     }
 }

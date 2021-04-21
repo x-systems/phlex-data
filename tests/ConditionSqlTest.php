@@ -8,7 +8,7 @@ use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Phlex\Data\Model;
 
-class ConditionSqlTest extends \Phlex\Schema\PhpunitTestCase
+class ConditionSqlTest extends SQL\TestCase
 {
     public function testBasic()
     {

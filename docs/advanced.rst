@@ -433,7 +433,7 @@ inside your model are unique::
             foreach ($this->fields as $field) {
                 if ($m->dirty[$field]) {
                     $mm = clone $m;
-                    $mm->addCondition($mm->id_field != $this->id);
+                    $mm->addCondition($mm->primaryKey != $this->id);
                     $mm->tryLoadBy($field, $m->get($field));
 
                     if ($mm->loaded()) {
@@ -515,7 +515,7 @@ Next we need to define reference. Inside Model_Invoice add::
         $j = $p->join('invoice_payment.payment_id');
         $j->addField('amount_closed');
         $j->hasOne('invoice_id', 'Model_Invoice');
-    }, 'their_field' => 'invoice_id']);
+    }, 'theirFieldName' => 'invoice_id']);
 
     $this->onHookShort(Model::HOOK_BEFORE_DELETE, function(){
         $this->ref('InvoicePayment')->action('delete')->execute();

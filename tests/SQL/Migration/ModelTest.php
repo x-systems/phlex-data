@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Schema\Tests;
+namespace Phlex\Data\Tests\SQL\Migration;
 
 use Phlex\Data\Model;
-use Phlex\Schema\PhpunitTestCase;
 
-class ModelTest extends PhpunitTestCase
+class ModelTest extends \Phlex\Data\Tests\SQL\TestCase
 {
     /**
      * @doesNotPerformAssertions
@@ -164,7 +163,7 @@ class TestUser extends \Phlex\Data\Model
         $this->addField('is_admin', ['type' => 'boolean']);
         $this->addField('notes', ['type' => 'text']);
 
-        $this->hasOne('role_id', ['model' => [TestRole::class], 'our_field' => 'main_role_id', 'their_field' => 'id']);
+        $this->hasOne('role_id', ['model' => [TestRole::class], 'ourFieldName' => 'main_role_id', 'theirFieldName' => 'id']);
     }
 }
 
@@ -177,6 +176,6 @@ class TestRole extends \Phlex\Data\Model
         parent::init();
 
         $this->addField('name');
-        $this->hasMany('Users', [TestUser::class, 'our_field' => 'id', 'their_field' => 'main_role_id']);
+        $this->hasMany('Users', [TestUser::class, 'ourFieldName' => 'id', 'theirFieldName' => 'main_role_id']);
     }
 }

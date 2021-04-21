@@ -114,7 +114,7 @@ class Model implements \IteratorAggregate
      *
      * @var string|array
      */
-    public $_default_seed_addExpression = [Field\Callback::class];
+    public $_default_seed_addExpression = [Model\Field\Callback::class];
 
     /**
      * @var array Collection containing Field Objects - using key as the field system name
@@ -242,7 +242,7 @@ class Model implements \IteratorAggregate
      *
      * @var string
      */
-    public $id_field = 'id';
+    public $primaryKey = 'id';
 
     /**
      * Title field is used typically by UI components for a simple human
@@ -318,7 +318,7 @@ class Model implements \IteratorAggregate
      */
     public $contained_in_root_model;
 
-    /** @var Reference Only for Reference class */
+    /** @var Model\Reference Only for Reference class */
     public $ownerReference;
 
     // }}}
@@ -375,10 +375,12 @@ class Model implements \IteratorAggregate
     {
         $this->_init();
 
-        if ($this->id_field) {
-            $this->addField($this->id_field, ['type' => 'integer', 'required' => true, 'system' => true]);
+        if ($this->primaryKey) {
+            if (!$this->hasPrimaryKeyField()) {
+                $this->addField($this->primaryKey, ['type' => 'integer'])->asPrimaryKey();
+            }
         } else {
-            return; // don't declare actions for model without id_field
+            return; // don't declare actions for model without primaryKey
         }
 
         $this->initEntityHooks();
@@ -431,7 +433,7 @@ class Model implements \IteratorAggregate
             if ($this->entityId === null) {
                 $this->entityId = $this->getId();
             } else {
-                if (!$this->compare($this->id_field, $this->entityId)) {
+                if (!$this->compare($this->primaryKey, $this->entityId)) {
                     $newId = $this->getId();
                     $this->unload(); // data for different ID were loaded, make sure to discard them
 
@@ -515,16 +517,12 @@ class Model implements \IteratorAggregate
     {
         $seed = Factory::mergeSeeds(
             $seed,
-            isset($seed['type']) ? ($this->typeToFieldSeed[$seed['type']] ?? null) : null,
-            $this->_default_seed_addField
+            $this->_default_seed_addField,
+            $this->persistence ? ($this->persistence->_default_seed_addField ?? null) : null
         );
 
         return Model\Field::fromSeed($seed);
     }
-
-    protected $typeToFieldSeed = [
-        'boolean' => [Field\Boolean::class],
-    ];
 
     /**
      * Adds multiple fields into model.
@@ -584,6 +582,23 @@ class Model implements \IteratorAggregate
             throw (new Exception('Field is not defined in model', 0, $e))
                 ->addMoreInfo('model', $this)
                 ->addMoreInfo('field', $name);
+        }
+    }
+
+    public function hasPrimaryKeyField(): bool
+    {
+        return is_string($this->primaryKey) && $this->hasField($this->primaryKey);
+    }
+
+    public function getPrimaryKeyField(): ?Model\Field
+    {
+        return $this->hasPrimaryKeyField() ? $this->getField($this->primaryKey) : null;
+    }
+
+    private function assertHasPrimaryKey(): void
+    {
+        if (!$this->hasPrimaryKeyField()) {
+            throw new Exception('ID field is not defined');
         }
     }
 
@@ -706,74 +721,74 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function set(string $field, $value)
+    public function set(string $fieldName, $value)
     {
-        $this->checkOnlyFieldsField($field);
+        $this->checkOnlyFieldsField($fieldName);
 
-        $f = $this->getField($field);
+        $field = $this->getField($fieldName);
 
         try {
-            $value = $f->normalize($value);
+            $value = $field->normalize($value);
         } catch (Exception $e) {
-            $e->addMoreInfo('field', $field);
+            $e->addMoreInfo('fieldName', $fieldName);
             $e->addMoreInfo('value', $value);
-            $e->addMoreInfo('f', $f);
+            $e->addMoreInfo('field', $field);
 
             throw $e;
         }
 
         // do nothing when value has not changed
-        $currentValue = array_key_exists($field, $this->data)
-            ? $this->data[$field]
-            : (array_key_exists($field, $this->dirty) ? $this->dirty[$field] : $f->default);
-        if (!$value instanceof \Atk4\Dsql\Expression && $f->compare($value, $currentValue)) {
+        $currentValue = array_key_exists($fieldName, $this->data)
+            ? $this->data[$fieldName]
+            : (array_key_exists($fieldName, $this->dirty) ? $this->dirty[$fieldName] : $field->default);
+        if (!$value instanceof \Atk4\Dsql\Expression && $field->compare($value, $currentValue)) {
             return $this;
         }
 
         // perform bunch of standard validation here. This can be re-factored in the future.
-        $f->assertSetAccess();
+        $field->assertSetAccess();
 
         // enum property support
-        if (isset($f->enum) && $f->enum && $f->type !== 'boolean') {
+        if (isset($field->enum) && $field->enum && get_class($field->getType()) !== Model\Field\Type\Boolean::class) {
             if ($value === '') {
                 $value = null;
             }
-            if ($value !== null && !in_array($value, $f->enum, true)) {
+            if ($value !== null && !in_array($value, $field->enum, true)) {
                 throw (new Exception('This is not one of the allowed values for the field'))
-                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('fieldName', $fieldName)
                     ->addMoreInfo('model', $this)
                     ->addMoreInfo('value', $value)
-                    ->addMoreInfo('enum', $f->enum);
+                    ->addMoreInfo('enum', $field->enum);
             }
         }
 
         // values property support
-        if ($f->values) {
+        if ($field->values) {
             if ($value === '') {
                 $value = null;
             } elseif ($value === null) {
                 // all is good
             } elseif (!is_string($value) && !is_int($value)) {
                 throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
-                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('field', $fieldName)
                     ->addMoreInfo('model', $this)
                     ->addMoreInfo('value', $value)
-                    ->addMoreInfo('values', $f->values);
-            } elseif (!array_key_exists($value, $f->values)) {
+                    ->addMoreInfo('values', $field->values);
+            } elseif (!array_key_exists($value, $field->values)) {
                 throw (new Exception('This is not one of the allowed values for the field'))
-                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('field', $fieldName)
                     ->addMoreInfo('model', $this)
                     ->addMoreInfo('value', $value)
-                    ->addMoreInfo('values', $f->values);
+                    ->addMoreInfo('values', $field->values);
             }
         }
 
-        if (array_key_exists($field, $this->dirty) && $f->compare($this->dirty[$field], $value)) {
-            unset($this->dirty[$field]);
-        } elseif (!array_key_exists($field, $this->dirty)) {
-            $this->dirty[$field] = array_key_exists($field, $this->data) ? $this->data[$field] : $f->default;
+        if (array_key_exists($fieldName, $this->dirty) && $field->compare($this->dirty[$fieldName], $value)) {
+            unset($this->dirty[$fieldName]);
+        } elseif (!array_key_exists($fieldName, $this->dirty)) {
+            $this->dirty[$fieldName] = array_key_exists($fieldName, $this->data) ? $this->data[$fieldName] : $field->default;
         }
-        $this->data[$field] = $value;
+        $this->data[$fieldName] = $value;
 
         return $this;
     }
@@ -839,21 +854,14 @@ class Model implements \IteratorAggregate
         return $this->getField($field)->default;
     }
 
-    private function assertHasIdField(): void
-    {
-        if (!is_string($this->id_field) || !$this->hasField($this->id_field)) {
-            throw new Exception('ID field is not defined');
-        }
-    }
-
     /**
      * @return mixed
      */
     public function getId()
     {
-        $this->assertHasIdField();
+        $this->assertHasPrimaryKey();
 
-        return $this->get($this->id_field);
+        return $this->get($this->primaryKey);
     }
 
     /**
@@ -863,12 +871,12 @@ class Model implements \IteratorAggregate
      */
     public function setId($value)
     {
-        $this->assertHasIdField();
+        $this->assertHasPrimaryKey();
 
         if ($value === null) {
-            $this->setNull($this->id_field);
+            $this->setNull($this->primaryKey);
         } else {
-            $this->set($this->id_field, $value);
+            $this->set($this->primaryKey, $value);
         }
 
         // set entity ID to the first set ID
@@ -909,11 +917,11 @@ class Model implements \IteratorAggregate
      */
     public function getTitles(): array
     {
-        $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
+        $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->primaryKey;
 
         return array_map(function ($row) use ($field) {
             return $row[$field];
-        }, $this->export([$field], $this->id_field));
+        }, $this->export([$field], $this->primaryKey));
     }
 
     /**
@@ -1011,7 +1019,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Shortcut for using addCondition(id_field, $id).
+     * Shortcut for using addCondition(primaryKey, $id).
      *
      * @param mixed $id
      *
@@ -1019,7 +1027,7 @@ class Model implements \IteratorAggregate
      */
     public function withId($id)
     {
-        return $this->addCondition($this->id_field, $id);
+        return $this->addCondition($this->primaryKey, $id);
     }
 
     /**
@@ -1115,7 +1123,7 @@ class Model implements \IteratorAggregate
      */
     public function loaded(): bool
     {
-        return $this->id_field && $this->getId() !== null && $this->entityId !== null;
+        return $this->primaryKey && $this->getId() !== null && $this->entityId !== null;
     }
 
     /**
@@ -1127,7 +1135,7 @@ class Model implements \IteratorAggregate
     {
         $this->hook(self::HOOK_BEFORE_UNLOAD);
         $this->data = [];
-        if ($this->id_field) {
+        if ($this->primaryKey) {
             $this->setId(null);
         }
         $this->dirty = [];
@@ -1172,9 +1180,9 @@ class Model implements \IteratorAggregate
 
         if ($this->data) {
             if ($noId) { // @TODO pure port from tryLoadAny, simplify
-                if ($this->id_field) {
-                    if (isset($this->data[$this->id_field])) {
-                        $this->setId($this->data[$this->id_field]);
+                if ($this->primaryKey) {
+                    if (isset($this->data[$this->primaryKey])) {
+                        $this->setId($this->data[$this->primaryKey]);
                     }
                 }
             } else {
@@ -1221,8 +1229,8 @@ class Model implements \IteratorAggregate
         }
 
         if ($noId) { // @TODO pure port from loadAny, simplify
-            if ($this->id_field) {
-                $this->setId($this->data[$this->id_field]);
+            if ($this->primaryKey) {
+                $this->setId($this->data[$this->primaryKey]);
             }
         } else {
             if ($this->getId() === null) { // TODO what is the usecase?
@@ -1368,7 +1376,7 @@ class Model implements \IteratorAggregate
         $m = $this->newInstance($class, $options);
 
         foreach ($this->data as $field => $value) {
-            if ($value !== null && $value !== $this->getField($field)->default && $field !== $this->id_field) {
+            if ($value !== null && $value !== $this->getField($field)->default && $field !== $this->primaryKey) {
                 // Copying only non-default value
                 $m->set($field, $value);
             }
@@ -1420,7 +1428,7 @@ class Model implements \IteratorAggregate
 
         $model = new $class($persistence, ['table' => $this->table]);
 
-        if ($this->id_field) {
+        if ($this->primaryKey) {
             $model->setId($id === true ? $this->getId() : $id);
         }
 
@@ -1604,7 +1612,7 @@ class Model implements \IteratorAggregate
                 // Collect all data of a new record
                 $id = $this->persistence->insert($this, $data);
 
-                if (!$this->id_field) {
+                if (!$this->primaryKey) {
                     $this->hook(self::HOOK_AFTER_INSERT, [null]);
 
                     $this->dirty = [];
@@ -1671,8 +1679,8 @@ class Model implements \IteratorAggregate
         }
 
         // store id value
-        if ($this->id_field) {
-            $m->data[$m->id_field] = $m->getId();
+        if ($this->primaryKey) {
+            $m->data[$m->primaryKey] = $m->getId();
         }
 
         // if there was referenced data, then import it
@@ -1694,7 +1702,7 @@ class Model implements \IteratorAggregate
         $model->entityId = null;
         $this->_rawInsert($model, $row);
 
-        return $this->id_field ? $model->getId() : null;
+        return $this->primaryKey ? $model->getId() : null;
     }
 
     /**
@@ -1774,8 +1782,8 @@ class Model implements \IteratorAggregate
             $thisCloned = clone $this;
 
             $thisCloned->data = $this->persistence->typecastLoadRow($this, $data);
-            if ($this->id_field) {
-                $thisCloned->setId($data[$this->id_field] ?? null);
+            if ($this->primaryKey) {
+                $thisCloned->setId($data[$this->primaryKey] ?? null);
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
@@ -1794,13 +1802,13 @@ class Model implements \IteratorAggregate
             }
 
             if (is_object($ret)) {
-                if ($ret->id_field) {
+                if ($ret->primaryKey) {
                     yield $ret->getId() => $ret; // @phpstan-ignore-line
                 } else {
                     yield $ret; // @phpstan-ignore-line
                 }
             } else {
-                if ($this->id_field) {
+                if ($this->primaryKey) {
                     yield $thisCloned->getId() => $thisCloned;
                 } else {
                     yield $thisCloned;
@@ -1847,7 +1855,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Model is read-only and cannot be deleted');
         }
 
-        if ($this->compare($this->id_field, $id)) {
+        if ($this->compare($this->primaryKey, $id)) {
             $id = null;
         }
 
@@ -1923,7 +1931,7 @@ class Model implements \IteratorAggregate
      *
      * @param string|array|\Atk4\Dsql\Expression|\Closure $expression
      *
-     * @return Field\Callback
+     * @return Model\Field\Callback
      */
     public function addExpression(string $name, $expression)
     {
@@ -1934,7 +1942,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        /** @var Field\Callback */
+        /** @var Model\Field\Callback */
         $field = Model\Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);
@@ -1947,7 +1955,7 @@ class Model implements \IteratorAggregate
      *
      * @param string|array|\Closure $expression
      *
-     * @return Field\Callback
+     * @return Model\Field\Callback
      */
     public function addCalculatedField(string $name, $expression)
     {
@@ -1958,7 +1966,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        $field = new Field\Callback($expression);
+        $field = new Model\Field\Callback($expression);
 
         $this->addField($name, $field);
 
@@ -1975,7 +1983,7 @@ class Model implements \IteratorAggregate
     public function __debugInfo(): array
     {
         return [
-            'id' => $this->id_field && $this->hasField('id') ? $this->getId() : 'no id field',
+            'id' => $this->primaryKey && $this->hasField('id') ? $this->getId() : 'no id field',
             'scope' => $this->scope()->toWords(),
         ];
     }

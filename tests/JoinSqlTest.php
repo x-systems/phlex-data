@@ -11,7 +11,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class JoinSqlTest extends \Phlex\Schema\PhpunitTestCase
+class JoinSqlTest extends SQL\TestCase
 {
     public function testDirection()
     {
@@ -568,11 +568,11 @@ class JoinSqlTest extends \Phlex\Schema\PhpunitTestCase
             'id' => 1, 'name' => 'John', 'contact_id' => 10, 'phone_id' => 20, 'number' => '+123',
         ], $m_u->get());
 
-        // hasMany token model (uses default our_field, their_field)
+        // hasMany token model (uses default ourFieldName, theirFieldName)
         $m_t = new Model($db, ['table' => 'token']);
         $m_t->addField('user_id');
         $m_t->addField('token');
-        $ref = $j->hasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default our_field, their_field)
+        $ref = $j->hasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default ourFieldName, theirFieldName)
 
         $m_u->load(1);
         $this->assertEquals([
@@ -580,11 +580,11 @@ class JoinSqlTest extends \Phlex\Schema\PhpunitTestCase
             ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
         ], $m_u->ref('Token')->export());
 
-        // hasMany email model (uses custom our_field, their_field)
+        // hasMany email model (uses custom ourFieldName, theirFieldName)
         $m_e = new Model($db, ['table' => 'email']);
         $m_e->addField('contact_id');
         $m_e->addField('address');
-        $ref = $j->hasMany('Email', ['model' => $m_e, 'our_field' => 'contact_id', 'their_field' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
+        $ref = $j->hasMany('Email', ['model' => $m_e, 'ourFieldName' => 'contact_id', 'theirFieldName' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
 
         $m_u->load(1);
         $this->assertEquals([

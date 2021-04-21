@@ -52,8 +52,10 @@ class Numeric extends \Phlex\Data\Model\Field\Type
         // we clear out thousand separator, but will change to
         // http://php.net/manual/en/numberformatter.parse.php
         // in the future with the introduction of locale
-        $value = trim(str_replace(["\r", "\n"], '', $value));
-        $value = preg_replace('/[,`\']/', '', $value);
+        if (is_string($value)) {
+            $value = trim(str_replace(["\r", "\n"], '', $value));
+            $value = preg_replace('/[,`\']/', '', $value);
+        }
 
         if (!is_numeric($value)) {
             throw new ValidationException('Must be numeric');

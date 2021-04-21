@@ -7,7 +7,7 @@ namespace Phlex\Data\Tests;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 
-class PersistentSqlTest extends \Phlex\Schema\PhpunitTestCase
+class PersistentSqlTest extends SQL\TestCase
 {
     /**
      * Test constructor.
@@ -53,7 +53,7 @@ class PersistentSqlTest extends \Phlex\Schema\PhpunitTestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->addCondition($m->id_field, 1);
+        $mm = (clone $m)->addCondition($m->primaryKey, 1);
         $this->assertSame('John', (clone $mm)->load(1)->get('name'));
         $this->assertNull((clone $mm)->tryload(2)->get('name'));
         $this->assertSame('John', (clone $mm)->tryloadOne()->get('name'));

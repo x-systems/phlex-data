@@ -11,6 +11,10 @@ class Object_ extends \Phlex\Data\Model\Field\Type
 {
     public function normalize($value)
     {
+        if ($value === null || $value === '') {
+            return;
+        }
+
         if (is_string($value)) {
             try {
                 $value = json_decode($value, false);
@@ -28,7 +32,7 @@ class Object_ extends \Phlex\Data\Model\Field\Type
 
     public function compare($value1, $value2): bool
     {
-        return $this->normalize($value1) === $this->normalize($value2);
+        return $this->compareAsString($value1, $value2);
     }
 
     public function toString($value): ?string

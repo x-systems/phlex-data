@@ -49,7 +49,7 @@ class SUser extends Model
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
 
-        $this->hasMany('Tickets', ['model' => [STicket::class], 'their_field' => 'user']);
+        $this->hasMany('Tickets', ['model' => [STicket::class], 'theirFieldName' => 'user']);
     }
 }
 
@@ -71,7 +71,7 @@ class STicket extends Model
     }
 }
 
-class ScopeTest extends \Phlex\Schema\PhpunitTestCase
+class ScopeTest extends SQL\TestCase
 {
     protected $user;
     protected $country;

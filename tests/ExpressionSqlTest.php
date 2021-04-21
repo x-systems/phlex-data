@@ -10,7 +10,7 @@ use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class ExpressionSqlTest extends \Phlex\Schema\PhpunitTestCase
+class ExpressionSqlTest extends SQL\TestCase
 {
     public function testNakedExpression()
     {

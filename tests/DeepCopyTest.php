@@ -35,7 +35,7 @@ class DcInvoice extends Model
 
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
-        $this->hasMany('Lines', ['model' => [DcInvoiceLine::class], 'their_field' => 'parent_id'])
+        $this->hasMany('Lines', ['model' => [DcInvoiceLine::class], 'theirFieldName' => 'parent_id'])
             ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
         $this->hasMany('Payments', ['model' => [DcPayment::class]])
@@ -64,7 +64,7 @@ class DcQuote extends Model
         parent::init();
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
-        $this->hasMany('Lines', ['model' => [DcQuoteLine::class], 'their_field' => 'parent_id'])
+        $this->hasMany('Lines', ['model' => [DcQuoteLine::class], 'theirFieldName' => 'parent_id'])
             ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
         $this->addField('ref');
@@ -137,7 +137,7 @@ class DcPayment extends Model
 /**
  * Implements various tests for deep copying objects.
  */
-class DeepCopyTest extends \Phlex\Schema\PhpunitTestCase
+class DeepCopyTest extends SQL\TestCase
 {
     protected function setUp(): void
     {
@@ -269,7 +269,7 @@ class DeepCopyTest extends \Phlex\Schema\PhpunitTestCase
         $client_id = $client->insert(['name' => 'John']);
 
         $quote = new DcQuote($this->db);
-        $quote->hasMany('Lines2', ['model' => [DcQuoteLine::class], 'their_field' => 'parent_id']);
+        $quote->hasMany('Lines2', ['model' => [DcQuoteLine::class], 'theirFieldName' => 'parent_id']);
 
         $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
             ['name' => 'tools', 'qty' => 5, 'price' => 10],

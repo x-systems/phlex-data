@@ -25,7 +25,6 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -39,7 +38,6 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
             'money' => 123.45,
             'float' => 123.456789,
             'boolean' => true,
-            'boolean_enum' => 'N',
             'date' => new \DateTime('2019-01-20T12:23:34+00:00'),
             'datetime' => new \DateTime('2019-01-20T12:23:34+00:00'),
             'time' => new \DateTime('2019-01-20T12:23:34+00:00'),
@@ -58,7 +56,6 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
             'money' => 123.45,
             'float' => 123.456789,
             'boolean' => 1,
-            'boolean_enum' => 'N',
             'date' => '2019-01-20',
             'datetime' => '2019-01-20 12:23:34.000000',
             'time' => '12:23:34.000000',

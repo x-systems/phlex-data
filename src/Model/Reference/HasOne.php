@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Reference;
+namespace Phlex\Data\Model\Reference;
 
 use Phlex\Data\Model;
-use Phlex\Data\Reference;
 
 /**
  * Reference\HasOne class.
  */
-class HasOne extends Reference
+class HasOne extends Model\Reference
 {
     use Model\JoinLinkTrait;
 
@@ -146,20 +145,20 @@ class HasOne extends Reference
 
     /**
      * Reference\HasOne will also add a field corresponding
-     * to 'our_field' unless it exists of course.
+     * to 'ourFieldName' unless it exists of course.
      */
     protected function init(): void
     {
         parent::init();
 
-        if (!$this->our_field) {
-            $this->our_field = $this->link;
+        if (!$this->ourFieldName) {
+            $this->ourFieldName = $this->link;
         }
 
         $ourModel = $this->getOurModel();
 
-        if (!$ourModel->hasField($this->our_field)) {
-            $ourModel->addField($this->our_field, [
+        if (!$ourModel->hasField($this->ourFieldName)) {
+            $ourModel->addField($this->ourFieldName, [
                 'type' => $this->type,
                 'reference' => $this,
                 'system' => $this->system,
@@ -201,15 +200,15 @@ class HasOne extends Reference
     {
         $theirModel = $this->createTheirModel($defaults);
 
-        // add hook to set our_field = null when record of referenced model is deleted
+        // add hook to set ourFieldName = null when record of referenced model is deleted
         $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function ($theirModel) {
             $this->getOurField()->setNull();
         });
 
         if ($ourValue = $this->getOurFieldValue()) {
             // if our model is loaded, then try to load referenced model
-            if ($this->their_field) {
-                $theirModel->tryLoadBy($this->their_field, $ourValue);
+            if ($this->theirFieldName) {
+                $theirModel->tryLoadBy($this->theirFieldName, $ourValue);
             } else {
                 $theirModel->tryLoad($ourValue);
             }
@@ -219,7 +218,7 @@ class HasOne extends Reference
         $theirModel->reload_after_save = false;
 
         $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function ($theirModel) {
-            $theirValue = $this->their_field ? $theirModel->get($this->their_field) : $theirModel->getId();
+            $theirValue = $this->theirFieldName ? $theirModel->get($this->theirFieldName) : $theirModel->getId();
 
             if ($this->getOurFieldValue() !== $theirValue) {
                 $this->getOurField()->set($theirValue)->getOwner()->save();

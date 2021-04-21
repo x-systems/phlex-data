@@ -2,27 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Reference;
+namespace Phlex\Data\Model\Reference;
 
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
-use Phlex\Data\Reference;
 
 /**
  * Reference\HasMany class.
  */
-class HasMany extends Reference
+class HasMany extends Model\Reference
 {
     public function getTheirFieldName(): string
     {
-        if ($this->their_field) {
-            return $this->their_field;
+        if ($this->theirFieldName) {
+            return $this->theirFieldName;
         }
 
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel();
-        $theirFieldName = $ourModel->table . '_' . $ourModel->id_field;
+        $theirFieldName = $ourModel->table . '_' . $ourModel->primaryKey;
         if (!$this->createTheirModel()->hasField($theirFieldName)) {
             throw (new Exception('Their model does not contain fallback field'))
                 ->addMoreInfo('their_fallback_field', $theirFieldName);
@@ -41,8 +40,8 @@ class HasMany extends Reference
         $ourModel = $this->getOurModel();
 
         if ($ourModel->loaded()) {
-            return $this->our_field
-                ? $ourModel->get($this->our_field)
+            return $this->ourFieldName
+                ? $ourModel->get($this->ourFieldName)
                 : $ourModel->getId();
         }
 

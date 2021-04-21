@@ -10,7 +10,6 @@ use Atk4\Dsql\Expression;
 use Atk4\Dsql\Query;
 use Doctrine\DBAL\Platforms;
 use Phlex\Data\Exception;
-use Phlex\Data\FieldSqlExpression;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
@@ -41,28 +40,28 @@ class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_addField = [\Phlex\Data\FieldSql::class];
+    public $_default_seed_addField = [Sql\Field::class];
 
     /**
      * Default class when adding hasOne field.
      *
      * @var array
      */
-    public $_default_seed_hasOne = [\Phlex\Data\Reference\HasOneSql::class];
+    public $_default_seed_hasOne = [Sql\Reference\HasOne::class];
 
     /**
      * Default class when adding hasMany field.
      *
      * @var array
      */
-    public $_default_seed_hasMany; // [\Phlex\Data\Reference\HasMany::class];
+    public $_default_seed_hasMany; // [Sql\Reference\HasMany::class];
 
     /**
      * Default class when adding Expression field.
      *
      * @var array
      */
-    public $_default_seed_addExpression = [FieldSqlExpression::class];
+    public $_default_seed_addExpression = [Sql\Field\Expression::class];
 
     /**
      * Default class when adding join.
@@ -160,16 +159,16 @@ class Sql extends Persistence
 
         // When we work without table, we can't have any IDs
         if ($model->table === false) {
-            $model->removeField($model->id_field);
-            $model->addExpression($model->id_field, '1');
+            $model->removeField($model->primaryKey);
+            $model->addExpression($model->primaryKey, '1');
             //} else {
             // SQL databases use ID of int by default
             //$m->getField($m->id_field)->type = 'integer';
         }
 
         // Sequence support
-        if ($model->sequence && $model->hasField($model->id_field)) {
-            $model->getField($model->id_field)->default = $this->dsql()->mode('seq_nextval')->sequence($model->sequence);
+        if ($model->sequence && $model->hasPrimaryKeyField()) {
+            $model->getPrimaryKeyField()->default = $this->dsql()->mode('seq_nextval')->sequence($model->sequence);
         }
 
         return $model;
@@ -374,8 +373,8 @@ class Sql extends Persistence
         // work only on copied value not real one !!!
         $v = is_object($value) ? clone $value : $value;
 
-        switch ($field->type) {
-            case 'boolean':
+        switch (get_class($field->getType())) {
+            case Model\Field\Type\Boolean::class:
                 // if enum is not set, then simply cast value to integer
                 if (!isset($field->enum) || !$field->enum) {
                     $v = (int) $v;
@@ -394,18 +393,24 @@ class Sql extends Persistence
                 $v = $v ? $field->enum[1] : $field->enum[0];
 
                 break;
-            case 'date':
-            case 'datetime':
-            case 'time':
+            case Model\Field\Type\Date::class:
+                $type = 'date';
+                // no break
+            case Model\Field\Type\DateTime::class:
+                $type = $type ?? 'datetime';
+                // no break
+            case Model\Field\Type\Time::class:
+                $type = $type ?? 'time';
+
                 $dt_class = $field->dateTimeClass ?? \DateTime::class;
                 $tz_class = $field->dateTimeZoneClass ?? \DateTimeZone::class;
 
                 if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
                     $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
-                    $format = $field->persist_format ?: $format[$field->type];
+                    $format = $field->persist_format ?: $format[$type];
 
                     // datetime only - set to persisting timezone
-                    if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+                    if ($type === 'datetime' && isset($field->persist_timezone)) {
                         $v = new \DateTime($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
                         $v->setTimezone(new $tz_class($field->persist_timezone));
                     }
@@ -413,8 +418,8 @@ class Sql extends Persistence
                 }
 
                 break;
-            case 'array':
-            case 'object':
+            case Model\Field\Type\Array_::class:
+            case Model\Field\Type\Object_::class:
                 // don't encode if we already use some kind of serialization
                 $v = $field->serialize ? $v : $this->jsonEncode($field, $v);
 
@@ -437,24 +442,25 @@ class Sql extends Persistence
         // work only on copied value not real one !!!
         $v = is_object($value) ? clone $value : $value;
 
-        switch ($field->type) {
-            case 'string':
-            case 'text':
+        switch (get_class($field->getType())) {
+            case Model\Field\Type\Generic::class:
+            case Model\Field\Type\Line::class:
+            case Model\Field\Type\Text::class:
                 // do nothing - it's ok as it is
                 break;
-            case 'integer':
+            case Model\Field\Type\Integer::class:
                 $v = (int) $v;
 
                 break;
-            case 'float':
+            case Model\Field\Type\Numeric::class:
                 $v = (float) $v;
 
                 break;
-            case 'money':
+            case Model\Field\Type\Money::class:
                 $v = round((float) $v, 4);
 
                 break;
-            case 'boolean':
+            case Model\Field\Type\Boolean::class:
                 if (is_array($field->enum ?? null)) {
                     if (isset($field->enum[0]) && $v === $field->enum[0]) {
                         $v = false;
@@ -470,9 +476,15 @@ class Sql extends Persistence
                 }
 
                 break;
-            case 'date':
-            case 'datetime':
-            case 'time':
+            case Model\Field\Type\Date::class:
+                $type = 'date';
+                // no break
+            case Model\Field\Type\DateTime::class:
+                $type = $type ?? 'datetime';
+                // no break
+            case Model\Field\Type\Time::class:
+                $type = $type ?? 'time';
+
                 $dt_class = $field->dateTimeClass ?? \DateTime::class;
                 $tz_class = $field->dateTimeZoneClass ?? \DateTimeZone::class;
 
@@ -484,14 +496,14 @@ class Sql extends Persistence
                     if ($field->persist_format) {
                         $format = $field->persist_format;
                     } else {
-                        $format = $format[$field->type];
+                        $format = $format[$type];
                         if (strpos($v, '.') !== false) { // time possibly with microseconds, otherwise invalid format
                             $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
                         }
                     }
 
                     // datetime only - set from persisting timezone
-                    if ($field->type === 'datetime' && isset($field->persist_timezone)) {
+                    if ($type === 'datetime' && isset($field->persist_timezone)) {
                         $v = $dt_class::createFromFormat($format, $v, new $tz_class($field->persist_timezone));
                         if ($v !== false) {
                             $v->setTimezone(new $tz_class(date_default_timezone_get()));
@@ -515,12 +527,12 @@ class Sql extends Persistence
                 }
 
                 break;
-            case 'array':
+            case Model\Field\Type\Array_::class:
                 // don't decode if we already use some kind of serialization
                 $v = $field->serialize ? $v : $this->jsonDecode($field, $v, true);
 
                 break;
-            case 'object':
+            case Model\Field\Type\Object_::class:
                 // don't decode if we already use some kind of serialization
                 $v = $field->serialize ? $v : $this->jsonDecode($field, $v, false);
 
@@ -577,7 +589,7 @@ class Sql extends Persistence
                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($field, $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
+                } elseif ($field instanceof Sql\Field\Expression) {
                     $query->reset('field')->field($field, $field->short_name);
                 } else {
                     $query->reset('field')->field($field);
@@ -586,7 +598,7 @@ class Sql extends Persistence
                 $this->setLimitOrder($model, $query);
 
                 if ($model->loaded()) {
-                    $query->where($model->getField($model->id_field), $model->getId());
+                    $query->where($model->getPrimaryKeyField(), $model->getId());
                 }
 
                 return $query;
@@ -612,7 +624,7 @@ class Sql extends Persistence
 
                 if (isset($args['alias'])) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
-                } elseif ($field instanceof FieldSqlExpression) {
+                } elseif ($field instanceof Sql\Field\Expression) {
                     $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->short_name);
                 } else {
                     $query->reset('field')->field($query->expr($expr, [$field]));
@@ -638,11 +650,11 @@ class Sql extends Persistence
         $query = $model->action('select');
 
         if (!$noId) {
-            if (!$model->id_field) {
+            if (!$model->hasPrimaryKeyField()) {
                 throw (new Exception('Unable to load field by "id" when Model->id_field is not defined.'))
                     ->addMoreInfo('id', $id);
             }
-            $query->where($model->getField($model->id_field), $id);
+            $query->where($model->getPrimaryKeyField(), $id);
         }
         $query->limit($id === self::ID_LOAD_ANY ? 1 : 2);
 
@@ -654,7 +666,7 @@ class Sql extends Persistence
             } elseif (count($rowsRaw) !== 1) {
                 throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
                     ->addMoreInfo('model', $model)
-                    ->addMoreInfo('id_field', $model->id_field)
+                    ->addMoreInfo('id_field', $model->primaryKey)
                     ->addMoreInfo('id', $noId ? null : $id);
             }
             $data = $this->typecastLoadRow($model, $rowsRaw[0]);
@@ -666,10 +678,10 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->id_field && !isset($data[$model->id_field])) {
+        if ($model->primaryKey && !isset($data[$model->primaryKey])) {
             throw (new Exception('Model uses "id_field" but it was not available in the database'))
                 ->addMoreInfo('model', $model)
-                ->addMoreInfo('id_field', $model->id_field)
+                ->addMoreInfo('id_field', $model->primaryKey)
                 ->addMoreInfo('id', $noId ? null : $id)
                 ->addMoreInfo('data', $data);
         }
@@ -684,8 +696,8 @@ class Sql extends Persistence
     {
         $insert = $model->action('insert');
 
-        if ($model->id_field && !isset($data[$model->id_field])) {
-            unset($data[$model->id_field]);
+        if ($model->primaryKey && !isset($data[$model->primaryKey])) {
+            unset($data[$model->primaryKey]);
 
             $this->syncIdSequence($model);
         }
@@ -704,8 +716,8 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->id_field && isset($data[$model->id_field])) {
-            $id = (string) $data[$model->id_field];
+        if ($model->primaryKey && isset($data[$model->primaryKey])) {
+            $id = (string) $data[$model->primaryKey];
 
             $this->syncIdSequence($model);
         } else {
@@ -755,7 +767,7 @@ class Sql extends Persistence
      */
     public function update(Model $model, $id, array $data)
     {
-        if (!$model->id_field) {
+        if (!$model->primaryKey) {
             throw new Exception('id_field of a model is not set. Unable to update record.');
         }
 
@@ -766,7 +778,7 @@ class Sql extends Persistence
 
         // only apply fields that has been modified
         $update->set($data);
-        $update->where($model->getField($model->id_field), $id);
+        $update->where($model->getPrimaryKeyField(), $id);
 
         $st = null;
         try {
@@ -782,9 +794,9 @@ class Sql extends Persistence
                 ->addMoreInfo('scope', $model->scope()->toWords());
         }
 
-        if ($model->id_field && isset($data[$model->id_field]) && $model->dirty[$model->id_field]) {
+        if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->dirty[$model->primaryKey]) {
             // ID was changed
-            $model->setId($data[$model->id_field]);
+            $model->setId($data[$model->primaryKey]);
         }
 
         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
@@ -805,13 +817,13 @@ class Sql extends Persistence
      */
     public function delete(Model $model, $id)
     {
-        if (!$model->id_field) {
+        if (!$model->primaryKey) {
             throw new Exception('id_field of a model is not set. Unable to delete record.');
         }
 
         $delete = $this->initQuery($model);
         $delete->mode('delete');
-        $delete->where($model->getField($model->id_field), $id);
+        $delete->where($model->getPrimaryKeyField(), $id);
         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
 
         try {
@@ -825,33 +837,6 @@ class Sql extends Persistence
         }
     }
 
-    public function getFieldSqlExpression(Model\Field $field, Expression $expression)
-    {
-        if (isset($field->getOwner()->persistence_data['use_table_prefixes'])) {
-            $mask = '{{}}.{}';
-            $prop = [
-                $field->hasJoin()
-                    ? ($field->getJoin()->foreign_alias ?: $field->getJoin()->short_name)
-                    : ($field->getOwner()->table_alias ?: $field->getOwner()->table),
-                $field->getPersistenceName(),
-            ];
-        } else {
-            // references set flag use_table_prefixes, so no need to check them here
-            $mask = '{}';
-            $prop = [
-                $field->getPersistenceName(),
-            ];
-        }
-
-        // If our Model has expr() method (inherited from Persistence\Sql) then use it
-        if ($field->getOwner()->hasMethod('expr')) {
-            return $field->getOwner()->expr($mask, $prop);
-        }
-
-        // Otherwise call method from expression
-        return $expression->expr($mask, $prop);
-    }
-
     private function getIdSequenceName(Model $model): ?string
     {
         $sequenceName = $model->sequence ?: null;
@@ -860,7 +845,7 @@ class Sql extends Persistence
             // PostgreSQL uses sequence internally for PK autoincrement,
             // use default name if not set explicitly
             if ($this->connection instanceof \Atk4\Dsql\Postgresql\Connection) {
-                $sequenceName = $model->table . '_' . $model->id_field . '_seq';
+                $sequenceName = $model->table . '_' . $model->primaryKey . '_seq';
             }
         }
 
@@ -872,12 +857,12 @@ class Sql extends Persistence
         // TODO: Oracle does not support lastInsertId(), only for testing
         // as this does not support concurrent inserts
         if ($this->connection instanceof \Atk4\Dsql\Oracle\Connection) {
-            if (!$model->id_field) {
+            if (!$model->primaryKey) {
                 return ''; // TODO code should never call lastInsertId() if id field is not defined
             }
 
             $query = $this->connection->dsql()->table($model->table);
-            $query->field($query->expr('max({id_col})', ['id_col' => $model->id_field]), 'max_id');
+            $query->field($query->expr('max({id_col})', ['id_col' => $model->primaryKey]), 'max_id');
 
             return $query->getOne();
         }
@@ -891,7 +876,7 @@ class Sql extends Persistence
         if ($this->connection instanceof \Atk4\Dsql\Postgresql\Connection) {
             $this->connection->expr(
                 'select setval([], coalesce(max({}), 0) + 1, false) from {}',
-                [$this->getIdSequenceName($model), $model->id_field, $model->table]
+                [$this->getIdSequenceName($model), $model->primaryKey, $model->table]
             )->execute();
         }
     }

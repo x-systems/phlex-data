@@ -10,7 +10,7 @@ use Phlex\Data\Persistence\Static_ as Persistence_Static;
 /**
  * Test various Field.
  */
-class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
+class FieldTypesTest extends SQL\TestCase
 {
     public $pers;
 
@@ -24,10 +24,19 @@ class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
         ]);
     }
 
+    public function testFielTypeSeedResolving()
+    {
+        $this->assertSame([Model\Field\Type\Line::class], Model\Field\Type::resolve('string'));
+
+        $this->assertSame([Model\Field\Type\Generic::class], Model\Field\Type::resolve(null));
+
+        $this->assertSame([Model\Field\Type\Line::class, 'maxLength' => 5], Model\Field\Type::resolve(['string', 'maxLength' => 5]));
+    }
+
     public function testEmailBasic()
     {
         $m = new Model($this->pers);
-        $m->addField('email', [\Phlex\Data\Field\Email::class]);
+        $m->addField('email', ['type' => 'email']);
 
         // null value
         $m->set('email', null);
@@ -46,15 +55,15 @@ class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
 
         // no domain - go to hell :)
         $this->expectException(Model\Field\ValidationException::class);
-        $this->expectExceptionMessage('does not have domain');
+        $this->expectExceptionMessage('Email format is invalid');
         $m->set('email', 'qq');
     }
 
     public function testEmailMultipleValues()
     {
         $m = new Model($this->pers);
-        $m->addField('email', [\Phlex\Data\Field\Email::class]);
-        $m->addField('emails', [\Phlex\Data\Field\Email::class, 'allow_multiple' => true]);
+        $m->addField('email', ['type' => 'email']);
+        $m->addField('emails', ['type' => ['email', 'allow_multiple' => true]]);
 
         $m->set('emails', 'bar@exampe.com, foo@example.com');
         $this->assertSame('bar@exampe.com, foo@example.com', $m->get('emails'));
@@ -67,7 +76,7 @@ class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
     public function testEmailValidateDns()
     {
         $m = new Model($this->pers);
-        $m->addField('email', [\Phlex\Data\Field\Email::class, 'dns_check' => true]);
+        $m->addField('email', ['type' => ['email', 'dns_check' => true]]);
 
         $m->set('email', ' foo@gmail.com');
 
@@ -79,10 +88,10 @@ class FieldTypesTest extends \Phlex\Schema\PhpunitTestCase
     public function testEmailWithName()
     {
         $m = new Model($this->pers);
-        $m->addField('email_name', [\Phlex\Data\Field\Email::class, 'include_names' => true]);
-        $m->addField('email_names', [\Phlex\Data\Field\Email::class, 'include_names' => true, 'allow_multiple' => true, 'dns_check' => true, 'separator' => [',', ';']]);
-        $m->addField('email_idn', [\Phlex\Data\Field\Email::class, 'dns_check' => true]);
-        $m->addField('email', [\Phlex\Data\Field\Email::class]);
+        $m->addField('email_name', ['type' => ['email', 'include_names' => true]]);
+        $m->addField('email_names', ['type' => ['email', 'include_names' => true, 'allow_multiple' => true, 'dns_check' => true, 'separator' => [',', ';']]]);
+        $m->addField('email_idn', ['type' => ['email', 'dns_check' => true]]);
+        $m->addField('email', ['type' => 'email']);
 
         $m->set('email_name', 'Romans <me@gmail.com>');
         $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans Žlutý Kůň <me3@gmail.com>');

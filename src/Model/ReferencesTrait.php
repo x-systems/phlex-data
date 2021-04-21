@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Model;
 
 use Phlex\Data\Exception;
-use Phlex\Data\Reference;
 
 /**
  * Provides native Model methods for manipulating model references.

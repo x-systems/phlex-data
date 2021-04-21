@@ -8,8 +8,27 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class FieldTest extends \Phlex\Schema\PhpunitTestCase
+class FieldTest extends SQL\TestCase
 {
+    public function testExplicitPrimaryKey()
+    {
+        $m = new Model();
+        $m->addField('primary_key')->asPrimaryKey();
+
+        $this->assertSame('primary_key', $m->primaryKey);
+        $this->assertTrue($m->getPrimaryKeyField()->required);
+        $this->assertTrue($m->getPrimaryKeyField()->system);
+    }
+
+    public function testSecondPrimaryKeyException()
+    {
+        $m = new Model();
+        $m->addField('primary_key1')->asPrimaryKey();
+
+        $this->expectException(Exception::class);
+        $m->addField('primary_key2')->asPrimaryKey();
+    }
+
     public function testDirty1()
     {
         $m = new Model();
@@ -531,7 +550,6 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -573,11 +591,6 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
         $this->assertFalse($m->get('boolean'));
         $m->set('boolean', 1);
         $this->assertTrue($m->get('boolean'));
-
-        $m->set('boolean_enum', 'N');
-        $this->assertFalse($m->get('boolean_enum'));
-        $m->set('boolean_enum', 'Y');
-        $this->assertTrue($m->get('boolean_enum'));
 
         // date, datetime, time
         $m->set('date', 123);
@@ -724,7 +737,6 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('boolean', ['type' => 'boolean']);
-        $m->addField('boolean_enum', ['type' => 'boolean', 'enum' => ['N', 'Y']]);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
         $m->addField('time', ['type' => 'time']);
@@ -738,8 +750,6 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
         $this->assertSame('123.456789', $m->getField('float')->toString(123.456789));
         $this->assertSame('1', $m->getField('boolean')->toString(true));
         $this->assertSame('0', $m->getField('boolean')->toString(false));
-        $this->assertSame('1', $m->getField('boolean_enum')->toString('Y'));
-        $this->assertSame('0', $m->getField('boolean_enum')->toString('N'));
         $this->assertSame('2019-01-20', $m->getField('date')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
         $this->assertSame('2019-01-20T12:23:34+00:00', $m->getField('datetime')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
         $this->assertSame('12:23:34', $m->getField('time')->toString(new \DateTime('2019-01-20T12:23:34+00:00')));
@@ -852,22 +862,8 @@ class FieldTest extends \Phlex\Schema\PhpunitTestCase
     public function testBoolean()
     {
         $m = new Model();
-        $m->addField('is_vip_1', ['type' => 'boolean', 'enum' => ['No', 'Yes']]);
-        $m->addField('is_vip_2', ['type' => 'boolean', 'valueTrue' => 1, 'valueFalse' => 0]);
-        $m->addField('is_vip_3', ['type' => 'boolean', 'valueTrue' => 'Y', 'valueFalse' => 'N']);
-
-        $m->set('is_vip_1', 'No');
-        $this->assertFalse($m->get('is_vip_1'));
-        $m->set('is_vip_1', 'Yes');
-        $this->assertTrue($m->get('is_vip_1'));
-        $m->set('is_vip_1', false);
-        $this->assertFalse($m->get('is_vip_1'));
-        $m->set('is_vip_1', true);
-        $this->assertTrue($m->get('is_vip_1'));
-        $m->set('is_vip_1', 0);
-        $this->assertFalse($m->get('is_vip_1'));
-        $m->set('is_vip_1', 1);
-        $this->assertTrue($m->get('is_vip_1'));
+        $m->addField('is_vip_2', ['type' => ['boolean', 'valueTrue' => 1, 'valueFalse' => 0]]);
+        $m->addField('is_vip_3', ['type' => ['boolean', 'valueTrue' => 'Y', 'valueFalse' => 'N']]);
 
         $m->set('is_vip_2', 0);
         $this->assertFalse($m->get('is_vip_2'));

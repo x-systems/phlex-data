@@ -61,12 +61,12 @@ class Model_Item3 extends Model
         $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
             ->withTitle();
 
-        $this->hasMany('Child', ['model' => $m, 'their_field' => 'parent_item_id', 'table_alias' => 'child'])
+        $this->hasMany('Child', ['model' => $m, 'theirFieldName' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
     }
 }
 
-class RandomTest extends \Phlex\Schema\PhpunitTestCase
+class RandomTest extends SQL\TestCase
 {
     public function testRate()
     {
@@ -330,24 +330,26 @@ class RandomTest extends \Phlex\Schema\PhpunitTestCase
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 
-    public function testNonSqlFieldClass()
-    {
-        $db = new Persistence\Sql($this->db->connection);
-        $this->setDb([
-            'rate' => [
-                ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
-            ],
-        ]);
+    // @todo: activate when morphing of seeds to more specific class tested
+    // e.g. \Phlex\Data\Model\Field should be transformed to Phlex\Data\Persistence\Sql\Field for the persistence in Model::addField
+//     public function testNonSqlFieldClass()
+//     {
+//         $db = new Persistence\Sql($this->db->connection);
+//         $this->setDb([
+//             'rate' => [
+//                 ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
+//             ],
+//         ]);
 
-        $m = new Model_Rate($db);
-        $m->addField('x1', new \Phlex\Data\FieldSql());
-        $m->addField('x2', new \Phlex\Data\Model\Field());
-        $m->load(1);
+//         $m = new Model_Rate($db);
+//         $m->addField('x1', new \Phlex\Data\Persistence\Sql\Field());
+//         $m->addField('x2', new \Phlex\Data\Model\Field());
+//         $m->load(1);
 
-        $this->assertEquals(3.4, $m->get('bid'));
-        $this->assertSame('y1', $m->get('x1'));
-        $this->assertSame('y2', $m->get('x2'));
-    }
+//         $this->assertEquals(3.4, $m->get('bid'));
+//         $this->assertSame('y1', $m->get('x1'));
+//         $this->assertSame('y2', $m->get('x2'));
+//     }
 
     public function testModelCaption()
     {
@@ -415,7 +417,7 @@ class RandomTest extends \Phlex\Schema\PhpunitTestCase
         ]);
 
         // model without id field
-        $m1 = new Model($this->db, ['table' => 'user', 'id_field' => false]);
+        $m1 = new Model($this->db, ['table' => 'user', 'primaryKey' => false]);
         $m1->addField('code');
         $m1->addField('name');
 
@@ -542,6 +544,6 @@ class RandomTest extends \Phlex\Schema\PhpunitTestCase
     }
 }
 
-class CustomField extends \Phlex\Data\Model\Field
+class CustomField extends \Phlex\Data\Persistence\Sql\Field
 {
 }

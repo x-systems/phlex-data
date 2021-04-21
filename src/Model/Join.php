@@ -10,7 +10,6 @@ use Phlex\Core\TrackableTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
-use Phlex\Data\Reference;
 
 /**
  * Provides generic functionality for joining data.
@@ -57,7 +56,7 @@ class Join
      *
      * @var string
      */
-    protected $id_field = 'id';
+    protected $primaryKey = 'id';
 
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
@@ -170,7 +169,7 @@ class Join
         $this->_init();
 
         // owner model should have id_field set
-        $id_field = $this->getOwner()->id_field;
+        $id_field = $this->getOwner()->primaryKey;
         if (!$id_field) {
             throw (new Exception('Joins owner model should have id_field set'))
                 ->addMoreInfo('model', $this->getOwner());
@@ -306,8 +305,8 @@ class Join
     public function hasMany(string $link, array $defaults = [])
     {
         $defaults = array_merge([
-            'our_field' => $this->id_field,
-            'their_field' => $this->getOwner()->table . '_' . $this->id_field,
+            'ourFieldName' => $this->primaryKey,
+            'theirFieldName' => $this->getOwner()->table . '_' . $this->primaryKey,
         ], $defaults);
 
         return $this->getOwner()->hasMany($link, $defaults);

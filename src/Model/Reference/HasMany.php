@@ -14,8 +14,8 @@ class HasMany extends Model\Reference
 {
     public function getTheirFieldName(): string
     {
-        if ($this->their_field) {
-            return $this->their_field;
+        if ($this->theirFieldName) {
+            return $this->theirFieldName;
         }
 
         // this is pure guess, verify if such field exist, otherwise throw
@@ -40,8 +40,8 @@ class HasMany extends Model\Reference
         $ourModel = $this->getOurModel();
 
         if ($ourModel->loaded()) {
-            return $this->our_field
-                ? $ourModel->get($this->our_field)
+            return $this->ourFieldName
+                ? $ourModel->get($this->ourFieldName)
                 : $ourModel->getId();
         }
 

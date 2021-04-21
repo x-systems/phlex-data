@@ -45,14 +45,14 @@ class ContainsOne extends Model\Reference
 
     /**
      * Reference\ContainsOne will also add a field corresponding
-     * to 'our_field' unless it exists of course.
+     * to 'ourFieldName' unless it exists of course.
      */
     protected function init(): void
     {
         parent::init();
 
-        if (!$this->our_field) {
-            $this->our_field = $this->link;
+        if (!$this->ourFieldName) {
+            $this->ourFieldName = $this->link;
         }
 
         $ourModel = $this->getOurModel();

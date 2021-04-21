@@ -232,7 +232,7 @@ class Migration
     {
         if ($field->reference instanceof Model\Reference\HasOne) {
             $referenceTheirField = \Closure::bind(function () use ($field) {
-                return $field->reference->their_field;
+                return $field->reference->theirFieldName;
             }, null, Model\Reference::class)();
 
             $referenceField = $referenceTheirField ?? $field->reference->getOwner()->idFieldName;

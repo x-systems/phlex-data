@@ -318,7 +318,7 @@ class Model implements \IteratorAggregate
      */
     public $contained_in_root_model;
 
-    /** @var Reference Only for Reference class */
+    /** @var Model\Reference Only for Reference class */
     public $ownerReference;
 
     // }}}
@@ -1932,7 +1932,7 @@ class Model implements \IteratorAggregate
             unset($expression[0]);
         }
 
-        /** @var Field\Callback */
+        /** @var Model\Field\Callback */
         $field = Model\Field::fromSeed($this->_default_seed_addExpression, $expression);
 
         $this->addField($name, $field);

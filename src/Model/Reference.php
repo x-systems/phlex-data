@@ -60,7 +60,7 @@ class Reference
      *
      * @var string
      */
-    protected $our_field;
+    protected $ourFieldName;
 
     /**
      * This is an optional property which can be used by your implementation
@@ -68,7 +68,7 @@ class Reference
      *
      * @var string
      */
-    protected $their_field;
+    protected $theirFieldName;
 
     /**
      * Caption of the reeferenced model. Can be used in UI components, for example.
@@ -85,7 +85,7 @@ class Reference
 
     public function getTheirFieldName(): string
     {
-        return $this->their_field ?? $this->model->idFieldName;
+        return $this->theirFieldName ?? $this->model->idFieldName;
     }
 
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -184,7 +184,7 @@ class Reference
 
     protected function getOurFieldName(): string
     {
-        return $this->our_field ?: $this->getOurModel()->idFieldName;
+        return $this->ourFieldName ?: $this->getOurModel()->idFieldName;
     }
 
     protected function getOurFieldValue()
@@ -268,7 +268,7 @@ class Reference
     /**
      * List of properties to show in var_dump.
      */
-    protected $__debug_fields = ['link', 'model', 'our_field', 'their_field'];
+    protected $__debug_fields = ['link', 'model', 'ourFieldName', 'theirFieldName'];
 
     /**
      * Returns array with useful debug info for var_dump.

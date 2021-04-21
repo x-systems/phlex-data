@@ -60,9 +60,9 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
 
         // Will try to execute last
         $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($ourFieldName, $theirFieldName) {
-            // if title field is changed, but reference ID field (our_field)
+            // if title field is changed, but reference ID field (ourFieldName)
             // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($ourFieldName) && !$ourModel->isDirty($this->our_field)) {
+            if ($ourModel->isDirty($ourFieldName) && !$ourModel->isDirty($this->ourFieldName)) {
                 $theirModel = $this->createTheirModel();
 
                 $theirModel->addCondition($theirFieldName, $ourModel->get($ourFieldName));
@@ -121,7 +121,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         $theirModel = $this->createTheirModel($defaults);
 
         $theirModel->addCondition(
-            $this->their_field ?: $theirModel->idFieldName,
+            $this->theirFieldName ?: $theirModel->idFieldName,
             $this->referenceOurValue()
         );
 
@@ -140,11 +140,11 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
             return $theirModel;
         }
 
-        $theirField = $this->their_field ?: $theirModel->idFieldName;
+        $theirField = $this->theirFieldName ?: $theirModel->idFieldName;
         $ourField = $this->getOurField();
 
         // At this point the reference
-        // if our_field is the id_field and is being used in the reference
+        // if ourFieldName is the idFieldName and is being used in the reference
         // we should persist the relation in condtition
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->loaded() && !$theirModel->loaded()) {
@@ -203,7 +203,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->our_field)) {
+            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->ourFieldName)) {
                 $theirModel = $this->createTheirModel();
 
                 $theirModel->addCondition($theirModel->title_field, $ourModel->get($fieldName));

@@ -451,7 +451,7 @@ class ReferenceSqlTest extends SQL\TestCase
     }
 
     /**
-     * test case hasOne::our_key == owner::id_field.
+     * test case hasOne::our_key == owner::idFieldName.
      */
     public function testIdFieldReferenceOurFieldCase()
     {

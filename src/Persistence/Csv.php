@@ -178,7 +178,7 @@ class Csv extends Persistence
 
         $header = [];
         foreach ($model->getFields() as $name => $field) {
-            if ($model->id_field && $name === $model->id_field) {
+            if ($model->idFieldName && $name === $model->idFieldName) {
                 continue;
             }
 
@@ -208,19 +208,19 @@ class Csv extends Persistence
     public function typecastLoadRow(Model $model, array $row): array
     {
         $id = null;
-        if ($model->id_field) {
-            if (isset($row[$model->id_field])) {
+        if ($model->idFieldName) {
+            if (isset($row[$model->idFieldName])) {
                 // temporary remove id field
-                $id = $row[$model->id_field];
-                unset($row[$model->id_field]);
+                $id = $row[$model->idFieldName];
+                unset($row[$model->idFieldName]);
             } else {
                 $id = null;
             }
         }
 
         $row = array_combine($this->header, $row);
-        if ($model->id_field && isset($id)) {
-            $row[$model->id_field] = $id;
+        if ($model->idFieldName && isset($id)) {
+            $row[$model->idFieldName] = $id;
         }
 
         foreach ($row as $key => $value) {
@@ -258,8 +258,8 @@ class Csv extends Persistence
         }
 
         $data = $this->typecastLoadRow($model, $data);
-        if ($model->id_field) {
-            $data[$model->id_field] = $this->line;
+        if ($model->idFieldName) {
+            $data[$model->idFieldName] = $this->line;
         }
 
         return $data;
@@ -283,8 +283,8 @@ class Csv extends Persistence
                 break;
             }
             $data = $this->typecastLoadRow($model, $data);
-            if ($model->id_field) {
-                $data[$model->id_field] = $this->line;
+            if ($model->idFieldName) {
+                $data[$model->idFieldName] = $this->line;
             }
 
             yield $data;
@@ -316,8 +316,8 @@ class Csv extends Persistence
 
         $this->putLine($line);
 
-        if ($model->id_field) {
-            return $data[$model->id_field];
+        if ($model->idFieldName) {
+            return $data[$model->idFieldName];
         }
     }
 

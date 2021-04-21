@@ -700,15 +700,15 @@ or as defaults::
     $m = new MyModel($db, ['title_field'=>'full_name']);
 
 
-.. _id_field:
+.. _idFieldName:
 
 ID Field
 --------
 
-.. php:attr:: id_field
+.. php:attr:: idFieldName
 
     If your data storage uses field different than ``id`` to keep the ID of your
-    records, then you can specify that in $id_field property.
+    records, then you can specify that in $idFieldName property.
 
 .. tip:: You can change ID value of the current ID field by calling::
 

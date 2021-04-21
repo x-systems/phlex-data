@@ -56,7 +56,7 @@ class Join
      *
      * @var string
      */
-    protected $id_field = 'id';
+    protected $idFieldName = 'id';
 
     /**
      * By default this will be either "inner" (for strong) or "left" for weak joins.
@@ -169,7 +169,7 @@ class Join
         $this->_init();
 
         // owner model should have id_field set
-        $id_field = $this->getOwner()->id_field;
+        $id_field = $this->getOwner()->idFieldName;
         if (!$id_field) {
             throw (new Exception('Joins owner model should have id_field set'))
                 ->addMoreInfo('model', $this->getOwner());
@@ -305,8 +305,8 @@ class Join
     public function hasMany(string $link, array $defaults = [])
     {
         $defaults = array_merge([
-            'our_field' => $this->id_field,
-            'their_field' => $this->getOwner()->table . '_' . $this->id_field,
+            'our_field' => $this->idFieldName,
+            'their_field' => $this->getOwner()->table . '_' . $this->idFieldName,
         ], $defaults);
 
         return $this->getOwner()->hasMany($link, $defaults);

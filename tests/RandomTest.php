@@ -417,7 +417,7 @@ class RandomTest extends SQL\TestCase
         ]);
 
         // model without id field
-        $m1 = new Model($this->db, ['table' => 'user', 'id_field' => false]);
+        $m1 = new Model($this->db, ['table' => 'user', 'idFieldName' => false]);
         $m1->addField('code');
         $m1->addField('name');
 

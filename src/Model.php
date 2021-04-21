@@ -242,7 +242,7 @@ class Model implements \IteratorAggregate
      *
      * @var string
      */
-    public $id_field = 'id';
+    public $idFieldName = 'id';
 
     /**
      * Title field is used typically by UI components for a simple human
@@ -375,10 +375,10 @@ class Model implements \IteratorAggregate
     {
         $this->_init();
 
-        if ($this->id_field) {
-            $this->addField($this->id_field, ['type' => 'integer', 'required' => true, 'system' => true]);
+        if ($this->idFieldName) {
+            $this->addField($this->idFieldName, ['type' => 'integer', 'required' => true, 'system' => true]);
         } else {
-            return; // don't declare actions for model without id_field
+            return; // don't declare actions for model without idFieldName
         }
 
         $this->initEntityHooks();
@@ -431,7 +431,7 @@ class Model implements \IteratorAggregate
             if ($this->entityId === null) {
                 $this->entityId = $this->getId();
             } else {
-                if (!$this->compare($this->id_field, $this->entityId)) {
+                if (!$this->compare($this->idFieldName, $this->entityId)) {
                     $newId = $this->getId();
                     $this->unload(); // data for different ID were loaded, make sure to discard them
 
@@ -837,7 +837,7 @@ class Model implements \IteratorAggregate
 
     private function assertHasIdField(): void
     {
-        if (!is_string($this->id_field) || !$this->hasField($this->id_field)) {
+        if (!is_string($this->idFieldName) || !$this->hasField($this->idFieldName)) {
             throw new Exception('ID field is not defined');
         }
     }
@@ -849,7 +849,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertHasIdField();
 
-        return $this->get($this->id_field);
+        return $this->get($this->idFieldName);
     }
 
     /**
@@ -862,9 +862,9 @@ class Model implements \IteratorAggregate
         $this->assertHasIdField();
 
         if ($value === null) {
-            $this->setNull($this->id_field);
+            $this->setNull($this->idFieldName);
         } else {
-            $this->set($this->id_field, $value);
+            $this->set($this->idFieldName, $value);
         }
 
         // set entity ID to the first set ID
@@ -905,11 +905,11 @@ class Model implements \IteratorAggregate
      */
     public function getTitles(): array
     {
-        $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->id_field;
+        $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->idFieldName;
 
         return array_map(function ($row) use ($field) {
             return $row[$field];
-        }, $this->export([$field], $this->id_field));
+        }, $this->export([$field], $this->idFieldName));
     }
 
     /**
@@ -1007,7 +1007,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Shortcut for using addCondition(id_field, $id).
+     * Shortcut for using addCondition(idFieldName, $id).
      *
      * @param mixed $id
      *
@@ -1015,7 +1015,7 @@ class Model implements \IteratorAggregate
      */
     public function withId($id)
     {
-        return $this->addCondition($this->id_field, $id);
+        return $this->addCondition($this->idFieldName, $id);
     }
 
     /**
@@ -1111,7 +1111,7 @@ class Model implements \IteratorAggregate
      */
     public function loaded(): bool
     {
-        return $this->id_field && $this->getId() !== null && $this->entityId !== null;
+        return $this->idFieldName && $this->getId() !== null && $this->entityId !== null;
     }
 
     /**
@@ -1123,7 +1123,7 @@ class Model implements \IteratorAggregate
     {
         $this->hook(self::HOOK_BEFORE_UNLOAD);
         $this->data = [];
-        if ($this->id_field) {
+        if ($this->idFieldName) {
             $this->setId(null);
         }
         $this->dirty = [];
@@ -1168,9 +1168,9 @@ class Model implements \IteratorAggregate
 
         if ($this->data) {
             if ($noId) { // @TODO pure port from tryLoadAny, simplify
-                if ($this->id_field) {
-                    if (isset($this->data[$this->id_field])) {
-                        $this->setId($this->data[$this->id_field]);
+                if ($this->idFieldName) {
+                    if (isset($this->data[$this->idFieldName])) {
+                        $this->setId($this->data[$this->idFieldName]);
                     }
                 }
             } else {
@@ -1217,8 +1217,8 @@ class Model implements \IteratorAggregate
         }
 
         if ($noId) { // @TODO pure port from loadAny, simplify
-            if ($this->id_field) {
-                $this->setId($this->data[$this->id_field]);
+            if ($this->idFieldName) {
+                $this->setId($this->data[$this->idFieldName]);
             }
         } else {
             if ($this->getId() === null) { // TODO what is the usecase?
@@ -1364,7 +1364,7 @@ class Model implements \IteratorAggregate
         $m = $this->newInstance($class, $options);
 
         foreach ($this->data as $field => $value) {
-            if ($value !== null && $value !== $this->getField($field)->default && $field !== $this->id_field) {
+            if ($value !== null && $value !== $this->getField($field)->default && $field !== $this->idFieldName) {
                 // Copying only non-default value
                 $m->set($field, $value);
             }
@@ -1416,7 +1416,7 @@ class Model implements \IteratorAggregate
 
         $model = new $class($persistence, ['table' => $this->table]);
 
-        if ($this->id_field) {
+        if ($this->idFieldName) {
             $model->setId($id === true ? $this->getId() : $id);
         }
 
@@ -1602,7 +1602,7 @@ class Model implements \IteratorAggregate
                 // Collect all data of a new record
                 $id = $this->persistence->insert($this, $data);
 
-                if (!$this->id_field) {
+                if (!$this->idFieldName) {
                     $this->hook(self::HOOK_AFTER_INSERT, [null]);
 
                     $this->dirty = [];
@@ -1669,8 +1669,8 @@ class Model implements \IteratorAggregate
         }
 
         // store id value
-        if ($this->id_field) {
-            $m->data[$m->id_field] = $m->getId();
+        if ($this->idFieldName) {
+            $m->data[$m->idFieldName] = $m->getId();
         }
 
         // if there was referenced data, then import it
@@ -1692,7 +1692,7 @@ class Model implements \IteratorAggregate
         $model->entityId = null;
         $this->_rawInsert($model, $row);
 
-        return $this->id_field ? $model->getId() : null;
+        return $this->idFieldName ? $model->getId() : null;
     }
 
     /**
@@ -1772,8 +1772,8 @@ class Model implements \IteratorAggregate
             $thisCloned = clone $this;
 
             $thisCloned->data = $this->persistence->typecastLoadRow($this, $data);
-            if ($this->id_field) {
-                $thisCloned->setId($data[$this->id_field] ?? null);
+            if ($this->idFieldName) {
+                $thisCloned->setId($data[$this->idFieldName] ?? null);
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
@@ -1792,13 +1792,13 @@ class Model implements \IteratorAggregate
             }
 
             if (is_object($ret)) {
-                if ($ret->id_field) {
+                if ($ret->idFieldName) {
                     yield $ret->getId() => $ret; // @phpstan-ignore-line
                 } else {
                     yield $ret; // @phpstan-ignore-line
                 }
             } else {
-                if ($this->id_field) {
+                if ($this->idFieldName) {
                     yield $thisCloned->getId() => $thisCloned;
                 } else {
                     yield $thisCloned;
@@ -1845,7 +1845,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Model is read-only and cannot be deleted');
         }
 
-        if ($this->compare($this->id_field, $id)) {
+        if ($this->compare($this->idFieldName, $id)) {
             $id = null;
         }
 
@@ -1973,7 +1973,7 @@ class Model implements \IteratorAggregate
     public function __debugInfo(): array
     {
         return [
-            'id' => $this->id_field && $this->hasField('id') ? $this->getId() : 'no id field',
+            'id' => $this->idFieldName && $this->hasField('id') ? $this->getId() : 'no id field',
             'scope' => $this->scope()->toWords(),
         ];
     }

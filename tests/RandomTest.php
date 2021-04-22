@@ -254,7 +254,7 @@ class RandomTest extends SQL\TestCase
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
-                throw (new \Atk4\Core\Exception('Update didn\'t affect any records'))
+                throw (new \Phlex\Core\Exception('Update didn\'t affect any records'))
                     ->addMoreInfo('query', $update->getDebugQuery())
                     ->addMoreInfo('statement', $st)
                     ->addMoreInfo('model', $m)

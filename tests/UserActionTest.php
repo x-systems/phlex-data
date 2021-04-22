@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Atk4\Core\Exception;
+use Phlex\Core\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence\Static_ as Persistence_Static;
 

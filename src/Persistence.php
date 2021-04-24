@@ -18,6 +18,19 @@ abstract class Persistence
     use \Phlex\Core\NameTrait;
 
     /** @const string */
+    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelect';
+    /** @const string */
+    public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsert';
+    /** @const string */
+    public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsert';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdate';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdate';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDelete';
+
+    /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
     /** @const string */
@@ -101,6 +114,10 @@ abstract class Persistence
     {
     }
 
+    public function query(Model $model): Persistence\AbstractQuery
+    {
+    }
+
     /**
      * Atomic executes operations within one begin/end transaction. Not all
      * persistences will support atomic operations, so by default we just
@@ -113,45 +130,157 @@ abstract class Persistence
         return $fx();
     }
 
+    public function getRow(Model $model, $id = null)
+    {
+        $query = $this->query($model);
+
+        if ($id !== null) {
+            $query->whereId($id);
+        }
+
+        $rawData = $query->getRow();
+
+        if ($rawData === null) {
+            return null;
+        }
+
+        return $this->typecastLoadRow($model, $rawData);
+    }
+
+    /**
+     * Inserts record in database and returns new record ID.
+     *
+     * @return mixed
+     */
+    public function insert(Model $model, array $data)
+    {
+        // don't set id field at all if it's NULL
+        if ($model->primaryKey && !isset($data[$model->primaryKey])) {
+            unset($data[$model->primaryKey]);
+
+            $this->syncIdSequence($model);
+        }
+
+        $data = $this->typecastSaveRow($model, $data);
+
+        $this->query($model)->insert($data)->execute();
+
+        if ($model->primaryKey && isset($data[$model->primaryKey])) {
+            $id = (string) $data[$model->primaryKey];
+
+            $this->syncIdSequence($model);
+        } else {
+            $id = $this->lastInsertId($model);
+        }
+
+        return $id;
+    }
+
+    /**
+     * Updates record in database.
+     *
+     * @param mixed $id
+     */
+    public function update(Model $model, $id, array $data)
+    {
+        $data = $this->typecastSaveRow($model, $data);
+
+        $model->onHook(self::HOOK_AFTER_UPDATE_QUERY, function (Model $model, Persistence\AbstractQuery $query, $result) use ($data) {
+            if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->dirty[$model->primaryKey]) {
+                // ID was changed
+                $model->id = $data[$model->primaryKey];
+            }
+        }, [], -1000);
+
+        $result = $this->query($model)->whereId($id)->update($data)->execute();
+
+        //@todo $result->rowCount() is specific to PDO, must be done specific to Query
+        // if any rows were updated in database, and we had expressions, reload
+        if ($model->reload_after_save === true /* && (!$result || iterator_count($result)) */) {
+            $dirty = $model->dirty;
+            $model->reload();
+            $model->_dirty_after_reload = $model->dirty;
+            $model->dirty = $dirty;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Deletes record from database.
+     *
+     * @param mixed $id
+     */
+    public function delete(Model $model, $id)
+    {
+        $this->query($model)->whereId($id)->delete()->execute();
+    }
+
+    /**
+     * Export all DataSet.
+     *
+     * @param bool $typecast Should we typecast exported data
+     */
+    public function export(Model $model, array $fields = null, bool $typecast = true): array
+    {
+        $data = $this->query($model)->select($fields)->getRows();
+
+        if ($typecast) {
+            $data = array_map(function ($row) use ($model) {
+                return $this->typecastLoadRow($model, $row);
+            }, $data);
+        }
+
+        return $data;
+    }
+
+    public function lastInsertId(Model $model = null): string
+    {
+    }
+
+    protected function syncIdSequence(Model $model): void
+    {
+    }
+
     public function getDatabasePlatform(): Platforms\AbstractPlatform
     {
         return new Persistence\GenericPlatform();
     }
 
-    /**
-     * Tries to load data record, but will not fail if record can't be loaded.
-     *
-     * @param mixed $id
-     */
-    public function tryLoad(Model $model, $id): ?array
-    {
-        throw new Exception('Load is not supported.');
-    }
+//     /**
+//      * Tries to load data record, but will not fail if record can't be loaded.
+//      *
+//      * @param mixed $id
+//      */
+//     public function tryLoad(Model $model, $id): ?array
+//     {
+//         throw new Exception('Load is not supported.');
+//     }
 
-    /**
-     * Loads a record from model and returns a associative array.
-     *
-     * @param mixed $id
-     */
-    public function load(Model $model, $id): array
-    {
-        $data = $this->tryLoad(
-            $model,
-            $id,
-            ...array_slice(func_get_args(), 2, null, true)
-        );
+//     /**
+//      * Loads a record from model and returns a associative array.
+//      *
+//      * @param mixed $id
+//      */
+//     public function load(Model $model, $id): array
+//     {
+//         $data = $this->tryLoad(
+//             $model,
+//             $id,
+//             ...array_slice(func_get_args(), 2, null, true)
+//         );
 
-        if (!$data) {
-            $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+//         if (!$data) {
+//             $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
 
-            throw (new Exception($noId ? 'No record was found' : 'Record with specified ID was not found', 404))
-                ->addMoreInfo('model', $model)
-                ->addMoreInfo('id', $noId ? null : $id)
-                ->addMoreInfo('scope', $model->scope()->toWords());
-        }
+//             throw (new Exception($noId ? 'No record was found' : 'Record with specified ID was not found', 404))
+//                 ->addMoreInfo('model', $model)
+//                 ->addMoreInfo('id', $noId ? null : $id)
+//                 ->addMoreInfo('scope', $model->scope()->toWords());
+//         }
 
-        return $data;
-    }
+//         return $data;
+//     }
 
     /**
      * Will convert one row of data from native PHP types into

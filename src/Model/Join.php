@@ -52,7 +52,7 @@ class Join
      * Field that is used as native "ID" in the foreign table.
      * When deleting record, this field will be conditioned.
      *
-     * ->where($join->id_field, $join->id)->delete();
+     * ->where($join->primaryKey, $join->id)->delete();
      *
      * @var string
      */
@@ -168,10 +168,10 @@ class Join
     {
         $this->_init();
 
-        // owner model should have id_field set
-        $id_field = $this->getOwner()->primaryKey;
-        if (!$id_field) {
-            throw (new Exception('Joins owner model should have id_field set'))
+        // owner model should have primaryKey set
+        $primaryKey = $this->getOwner()->primaryKey;
+        if (!$primaryKey) {
+            throw (new Exception('Joins owner model should have primaryKey set'))
                 ->addMoreInfo('model', $this->getOwner());
         }
 
@@ -186,27 +186,27 @@ class Join
         }
 
         if ($this->reverse === true) {
-            if (isset($this->master_field) && $this->master_field !== $id_field) { // TODO not implemented yet, see https://github.com/x-systems/phlex-data/issues/803
+            if (isset($this->master_field) && $this->master_field !== $primaryKey) { // TODO not implemented yet, see https://github.com/x-systems/phlex-data/issues/803
                 throw (new Exception('Joining tables on non-id fields is not implemented yet'))
                     ->addMoreInfo('condition', $this->getOwner()->table . '.' . $this->master_field . ' = ' . $this->foreign_table . '.' . $this->foreign_field);
             }
 
             if (!$this->master_field) {
-                $this->master_field = $id_field;
+                $this->master_field = $primaryKey;
             }
 
             if (!$this->foreign_field) {
-                $this->foreign_field = $this->getOwner()->table . '_' . $id_field;
+                $this->foreign_field = $this->getOwner()->table . '_' . $primaryKey;
             }
         } else {
             $this->reverse = false;
 
             if (!$this->master_field) {
-                $this->master_field = $this->foreign_table . '_' . $id_field;
+                $this->master_field = $this->foreign_table . '_' . $primaryKey;
             }
 
             if (!$this->foreign_field) {
-                $this->foreign_field = $id_field;
+                $this->foreign_field = $primaryKey;
             }
         }
 

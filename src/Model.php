@@ -36,6 +36,7 @@ class Model implements \IteratorAggregate
     use InitializerTrait {
         init as _init;
     }
+    use Model\AggregatesTrait;
     use Model\JoinsTrait;
     use Model\ReferencesTrait;
     use Model\UserActionsTrait;
@@ -91,10 +92,10 @@ class Model implements \IteratorAggregate
     /** @const string */
     public const FIELD_FILTER_ONLY_FIELDS = 'only fields';
 
-    /** @const string */
-    protected const ID_LOAD_ONE = self::class . '@idLoadOne';
-    /** @const string */
-    protected const ID_LOAD_ANY = self::class . '@idLoadAny';
+//     /** @const string */
+//     protected const ID_LOAD_ONE = self::class . '@idLoadOne';
+//     /** @const string */
+//     protected const ID_LOAD_ANY = self::class . '@idLoadAny';
 
     // {{{ Properties of the class
 
@@ -1144,21 +1145,21 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    /**
-     * @param mixed $id
-     *
-     * @return mixed
-     */
-    private function remapIdLoadToPersistence($id)
-    {
-        if ($id === self::ID_LOAD_ONE) {
-            return Persistence::ID_LOAD_ONE;
-        } elseif ($id === self::ID_LOAD_ANY) {
-            return Persistence::ID_LOAD_ANY;
-        }
+//     /**
+//      * @param mixed $id
+//      *
+//      * @return mixed
+//      */
+//     private function remapIdLoadToPersistence($id)
+//     {
+//         if ($id === self::ID_LOAD_ONE) {
+//             return Persistence::ID_LOAD_ONE;
+//         } elseif ($id === self::ID_LOAD_ANY) {
+//             return Persistence::ID_LOAD_ANY;
+//         }
 
-        return $id;
-    }
+//         return $id;
+//     }
 
     /**
      * Try to load record. Will not throw an exception if record does not exist.
@@ -1167,36 +1168,80 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
+//     public function tryLoad($id)
+//     {
+//         $this->checkPersistence();
+
+//         if ($this->loaded()) {
+//             $this->unload();
+//         }
+
+//         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+//         $this->data = $this->persistence->tryLoad($this, $this->remapIdLoadToPersistence($id));
+
+//         if ($this->data) {
+//             if ($noId) { // @TODO pure port from tryLoadAny, simplify
+//                 if ($this->primaryKey) {
+//                     if (isset($this->data[$this->primaryKey])) {
+//                         $this->setId($this->data[$this->primaryKey]);
+//                     }
+//                 }
+//             } else {
+//                 $this->setId($id);
+//             }
+
+//             $ret = $this->hook(self::HOOK_AFTER_LOAD);
+//             if ($ret === false) {
+//                 return $this->unload();
+//             } elseif (is_object($ret)) {
+//                 return $ret; // @phpstan-ignore-line
+//             }
+//         } else {
+//             $this->unload();
+//         }
+
+//         return $this;
+//     }
+
+    /**
+     * Try to load record.
+     * Will not throw exception if record doesn't exist.
+     *
+     * @param mixed $id
+     *
+     * @return $this
+     */
     public function tryLoad($id)
     {
-        $this->checkPersistence();
-
-        if ($this->loaded()) {
-            $this->unload();
+        try {
+            return $this->load($id);
+        } catch (Model\RecordNotFoundException $e) {
         }
 
-        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
-        $this->data = $this->persistence->tryLoad($this, $this->remapIdLoadToPersistence($id));
+        return $this;
+    }
 
-        if ($this->data) {
-            if ($noId) { // @TODO pure port from tryLoadAny, simplify
-                if ($this->primaryKey) {
-                    if (isset($this->data[$this->primaryKey])) {
-                        $this->setId($this->data[$this->primaryKey]);
-                    }
-                }
-            } else {
-                $this->setId($id);
-            }
+    /**
+     * Load any record.
+     *
+     * @return $this
+     */
+    public function loadAny()
+    {
+        return $this->load();
+    }
 
-            $ret = $this->hook(self::HOOK_AFTER_LOAD);
-            if ($ret === false) {
-                return $this->unload();
-            } elseif (is_object($ret)) {
-                return $ret; // @phpstan-ignore-line
-            }
-        } else {
-            $this->unload();
+    /**
+     * Try to load any record.
+     * Will not throw exception if record doesn't exist.
+     *
+     * @return $this
+     */
+    public function tryLoadAny()
+    {
+        try {
+            return $this->load();
+        } catch (Model\RecordNotFoundException $e) {
         }
 
         return $this;
@@ -1209,88 +1254,189 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function load($id)
+    public function load($id = null)
     {
-        $this->checkPersistence();
+        $this->checkPersistence('getRow');
 
         if ($this->loaded()) {
             $this->unload();
         }
 
-        $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
-        if ($noId) {
-            $this->data = $this->persistence->load($this, $this->remapIdLoadToPersistence($id));
-        } else {
-            if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) { // @TODO pure port from loadAny. why not for tryLoad?
-                return $this;
-            }
-
-            $this->data = $this->persistence->load($this, $id);
+        if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
+            return $this;
         }
 
-        if ($noId) { // @TODO pure port from loadAny, simplify
+        $this->data = $this->persistence->getRow($this, $id);
+
+        if ($this->data) {
             if ($this->primaryKey) {
-                $this->setId($this->data[$this->primaryKey]);
+                if (isset($this->data[$this->primaryKey])) {
+                    $this->setId($this->data[$this->primaryKey]);
+                }
+            }
+
+            $ret = $this->hook(self::HOOK_AFTER_LOAD);
+            if ($ret === false) {
+                return $this->unload();
+            } elseif (is_object($ret)) {
+                return $ret; // @phpstan-ignore-line
             }
         } else {
-            if ($this->getId() === null) { // TODO what is the usecase?
-                $this->setId($id);
-            }
+            $this->unload();
         }
 
-        $ret = $this->hook(self::HOOK_AFTER_LOAD);
-        if ($ret === false) {
-            return $this->unload();
-        } elseif (is_object($ret)) {
-            return $ret; // @phpstan-ignore-line
+        if ($this->primaryKey && !$this->loaded()) {
+            throw (new Model\RecordNotFoundException())
+                ->setRecordParameters($this, $id);
         }
 
         return $this;
     }
 
     /**
-     * Try to load one record. Will throw if more than one record exists, but not if there is no record.
+     * Load record by condition.
+     *
+     * @param mixed $value
      *
      * @return $this
      */
-    public function tryLoadOne()
+    public function loadBy(string $fieldName, $value)
     {
-        return $this->tryLoad(self::ID_LOAD_ONE);
+        $field = $this->getField($fieldName);
+
+        $scopeBak = $this->scope;
+        $systemBak = $field->system;
+        $defaultBak = $field->default;
+        try {
+            // add condition to cloned scope and try to load record
+            $this->scope = clone $this->scope;
+            $this->addCondition($field, $value);
+
+            return $this->loadAny();
+        } finally {
+            $this->scope = $scopeBak;
+            $field->system = $systemBak;
+            $field->default = $defaultBak;
+        }
     }
 
     /**
-     * Load one record. Will throw if more than one record exists.
+     * Try to load record by condition.
+     * Will not throw exception if record doesn't exist.
+     *
+     * @param mixed $value
      *
      * @return $this
      */
-    public function loadOne()
+    public function tryLoadBy(string $fieldName, $value)
     {
-        return $this->load(self::ID_LOAD_ONE);
+        $field = $this->getField($fieldName);
+
+        $scopeBak = $this->scope;
+        $systemBak = $field->system;
+        $defaultBak = $field->default;
+        try {
+            // add condition to cloned scope and try to load record
+            $this->scope = clone $this->scope;
+            $this->addCondition($field, $value);
+
+            return $this->tryLoadAny();
+        } finally {
+            $this->scope = $scopeBak;
+            $field->system = $systemBak;
+            $field->default = $defaultBak;
+        }
     }
 
-    /**
-     * Try to load any record. Will not throw an exception if record does not exist.
-     *
-     * If only one record should match, use checked "tryLoadOne" method.
-     *
-     * @return $this
-     */
-    public function tryLoadAny()
-    {
-        return $this->tryLoad(self::ID_LOAD_ANY);
-    }
+//     /**
+//      * Load model.
+//      *
+//      * @param mixed $id
+//      *
+//      * @return $this
+//      */
+//     public function load($id)
+//     {
+//         $this->checkPersistence();
 
-    /**
-     * Load any record.
-     *
-     * If only one record should match, use checked "loadOne" method.
-     *
-     * @return $this
-     */
-    public function loadAny()
-    {
-        return $this->load(self::ID_LOAD_ANY);
-    }
+//         if ($this->loaded()) {
+//             $this->unload();
+//         }
+
+//         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
+//         if ($noId) {
+//             $this->data = $this->persistence->load($this, $this->remapIdLoadToPersistence($id));
+//         } else {
+//             if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) { // @TODO pure port from loadAny. why not for tryLoad?
+//                 return $this;
+//             }
+
+//             $this->data = $this->persistence->load($this, $id);
+//         }
+
+//         if ($noId) { // @TODO pure port from loadAny, simplify
+//             if ($this->primaryKey) {
+//                 $this->setId($this->data[$this->primaryKey]);
+//             }
+//         } else {
+//             if ($this->getId() === null) { // TODO what is the usecase?
+//                 $this->setId($id);
+//             }
+//         }
+
+//         $ret = $this->hook(self::HOOK_AFTER_LOAD);
+//         if ($ret === false) {
+//             return $this->unload();
+//         } elseif (is_object($ret)) {
+//             return $ret; // @phpstan-ignore-line
+//         }
+
+//         return $this;
+//     }
+
+//     /**
+//      * Try to load one record. Will throw if more than one record exists, but not if there is no record.
+//      *
+//      * @return $this
+//      */
+//     public function tryLoadOne()
+//     {
+//         return $this->tryLoad(self::ID_LOAD_ONE);
+//     }
+
+//     /**
+//      * Load one record. Will throw if more than one record exists.
+//      *
+//      * @return $this
+//      */
+//     public function loadOne()
+//     {
+//         return $this->load(self::ID_LOAD_ONE);
+//     }
+
+//     /**
+//      * Try to load any record. Will not throw an exception if record does not exist.
+//      *
+//      * If only one record should match, use checked "tryLoadOne" method.
+//      *
+//      * @return $this
+//      */
+//     public function tryLoadAny()
+//     {
+//         return $this->tryLoad(self::ID_LOAD_ANY);
+//     }
+
+//     /**
+//      * Load any record.
+//      *
+//      * If only one record should match, use checked "loadOne" method.
+//      *
+//      * @return $this
+//      */
+//     public function loadAny()
+//     {
+//         return $this->load(self::ID_LOAD_ANY);
+//     }
 
     /**
      * Reload model by taking its current ID.
@@ -1448,60 +1594,60 @@ class Model implements \IteratorAggregate
         return $model;
     }
 
-    /**
-     * Load record by condition.
-     *
-     * @param mixed $value
-     *
-     * @return $this
-     */
-    public function loadBy(string $fieldName, $value)
-    {
-        $field = $this->getField($fieldName);
+//     /**
+//      * Load record by condition.
+//      *
+//      * @param mixed $value
+//      *
+//      * @return $this
+//      */
+//     public function loadBy(string $fieldName, $value)
+//     {
+//         $field = $this->getField($fieldName);
 
-        $scopeBak = $this->scope;
-        $systemBak = $field->system;
-        $defaultBak = $field->default;
-        try {
-            // add condition to cloned scope and try to load record
-            $this->scope = clone $this->scope;
-            $this->addCondition($field, $value);
+//         $scopeBak = $this->scope;
+//         $systemBak = $field->system;
+//         $defaultBak = $field->default;
+//         try {
+//             // add condition to cloned scope and try to load record
+//             $this->scope = clone $this->scope;
+//             $this->addCondition($field, $value);
 
-            return $this->loadAny();
-        } finally {
-            $this->scope = $scopeBak;
-            $field->system = $systemBak;
-            $field->default = $defaultBak;
-        }
-    }
+//             return $this->loadAny();
+//         } finally {
+//             $this->scope = $scopeBak;
+//             $field->system = $systemBak;
+//             $field->default = $defaultBak;
+//         }
+//     }
 
-    /**
-     * Try to load record by condition.
-     * Will not throw exception if record doesn't exist.
-     *
-     * @param mixed $value
-     *
-     * @return $this
-     */
-    public function tryLoadBy(string $fieldName, $value)
-    {
-        $field = $this->getField($fieldName);
+//     /**
+//      * Try to load record by condition.
+//      * Will not throw exception if record doesn't exist.
+//      *
+//      * @param mixed $value
+//      *
+//      * @return $this
+//      */
+//     public function tryLoadBy(string $fieldName, $value)
+//     {
+//         $field = $this->getField($fieldName);
 
-        $scopeBak = $this->scope;
-        $systemBak = $field->system;
-        $defaultBak = $field->default;
-        try {
-            // add condition to cloned scope and try to load record
-            $this->scope = clone $this->scope;
-            $this->addCondition($field, $value);
+//         $scopeBak = $this->scope;
+//         $systemBak = $field->system;
+//         $defaultBak = $field->default;
+//         try {
+//             // add condition to cloned scope and try to load record
+//             $this->scope = clone $this->scope;
+//             $this->addCondition($field, $value);
 
-            return $this->tryLoadAny();
-        } finally {
-            $this->scope = $scopeBak;
-            $field->system = $systemBak;
-            $field->default = $defaultBak;
-        }
-    }
+//             return $this->tryLoadAny();
+//         } finally {
+//             $this->scope = $scopeBak;
+//             $field->system = $systemBak;
+//             $field->default = $defaultBak;
+//         }
+//     }
 
     /**
      * Check if model has persistence with specified method.
@@ -1735,6 +1881,12 @@ class Model implements \IteratorAggregate
     {
         $this->checkPersistence('export');
 
+        // @todo: why only persisting fields?
+        // prepare array with field names
+        if ($fields === null) {
+            $fields = array_keys($this->getFields(self::FIELD_FILTER_PERSIST));
+        }
+        
         // no key field - then just do export
         if ($key_field === null) {
             return $this->persistence->export($this, $fields, $typecast_data);
@@ -1743,11 +1895,6 @@ class Model implements \IteratorAggregate
         // do we have added key field in fields list?
         // if so, then will have to remove it afterwards
         $key_field_added = false;
-
-        // prepare array with field names
-        if ($fields === null) {
-            $fields = array_keys($this->getFields(self::FIELD_FILTER_PERSIST, false));
-        }
 
         // add key_field to array if it's not there
         if (!in_array($key_field, $fields, true)) {
@@ -1778,7 +1925,7 @@ class Model implements \IteratorAggregate
      */
     public function getIterator(): \Traversable
     {
-        foreach ($this->rawIterator() as $data) {
+        foreach ($this->toQuery() as $data) {
             $thisCloned = clone $this;
 
             $thisCloned->data = $this->persistence->typecastLoadRow($this, $data);
@@ -1801,18 +1948,14 @@ class Model implements \IteratorAggregate
                 continue;
             }
 
-            if (is_object($ret)) {
-                if ($ret->primaryKey) {
-                    yield $ret->getId() => $ret; // @phpstan-ignore-line
-                } else {
-                    yield $ret; // @phpstan-ignore-line
-                }
+            if (!is_object($ret)) {
+                $ret = $thisCloned;
+            }
+
+            if ($ret->primaryKey) {
+                yield $ret->getId() => $ret; // @phpstan-ignore-line
             } else {
-                if ($this->primaryKey) {
-                    yield $thisCloned->getId() => $thisCloned;
-                } else {
-                    yield $thisCloned;
-                }
+                yield $ret; // @phpstan-ignore-line
             }
         }
 
@@ -1908,18 +2051,28 @@ class Model implements \IteratorAggregate
     // {{{ Support for actions
 
     /**
-     * Execute action.
-     *
-     * @param string $mode
-     * @param array  $args
-     *
-     * @return Query
-     */
-    public function action($mode, $args = [])
-    {
-        $this->checkPersistence('action');
+     * //      * Execute action.
+     * //      *
+     * //      * @param string $mode
+     * //      * @param array  $args
+     * //      *
+     * //      * @return Query
+     * //      */
+//     public function action($mode, $args = [])
+//     {
+//         $this->checkPersistence('action');
 
-        return $this->persistence->action($this, $mode, $args);
+//         return $this->persistence->action($this, $mode, $args);
+//     }
+
+    /**
+     * Get query object to perform query on raw persistence data.
+     */
+    public function toQuery(): Persistence\AbstractQuery
+    {
+        $this->checkPersistence('query');
+
+        return $this->persistence->query($this);
     }
 
     // }}}

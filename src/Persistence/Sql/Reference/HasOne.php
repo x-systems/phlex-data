@@ -46,7 +46,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
                 function (Model $ourModel) use ($theirFieldName) {
                     // remove order if we just select one field from hasOne model
                     // that is mandatory for Oracle
-                    return $ourModel->refLink($this->link)->action('field', [$theirFieldName])->reset('order');
+                    return $ourModel->refLink($this->link)->toQuery()->field($theirFieldName)->reset('order');
                 },
             ],
             $defaults,
@@ -66,7 +66,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
                 $theirModel = $this->createTheirModel();
 
                 $theirModel->addCondition($theirFieldName, $ourModel->get($ourFieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->primaryKey]));
+                $ourModel->set($this->getOurFieldName(), $theirModel->toQuery()->field($theirModel->primaryKey));
                 $ourModel->_unset($ourFieldName);
             }
         }, [], 21);
@@ -154,7 +154,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         }
 
         // handles the deep traversal using an expression
-        $ourFieldExpression = $ourModel->action('field', [$ourField]);
+        $ourFieldExpression = $ourModel->toQuery()->field($ourField);
 
         return $theirModel->addCondition($theirFieldName, $ourFieldExpression);
     }
@@ -185,7 +185,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
                 function (Model $ourModel) {
                     $theirModel = $ourModel->refLink($this->link);
 
-                    return $theirModel->action('field', [$theirModel->title_field])->reset('order');
+                    return $theirModel->toQuery()->field($theirModel->title_field)->reset('order');
                 },
                 'type' => null,
                 'ui' => ['editable' => false, 'visible' => true],
@@ -207,7 +207,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
                 $theirModel = $this->createTheirModel();
 
                 $theirModel->addCondition($theirModel->title_field, $ourModel->get($fieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->action('field', [$theirModel->primaryKey]));
+                $ourModel->set($this->getOurFieldName(), $theirModel->toQuery()->field($theirModel->primaryKey));
             }
         }, [], 20);
 

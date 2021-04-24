@@ -38,7 +38,7 @@ class ConditionSqlTest extends SQL\TestCase
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","name","gender" from "user" where "gender" = :a',
-                $mm->action('select')->render()
+                $mm->toQuery()->select()->render()
             );
         }
 
@@ -376,13 +376,13 @@ class ConditionSqlTest extends SQL\TestCase
             ['name', 'Peter'],
         ));
 
-        $this->assertEquals(2, $u->action('count')->getOne());
+        $this->assertEquals(2, $u->toQuery()->count()->getOne());
 
         $u->addCondition(Model\Scope::createOr(
             ['name', 'Peter'],
             ['name', 'Joe'],
         ));
-        $this->assertEquals(1, $u->action('count')->getOne());
+        $this->assertEquals(1, $u->toQuery()->count()->getOne());
     }
 
     /**

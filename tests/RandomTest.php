@@ -80,7 +80,7 @@ class RandomTest extends SQL\TestCase
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model_Rate($db);
 
-        $this->assertEquals(2, $m->action('count')->getOne());
+        $this->assertEquals(2, $m->toQuery()->count()->getOne());
     }
 
     public function testTitleImport()
@@ -231,7 +231,7 @@ class RandomTest extends SQL\TestCase
             $m->load(2)->get()
         );
 
-        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->action('count')->getOne());
+        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->toQuery()->count()->getOne());
         $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 
@@ -539,7 +539,7 @@ class RandomTest extends SQL\TestCase
 
         $this->assertSameSql(
             'select "id","name","user_id",(select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a',
-            $d->action('select')->render()
+            $d->toQuery()->select()->render()
         );
     }
 }

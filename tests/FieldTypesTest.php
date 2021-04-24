@@ -81,7 +81,7 @@ class FieldTypesTest extends SQL\TestCase
         $m->set('email', ' foo@gmail.com');
 
         $this->expectException(Model\Field\ValidationException::class);
-        $this->expectExceptionMessage('domain does not exist');
+        $this->expectExceptionMessage('Email domain does not exist');
         $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
 

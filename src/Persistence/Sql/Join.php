@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Persistence\Sql;
 
 use Atk4\Dsql\Expression;
-use Atk4\Dsql\Query;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
@@ -101,9 +100,9 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
     /**
      * Returns DSQL query.
      */
-    public function dsql(): Query
+    public function dsql(): \Atk4\Dsql\Query
     {
-        $dsql = $this->getOwner()->persistence->initQuery($this->getOwner());
+        $dsql = $this->getOwner()->persistence->query($this->getOwner())->dsql();
 
         return $dsql->reset('table')->table($this->foreign_table, $this->foreign_alias);
     }
@@ -115,7 +114,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
     {
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
-            $query->join(
+            $query->dsql()->join(
                 $this->foreign_table,
                 $this->on instanceof \Atk4\Dsql\Expression ? $this->on : $this->getOwner()->expr($this->on),
                 $this->kind,
@@ -125,7 +124,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
             return;
         }
 
-        $query->join(
+        $query->dsql()->join(
             $this->foreign_table,
             $this->getOwner()->expr('{{}}.{} = {}', [
                 ($this->foreign_alias ?: $this->foreign_table),

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Phlex\Core\AtkPhpunit;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 

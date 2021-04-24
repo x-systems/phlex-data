@@ -28,9 +28,9 @@ use Phlex\Data\Persistence;
 class Csv extends Persistence
 {
     /**
-     * Name of the file.
+     * Name of the file or file object.
      *
-     * @var string
+     * @var string|\SplFileObject
      */
     public $file;
 
@@ -40,22 +40,6 @@ class Csv extends Persistence
      * @var int
      */
     public $line = 0;
-
-    /**
-     * File handle, when the $file is opened.
-     *
-     * @var resource|null
-     */
-    public $handle;
-
-    /**
-     * Mode of operation. 'r' for reading and 'w' for writing.
-     * If you manually set this operation, it will be used
-     * for file opening.
-     *
-     * @var string
-     */
-    public $mode;
 
     /**
      * Delimiter in CSV file.
@@ -79,256 +63,141 @@ class Csv extends Persistence
     public $escape_char = '\\';
 
     /**
-     * Array of field names.
+     * File access object.
      *
-     * @var array|null
+     * @var \SplFileObject
      */
-    public $header;
+    protected $fileObject;
 
-    public function __construct(string $file, array $defaults = [])
+    protected $lastInsertId;
+
+    public function __construct($file, array $defaults = [])
     {
         $this->file = $file;
         $this->setDefaults($defaults);
     }
 
-    public function __destruct()
+    protected function initPersistence(Model $model)
     {
-        $this->closeFile();
+        parent::initPersistence($model);
+
+        $this->initFileObject($model);
     }
 
-    /**
-     * Open CSV file.
-     *
-     * Override this method and open handle yourself if you want to
-     * reposition or load some extra columns on the top.
-     *
-     * @param string $mode 'r' or 'w'
-     */
-    public function openFile(string $mode = 'r'): void
+    public function getRawDataIterator(Model $model): \Iterator
     {
-        if (!$this->handle) {
-            $this->handle = fopen($this->file, $mode);
-            if ($this->handle === false) {
-                throw (new Exception('Can not open CSV file.'))
-                    ->addMoreInfo('file', $this->file)
-                    ->addMoreInfo('mode', $mode);
+        return (function ($iterator) use ($model) {
+            foreach ($iterator as $id => $row) {
+                $row = array_combine($this->getFileHeader(), $row);
+
+                yield $id - 1 => $this->getRowWithId($model, $row, $id);
             }
-        }
+        })(new \LimitIterator($this->fileObject, 1));
     }
 
-    /**
-     * Close CSV file.
-     */
-    public function closeFile(): void
+    public function setRawData(Model $model, $row, $id = null)
     {
-        if ($this->handle) {
-            fclose($this->handle);
-            $this->handle = null;
-            $this->header = null;
-        }
-    }
-
-    /**
-     * Returns one line of CSV file as array.
-     */
-    public function getLine(): ?array
-    {
-        $data = fgetcsv($this->handle, 0, $this->delimiter, $this->enclosure, $this->escape_char);
-        if ($data === false) {
-            return null;
+        if (!$this->getFileHeader()) {
+            $this->initFileHeader($model);
         }
 
-        ++$this->line;
+        $emptyRow = array_flip($this->getFileHeader());
 
-        return $data;
+        $row = array_intersect_key(array_merge($emptyRow, $this->getRowWithId($model, $row, $id)), $emptyRow);
+
+        $id = $id ?? $this->lastInsertId;
+
+        $this->fileObject->seek($id);
+
+        $this->fileObject->fputcsv($row);
+
+        return $id;
     }
 
-    /**
-     * Writes array as one record to CSV file.
-     */
-    public function putLine(array $data): void
+    private function getRowWithId(Model $model, array $row, $id = null)
     {
-        $ok = fputcsv($this->handle, $data, $this->delimiter, $this->enclosure, $this->escape_char);
-        if ($ok === false) {
-            throw new Exception('Can not write to CSV file.');
-        }
-    }
-
-    /**
-     * When load operation starts, this will open file and read
-     * the first line. This line is then used to identify columns.
-     */
-    public function loadHeader(): void
-    {
-        $this->openFile('r');
-
-        $header = $this->getLine();
-        --$this->line; // because we don't want to count header line
-
-        $this->initializeHeader($header);
-    }
-
-    /**
-     * When load operation starts, this will open file and read
-     * the first line. This line is then used to identify columns.
-     */
-    public function saveHeader(Model $model): void
-    {
-        $this->openFile('w');
-
-        $header = [];
-        foreach ($model->getFields() as $name => $field) {
-            if ($model->primaryKey && $name === $model->primaryKey) {
-                continue;
-            }
-
-            $header[] = $name;
+        if ($id === null) {
+            $id = $this->generateNewId($model);
         }
 
-        $this->putLine($header);
-
-        $this->initializeHeader($header);
-    }
-
-    /**
-     * Remembers $this->header so that the data can be
-     * easier mapped.
-     */
-    public function initializeHeader(array $header): void
-    {
-        // removes forbidden symbols from header (field names)
-        $this->header = array_map(function ($name) {
-            return preg_replace('/[^a-z0-9_-]+/i', '_', $name);
-        }, $header);
-    }
-
-    /**
-     * Typecasting when load data row.
-     */
-    public function typecastLoadRow(Model $model, array $row): array
-    {
-        $id = null;
         if ($model->primaryKey) {
-            if (isset($row[$model->primaryKey])) {
-                // temporary remove id field
-                $id = $row[$model->primaryKey];
-                unset($row[$model->primaryKey]);
-            } else {
-                $id = null;
-            }
-        }
+            $idField = $model->getField($model->primaryKey);
+            $idColumnName = $idField->actual ?? $idField->short_name;
 
-        $row = array_combine($this->header, $row);
-        if ($model->primaryKey && isset($id)) {
-            $row[$model->primaryKey] = $id;
-        }
-
-        foreach ($row as $key => $value) {
-            if ($value === null) {
-                continue;
+            if (array_key_exists($idColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$idColumnName], $id);
+                unset($row[$idColumnName]);
             }
 
-            if ($model->hasField($key)) {
-                $row[$key] = $this->typecastLoadField($model->getField($key), $value);
-            }
+            // typecastSave value so we can use strict comparison
+            $row = [$idColumnName => $this->typecastSaveField($idField, $id)] + $row;
         }
 
         return $row;
     }
 
-    public function tryLoad(Model $model, $id): ?array
+    private function assertNoIdMismatch($idFromRow, $id): void
     {
-        if ($id !== self::ID_LOAD_ANY) {
-            throw new Exception('CSV Persistence does not support other than LOAD ANY mode'); // @TODO
+        if ($idFromRow !== null && (is_int($idFromRow) ? (string) $idFromRow : $idFromRow) !== (is_int($id) ? (string) $id : $id)) {
+            throw (new Exception('Row constains ID column, but it does not match the row ID'))
+                ->addMoreInfo('idFromKey', $id)
+                ->addMoreInfo('idFromData', $idFromRow);
         }
-
-        if (!$this->mode) {
-            $this->mode = 'r';
-        } elseif ($this->mode === 'w') {
-            throw new Exception('Currently writing records, so loading is not possible.');
-        }
-
-        if (!$this->handle) {
-            $this->loadHeader();
-        }
-
-        $data = $this->getLine();
-        if ($data === null) {
-            return null;
-        }
-
-        $data = $this->typecastLoadRow($model, $data);
-        if ($model->primaryKey) {
-            $data[$model->primaryKey] = $this->line;
-        }
-
-        return $data;
     }
 
-    public function prepareIterator(Model $model): \Traversable
+    protected function initFileObject(Model $model)
     {
-        if (!$this->mode) {
-            $this->mode = 'r';
-        } elseif ($this->mode === 'w') {
-            throw new Exception('Currently writing records, so loading is not possible.');
-        }
-
-        if (!$this->handle) {
-            $this->loadHeader();
-        }
-
-        while (true) {
-            $data = $this->getLine();
-            if ($data === null) {
-                break;
-            }
-            $data = $this->typecastLoadRow($model, $data);
-            if ($model->primaryKey) {
-                $data[$model->primaryKey] = $this->line;
+        if (is_string($this->file)) {
+            if (!file_exists($this->file)) {
+                file_put_contents($this->file, '');
             }
 
-            yield $data;
+            $this->fileObject = new \SplFileObject($this->file, 'r+');
+        } elseif ($this->file instanceof \SplFileObject) {
+            $this->fileObject = $this->file;
         }
+
+        $this->fileObject->setFlags(
+            \SplFileObject::READ_CSV |
+            \SplFileObject::SKIP_EMPTY |
+            \SplFileObject::DROP_NEW_LINE |
+            \SplFileObject::READ_AHEAD
+        );
+
+        $this->fileObject->setCsvControl($this->delimiter, $this->enclosure, $this->escape_char);
     }
 
-    /**
-     * Inserts record in data array and returns new record ID.
-     *
-     * @return mixed
-     */
-    public function insert(Model $model, array $data)
+    protected function initFileHeader(Model $model): void
     {
-        if (!$this->mode) {
-            $this->mode = 'w';
-        } elseif ($this->mode === 'r') {
-            throw new Exception('Currently reading records, so writing is not possible.');
-        }
+        $this->executeRestoringPointer(function () use ($model) {
+            $this->fileObject->seek(0);
 
-        if (!$this->handle) {
-            $this->saveHeader($model);
-        }
-
-        $line = [];
-
-        foreach ($this->header as $name) {
-            $line[] = $data[$name];
-        }
-
-        $this->putLine($line);
-
-        if ($model->primaryKey) {
-            return $data[$model->primaryKey];
-        }
+            $this->fileObject->fputcsv(array_keys($model->getFields('not system')));
+        });
     }
 
-    /**
-     * Updates record in data array and returns record ID.
-     *
-     * @param mixed $id
-     */
-    public function update(Model $model, $id, array $data, string $table = null)
+    public function getFileHeader(): array
     {
-        throw new Exception('Updating records is not supported in CSV persistence.');
+        $header = $this->executeRestoringPointer(function () {
+            $this->fileObject->seek(0);
+
+            return $this->fileObject->current();
+        });
+
+        return array_map(function ($name) {
+            return preg_replace('/[^a-z0-9_-]+/i', '_', $name);
+        }, $header ?: []);
+    }
+
+    private function executeRestoringPointer(\Closure $fx, array $args = [])
+    {
+        $position = $this->fileObject->key();
+
+        $result = $fx(...$args);
+
+        $this->fileObject->seek($position);
+
+        return $result;
     }
 
     /**
@@ -341,31 +210,24 @@ class Csv extends Persistence
         throw new Exception('Deleting records is not supported in CSV persistence.');
     }
 
-    /**
-     * Generates new record ID.
-     *
-     * @return string
-     */
-    public function generateNewId(Model $model, string $table = null)
+    public function lastInsertId(Model $model = null): string
     {
-        throw new Exception('Not implemented');
+        return $this->lastInsertId;
     }
 
-    /**
-     * Export all DataSet.
-     */
-    public function export(Model $model, array $fields = null): array
+    public function query(Model $model): AbstractQuery
     {
-        $data = [];
+        return new Csv\Query($model, $this);
+    }
 
-        foreach ($model as $row) {
-            $rowData = $row->get();
-            $data[] = $fields !== null ? array_intersect_key($rowData, array_flip($fields)) : $rowData;
+    public function generateNewId(Model $model)
+    {
+        while (!$this->fileObject->eof()) {
+            $this->fileObject->next();
         }
 
-        // need to close file otherwise file pointer is at the end of file
-        $this->closeFile();
+        $this->lastInsertId = $this->fileObject->key();
 
-        return $data;
+        return $this->lastInsertId;
     }
 }

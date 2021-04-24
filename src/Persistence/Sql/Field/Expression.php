@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Persistence\Sql\Field;
 
 use Atk4\Dsql\Expression as SqlExpression;
+use Atk4\Dsql\Expressionable;
 use Phlex\Core\InitializerTrait;
 use Phlex\Data\Model;
 
@@ -88,6 +89,10 @@ class Expression extends \Phlex\Data\Persistence\Sql\Field
         $expr = $this->expr;
         if ($expr instanceof \Closure) {
             $expr = $expr($this->getOwner(), $expression);
+        }
+
+        if ($expr instanceof Expressionable) {
+            $expr = $expr->getDsqlExpression($expression);
         }
 
         if (is_string($expr)) {

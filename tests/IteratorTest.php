@@ -78,7 +78,7 @@ class IteratorTest extends SQL\TestCase
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->action('insert');
+        $m->toQuery()->insert(['a', 'b']);
     }
 
     public function testBasic()
@@ -125,7 +125,7 @@ class IteratorTest extends SQL\TestCase
         ], $data);
     }
 
-    public function testRawIterator()
+    public function testRawQuery()
     {
         $this->setDb([
             'invoice' => [
@@ -143,18 +143,18 @@ class IteratorTest extends SQL\TestCase
         $i->onlyFields(['total_net']);
 
         $data = [];
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->toQuery() as $row) {
             $data[] = $row;
 
             break;
         }
 
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->toQuery() as $row) {
             $data[] = $row;
             $i->setLimit(1);
         }
 
-        foreach ($i->rawIterator() as $row) {
+        foreach ($i->toQuery() as $row) {
             $data[] = $row;
         }
 

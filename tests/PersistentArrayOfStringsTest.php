@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Atk4\Core\AtkPhpunit;
+use Phlex\Core\AtkPhpunit;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
@@ -49,7 +49,7 @@ class PersistentArrayOfStringsTest extends AtkPhpunit\TestCase
         // no typecasting option set in export()
         $data = $m->export(null, null, false);
         $this->assertSame([1 => [
-            'id' => 1,
+            'id' => '1',
             'string' => 'TwoLines',
             'text' => "Two\nLines",
             'integer' => 123,

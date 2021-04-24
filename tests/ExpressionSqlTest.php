@@ -37,7 +37,7 @@ class ExpressionSqlTest extends SQL\TestCase
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
-                $i->action('select')->render()
+                $i->toQuery()->select()->render()
             );
         }
 
@@ -54,7 +54,7 @@ class ExpressionSqlTest extends SQL\TestCase
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertEquals(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross",(("total_net"+"total_vat")*2) "double_total_gross" from "invoice"',
-                $i->action('select')->render()
+                $i->toQuery()->select()->render()
             );
         }
 
@@ -80,7 +80,7 @@ class ExpressionSqlTest extends SQL\TestCase
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","total_net","total_vat",("total_net"+"total_vat") "total_gross" from "invoice"',
-                $i->action('select')->render()
+                $i->toQuery()->select()->render()
             );
         }
 
@@ -104,12 +104,12 @@ class ExpressionSqlTest extends SQL\TestCase
 
         $db = new Persistence\Sql($this->db->connection);
         $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('sum_net', $i->action('fx', ['sum', 'total_net']));
+        $i->addExpression('sum_net', $i->toQuery()->aggregate('sum', 'total_net'));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","total_net","total_vat",(select sum("total_net") from "invoice") "sum_net" from "invoice"',
-                $i->action('select')->render()
+                $i->toQuery()->select()->render()
             );
         }
 
@@ -118,8 +118,8 @@ class ExpressionSqlTest extends SQL\TestCase
         $this->assertEquals(30, $i->get('sum_net'));
 
         $q = $db->dsql();
-        $q->field($i->action('count'), 'total_orders');
-        $q->field($i->action('fx', ['sum', 'total_net']), 'total_net');
+        $q->field($i->toQuery()->count(), 'total_orders');
+        $q->field($i->toQuery()->aggregate('sum', 'total_net'), 'total_net');
         $this->assertEquals(
             ['total_orders' => 2, 'total_net' => 30],
             $q->getRow()
@@ -152,17 +152,17 @@ class ExpressionSqlTest extends SQL\TestCase
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where (("name" || " " || "surname") != "cached_name")',
-                $m->action('select')->render()
+                $m->toQuery()->select()->render()
             );
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
-                $m->action('select')->render()
+                $m->toQuery()->select()->render()
             );
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(
                 'select `id`,`name`,`surname`,`cached_name`,(CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
-                $m->action('select')->render()
+                $m->toQuery()->select()->render()
             );
         }
 
@@ -216,24 +216,24 @@ class ExpressionSqlTest extends SQL\TestCase
         $m->addExpression('x', '2+3');
 
         // use alias as array key if it is set
-        $q = $m->action('field', ['x', 'alias' => 'foo']);
+        $q = $m->toQuery()->field('x', 'foo');
         $this->assertEquals([0 => ['foo' => 5]], $q->getRows());
 
         // if alias is not set, then use field name as key
-        $q = $m->action('field', ['x']);
+        $q = $m->toQuery()->field('x');
         $this->assertEquals([0 => ['x' => 5]], $q->getRows());
 
         // FX actions
-        $q = $m->action('fx', ['sum', 'x', 'alias' => 'foo']);
+        $q = $m->toQuery()->aggregate('sum', 'x', 'foo');
         $this->assertEquals([0 => ['foo' => 5]], $q->getRows());
 
-        $q = $m->action('fx', ['sum', 'x']);
+        $q = $m->toQuery()->aggregate('sum', 'x');
         $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
 
-        $q = $m->action('fx0', ['sum', 'x', 'alias' => 'foo']);
+        $q = $m->toQuery()->aggregate('sum', 'x', 'foo', true);
         $this->assertEquals([0 => ['foo' => 5]], $q->getRows());
 
-        $q = $m->action('fx0', ['sum', 'x']);
+        $q = $m->toQuery()->aggregate('sum', 'x', null, true);
         $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
     }
 

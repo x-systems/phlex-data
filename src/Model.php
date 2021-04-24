@@ -1787,14 +1787,18 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * This is a temporary method to avoid code duplication, but insert / import should
-     * be implemented differently.
+     * Faster method to add data, that does not modify active record.
      *
-     * @param Model $m Model where to insert
+     * Will be further optimized in the future.
+     *
+     * @return mixed
      */
-    protected function _rawInsert(self $m, array $row)
+    public function insert(array $row)
     {
-        $m->unload();
+        $model = clone $this;
+        $model->entityId = null;
+
+        $model->unload();
 
         // Find any row values that do not correspond to fields, and they may correspond to
         // references instead
@@ -1816,37 +1820,23 @@ class Model implements \IteratorAggregate
         }
 
         // save data fields
-        $reloadAfterSaveBackup = $m->reload_after_save;
+        $reloadAfterSaveBackup = $model->reload_after_save;
         try {
-            $m->reload_after_save = false;
-            $m->save($row);
+            $model->reload_after_save = false;
+            $model->save($row);
         } finally {
-            $m->reload_after_save = $reloadAfterSaveBackup;
+            $model->reload_after_save = $reloadAfterSaveBackup;
         }
 
         // store id value
         if ($this->primaryKey) {
-            $m->data[$m->primaryKey] = $m->getId();
+            $model->data[$model->primaryKey] = $model->getId();
         }
 
         // if there was referenced data, then import it
         foreach ($refs as $key => $value) {
-            $m->ref($key)->import($value);
+            $model->ref($key)->import($value);
         }
-    }
-
-    /**
-     * Faster method to add data, that does not modify active record.
-     *
-     * Will be further optimized in the future.
-     *
-     * @return mixed
-     */
-    public function insert(array $row)
-    {
-        $model = clone $this;
-        $model->entityId = null;
-        $this->_rawInsert($model, $row);
 
         return $this->primaryKey ? $model->getId() : null;
     }
@@ -1873,23 +1863,23 @@ class Model implements \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $fields        Names of fields to export
-     * @param string     $key_field     Optional name of field which value we will use as array key
+     * @param array|null $fieldNames    Names of fields to export
+     * @param string     $keyFieldName  Optional name of field which value we will use as array key
      * @param bool       $typecast_data Should we typecast exported data
      */
-    public function export(array $fields = null, $key_field = null, $typecast_data = true): array
+    public function export(array $fieldNames = null, $keyFieldName = null, $typecast_data = true): array
     {
         $this->checkPersistence('export');
 
         // @todo: why only persisting fields?
         // prepare array with field names
-        if ($fields === null) {
-            $fields = array_keys($this->getFields(self::FIELD_FILTER_PERSIST));
+        if ($fieldNames === null) {
+            $fieldNames = array_keys($this->getFields(self::FIELD_FILTER_PERSIST));
         }
-        
+
         // no key field - then just do export
-        if ($key_field === null) {
-            return $this->persistence->export($this, $fields, $typecast_data);
+        if ($keyFieldName === null) {
+            return $this->persistence->export($this, $fieldNames, $typecast_data);
         }
 
         // do we have added key field in fields list?
@@ -1897,20 +1887,20 @@ class Model implements \IteratorAggregate
         $key_field_added = false;
 
         // add key_field to array if it's not there
-        if (!in_array($key_field, $fields, true)) {
-            $fields[] = $key_field;
+        if (!in_array($keyFieldName, $fieldNames, true)) {
+            $fieldNames[] = $keyFieldName;
             $key_field_added = true;
         }
 
         // export
-        $data = $this->persistence->export($this, $fields, $typecast_data);
+        $data = $this->persistence->export($this, $fieldNames, $typecast_data);
 
         // prepare resulting array
         $res = [];
         foreach ($data as $row) {
-            $key = $row[$key_field];
+            $key = $row[$keyFieldName];
             if ($key_field_added) {
-                unset($row[$key_field]);
+                unset($row[$keyFieldName]);
             }
             $res[$key] = $row;
         }

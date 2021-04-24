@@ -2058,7 +2058,7 @@ class Model implements \IteratorAggregate
     /**
      * Get query object to perform query on raw persistence data.
      */
-    public function toQuery(): Persistence\AbstractQuery
+    public function toQuery(): Persistence\Query
     {
         $this->checkPersistence('query');
 

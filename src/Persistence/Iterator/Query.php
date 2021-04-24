@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Persistence;
+namespace Phlex\Data\Persistence\Iterator;
 
 use Doctrine\DBAL\Result;
 use Phlex\Data\Exception;
@@ -15,7 +15,7 @@ use Phlex\Data\Persistence;
  *
  * @property Phlex\Data\Persistence\Array_ $persistence
  */
-class IteratorQuery extends AbstractQuery
+class Query extends Persistence\Query
 {
     /** @var \Iterator */
     protected $iterator;
@@ -23,10 +23,10 @@ class IteratorQuery extends AbstractQuery
     protected $fields;
 
     /**
-     * Closure to be executed when calling IteratorQuery::getFinalIterator.
+     * Closure to be executed when calling Query::execute.
      *
      * @var \Closure
-     * */
+     */
     protected $fx;
 
     public function __construct(Model $model, Persistence $persistence = null)
@@ -36,7 +36,7 @@ class IteratorQuery extends AbstractQuery
         $this->iterator = $this->persistence->getRawDataIterator($model);
 
         $this->fx = function (\Iterator $iterator) {
-            return new IteratorQueryResult($iterator);
+            return new Query\Result($iterator);
         };
     }
 
@@ -48,7 +48,7 @@ class IteratorQuery extends AbstractQuery
             $keys = array_flip((array) $this->fields);
 
             $this->fx = function (\Iterator $iterator) use ($keys) {
-                return new IteratorQueryResult(function () use ($iterator, $keys) {
+                return new Query\Result(function () use ($iterator, $keys) {
                     foreach ($iterator as $id => $row) {
                         yield $id => array_intersect_key($row, $keys);
                     }
@@ -62,7 +62,7 @@ class IteratorQuery extends AbstractQuery
         $this->fx = function (\Iterator $iterator) use ($data) {
             $this->persistence->setRawData($this->model, $data, $data[$this->model->primaryKey] ?? null);
 
-            return new IteratorQueryResult(null, 1);
+            return new Query\Result(null, 1);
         };
     }
 
@@ -77,7 +77,7 @@ class IteratorQuery extends AbstractQuery
                 ++$rowsCount;
             }
 
-            return new IteratorQueryResult(null, $rowsCount);
+            return new Query\Result(null, $rowsCount);
         };
     }
 
@@ -91,7 +91,7 @@ class IteratorQuery extends AbstractQuery
                 ++$rowsCount;
             }
 
-            return new IteratorQueryResult(null, $rowsCount);
+            return new Query\Result(null, $rowsCount);
         };
     }
 

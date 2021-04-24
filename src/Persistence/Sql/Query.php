@@ -22,7 +22,7 @@ use Phlex\Data\Persistence;
  * @method DsqlQuery reset()
  * @method DsqlQuery join()
  */
-class Query extends Persistence\AbstractQuery implements Expressionable
+class Query extends Persistence\Query implements Expressionable
 {
     /** @var DsqlQuery */
     protected $dsql;

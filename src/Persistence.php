@@ -114,7 +114,7 @@ abstract class Persistence
     {
     }
 
-    public function query(Model $model): Persistence\AbstractQuery
+    public function query(Model $model): Persistence\Query
     {
     }
 
@@ -185,7 +185,7 @@ abstract class Persistence
     {
         $data = $this->typecastSaveRow($model, $data);
 
-        $model->onHook(self::HOOK_AFTER_UPDATE_QUERY, function (Model $model, Persistence\AbstractQuery $query, $result) use ($data) {
+        $model->onHook(self::HOOK_AFTER_UPDATE_QUERY, function (Model $model, Persistence\Query $query, $result) use ($data) {
             if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->dirty[$model->primaryKey]) {
                 // ID was changed
                 $model->id = $data[$model->primaryKey];

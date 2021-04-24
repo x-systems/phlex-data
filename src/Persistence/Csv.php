@@ -215,7 +215,7 @@ class Csv extends Persistence
         return $this->lastInsertId;
     }
 
-    public function query(Model $model): AbstractQuery
+    public function query(Model $model): Persistence\Query
     {
         return new Csv\Query($model, $this);
     }

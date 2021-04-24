@@ -9,7 +9,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-abstract class AbstractQuery implements \IteratorAggregate
+abstract class Query implements \IteratorAggregate
 {
     public const MODE_SELECT = 'select';
     public const MODE_UPDATE = 'update';
@@ -95,7 +95,7 @@ abstract class AbstractQuery implements \IteratorAggregate
     abstract protected function initInsert(array $data): void;
 
     /**
-     * Setup query as deleting record(s) within the AbstractQuery::$scope.
+     * Setup query as deleting record(s) within the Query::$scope.
      * If $id argument provided only record with $id will be deleted if within the scope.
      *
      * @param int|string $id

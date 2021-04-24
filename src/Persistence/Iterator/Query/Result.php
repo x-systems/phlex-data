@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Persistence;
+namespace Phlex\Data\Persistence\Iterator\Query;
 
-use Doctrine\DBAL\Result;
 use Traversable;
 
-class IteratorQueryResult extends Result
+class Result extends \Doctrine\DBAL\Result
 {
     /** @var Traversable */
     protected $iterator;

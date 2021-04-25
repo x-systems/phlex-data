@@ -18,18 +18,17 @@ class Array_ extends Persistence
     /** @var array */
     public $data;
 
+    /** @var array<string, int> */
+    protected $autoIncrement = [];
+
     public function __construct(array $data = [])
     {
         $this->data = $data;
-    }
 
-    /**
-     * Array of last inserted ids per table.
-     * Last inserted ID for any table is stored under '$' key.
-     *
-     * @var array
-     */
-    protected $lastInsertIds = [];
+        foreach ($data as $table => $rows) {
+            $this->autoIncrement[$table] = $rows ? max(array_keys($rows)) : 0;
+        }
+    }
 
     public function getRawDataIterator(Model $model): \Iterator
     {
@@ -66,6 +65,10 @@ class Array_ extends Persistence
     {
         if ($id === null) {
             $id = $this->generateNewId($model);
+        }
+
+        if ($id > ($this->autoIncrement[$model->table] ?? 0)) {
+            $this->autoIncrement[$model->table] = $id;
         }
 
         if ($model->primaryKey) {
@@ -176,13 +179,11 @@ class Array_ extends Persistence
 
         switch ($type) {
             case Model\Field\Type\Integer::class:
-                $ids = $model->primaryKey ? array_keys($this->data[$table]) : [count($this->data[$table])];
-
-                $id = $ids ? max($ids) + 1 : 1;
+                $nextId = ($this->autoIncrement[$table] ?? 0) + 1;
 
                 break;
             case Model\Field\Type\Line::class:
-                $id = uniqid();
+                $nextId = uniqid();
 
                 break;
             default:
@@ -190,10 +191,10 @@ class Array_ extends Persistence
                     ->addMoreInfo('type', $type);
         }
 
-        $this->lastInsertIds[$table] = $id;
-        $this->lastInsertIds['$'] = $id;
+        $this->autoIncrement[$table] = $nextId;
+        $this->autoIncrement['$'] = $nextId;
 
-        return $id;
+        return $nextId;
     }
 
     /**
@@ -205,10 +206,10 @@ class Array_ extends Persistence
     public function lastInsertId(Model $model = null): string
     {
         if ($model) {
-            return (string) $this->lastInsertIds[$model->table] ?? null;
+            return (string) $this->autoIncrement[$model->table] ?? null;
         }
 
-        return (string) $this->lastInsertIds['$'] ?? null;
+        return (string) $this->autoIncrement['$'] ?? null;
     }
 
     public function query(Model $model): Persistence\Query

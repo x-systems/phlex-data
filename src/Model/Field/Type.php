@@ -31,7 +31,7 @@ class Type
     /**
      * Resolve field type to seed from Field::$registry.
      *
-     * @param string $type
+     * @param string|array|object $type
      *
      * @return array|object
      */

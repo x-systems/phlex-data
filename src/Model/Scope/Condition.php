@@ -14,7 +14,7 @@ class Condition extends AbstractScope
 {
     use ReadableCaptionTrait;
 
-    /** @var string|Field|Expression */
+    /** @var string|Model\Field|Expression */
     public $key;
 
     /** @var string */

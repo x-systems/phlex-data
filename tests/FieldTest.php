@@ -29,6 +29,16 @@ class FieldTest extends SQL\TestCase
         $m->addField('primary_key2')->asPrimaryKey();
     }
 
+    public function testIsPrimaryKey()
+    {
+        $m = new Model();
+        $m->addField('primary_key')->asPrimaryKey();
+        $m->addField('normal');
+
+        $this->assertTrue($m->getField('primary_key')->isPrimaryKey());
+        $this->assertFalse($m->getField('normal')->isPrimaryKey());
+    }
+
     public function testDirty1()
     {
         $m = new Model();

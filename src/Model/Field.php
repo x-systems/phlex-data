@@ -297,7 +297,7 @@ class Field
     {
         $model = $this->getOwner();
 
-        if ($model->hasPrimaryKeyField() && $model->primaryKey !== $this->short_name) {
+        if ($model->hasPrimaryKeyField() && !$this->isPrimaryKey()) {
             throw (new Exception('Model already has different primaryKey set'))
                 ->addMoreInfo('existingPrimaryKey', $model->primaryKey)
                 ->addMoreInfo('attemptedPrimaryKey', $this->short_name);
@@ -412,6 +412,15 @@ class Field
     // }}}
 
     // {{{ Handy methods used by UI
+
+    public function isPrimaryKey(): bool
+    {
+        if (!$model = $this->getOwner()) {
+            return false;
+        }
+
+        return $model->getPrimaryKeyField() === $this;
+    }
 
     /**
      * Returns if field should be editable in UI.

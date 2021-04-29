@@ -134,7 +134,7 @@ class ScopeTest extends SQL\TestCase
         $this->assertEquals('Smith', $user->get('surname'));
     }
 
-    public function testContitionToWords()
+    public function testConditionToWords()
     {
         $user = clone $this->user;
 
@@ -148,7 +148,7 @@ class ScopeTest extends SQL\TestCase
 
         $condition = new Condition('country_id', 2);
 
-        $this->assertEquals('Country Id is equal to \'Latvia\'', $condition->toWords($user));
+        $this->assertEquals('Country Id is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $condition = new Condition('name', $user->expr('[surname]'));
@@ -166,7 +166,7 @@ class ScopeTest extends SQL\TestCase
 
         $condition = (new Condition('country_id', 2))->negate();
 
-        $this->assertEquals('Country Id is not equal to \'Latvia\'', $condition->toWords($user));
+        $this->assertEquals('Country Id is not equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         $condition = new Condition($user->getField('surname'), $user->getField('name'));
 
@@ -176,10 +176,23 @@ class ScopeTest extends SQL\TestCase
 
         $country->addCondition('Users/#', '>', 0);
 
-        $this->assertEquals('Country that has reference Users where number of records is greater than \'0\'', $country->scope()->toWords());
+        $this->assertEquals('Country that has reference Users where number of records is greater than 0', $country->scope()->toWords());
     }
 
-    public function testContitionUnsupportedToWords()
+    public function testContitionToWordsImmutableReference()
+    {
+        $user = clone $this->user;
+
+        $condition = new Condition('country_id', 2);
+
+        $originalReferenceModelData = $user->getField('country_id')->reference->getOwner()->data;
+
+        $this->assertEquals('Country Id is equal to 2 (\'Latvia\')', $condition->toWords($user));
+
+        $this->assertSame($originalReferenceModelData, $user->getField('country_id')->reference->getOwner()->data);
+    }
+
+    public function testConditionUnsupportedToWords()
     {
         $condition = new Condition('name', 'abc');
 
@@ -187,7 +200,7 @@ class ScopeTest extends SQL\TestCase
         $condition->toWords();
     }
 
-    public function testContitionUnsupportedOperator()
+    public function testConditionUnsupportedOperator()
     {
         $country = clone $this->country;
 
@@ -195,7 +208,7 @@ class ScopeTest extends SQL\TestCase
         $country->addCondition('name', '==', 'abc');
     }
 
-    public function testContitionUnsupportedNegate()
+    public function testConditionUnsupportedNegate()
     {
         $condition = new Condition(new Expression('false'));
 

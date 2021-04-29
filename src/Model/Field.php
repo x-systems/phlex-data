@@ -64,14 +64,12 @@ class Field
     public $values;
 
     /**
-     * If value of this field can be described by a model, this property
-     * will contain reference to that model.
+     * If value of this field is defined by a model, this property
+     * will contain reference link.
      *
-     * It's used more in x-systems/phlex-ui repository. See there.
-     *
-     * @var Reference|null
+     * @var string|null
      */
-    public $reference;
+    protected $referenceLink;
 
     /**
      * Actual field name.
@@ -362,6 +360,13 @@ class Field
         };
 
         return $typecastFunc($value) === $typecastFunc($value2);
+    }
+
+    public function getReference(): ?Reference
+    {
+        return $this->referenceLink !== null
+            ? $this->getOwner()->getRef($this->referenceLink)
+            : null;
     }
 
     public function getPersistenceName(): string

@@ -26,11 +26,11 @@ class FieldTypesTest extends SQL\TestCase
 
     public function testFielTypeSeedResolving()
     {
-        $this->assertSame([Model\Field\Type\Line::class], Model\Field\Type::resolve('string'));
+        $this->assertSame([Model\Field\Type\String_::class], Model\Field\Type::resolve('string'));
 
         $this->assertSame([Model\Field\Type\Generic::class], Model\Field\Type::resolve(null));
 
-        $this->assertSame([Model\Field\Type\Line::class, 'maxLength' => 5], Model\Field\Type::resolve(['string', 'maxLength' => 5]));
+        $this->assertSame([Model\Field\Type\String_::class, 'maxLength' => 5], Model\Field\Type::resolve(['string', 'maxLength' => 5]));
     }
 
     public function testEmailBasic()

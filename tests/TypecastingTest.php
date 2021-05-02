@@ -264,9 +264,9 @@ class TypecastingTest extends SQL\TestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
-        $m->addField('datetime', ['type' => 'datetime', 'dateTimeClass' => MyDateTime::class]);
-        $m->addField('time', ['type' => 'time', 'dateTimeClass' => MyTime::class]);
+        $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
+        $m->addField('datetime', ['type' => ['datetime', 'dateTimeClass' => MyDateTime::class]]);
+        $m->addField('time', ['type' => ['time', 'dateTimeClass' => MyTime::class]]);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
@@ -275,7 +275,7 @@ class TypecastingTest extends SQL\TestCase
             return str_rot13($v);
         };
 
-        $m->addField('rot13', ['typecast' => [$rot, $rot]]);
+        $m->addField('rot13', ['type' => ['string', 'codec' => [Persistence\Sql\Codec\Dynamic::class, 'encodeFx' => $rot, 'decodeFx' => $rot]]]);
 
         $mm = (clone $m)->load(1);
 
@@ -309,7 +309,7 @@ class TypecastingTest extends SQL\TestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
         $m->tryLoad(1);
 
@@ -329,7 +329,7 @@ class TypecastingTest extends SQL\TestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
         $m->tryLoadAny();
 
@@ -349,7 +349,7 @@ class TypecastingTest extends SQL\TestCase
 
         $m = new Model($db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
         $m->loadBy('id', 1);
 
@@ -368,7 +368,7 @@ class TypecastingTest extends SQL\TestCase
         $db = new Persistence\Sql($this->db->connection);
 
         $m = new Model($db, ['table' => 'types']);
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
         $m->loadAny();
         $this->assertTrue($m->loaded());
@@ -387,9 +387,9 @@ class TypecastingTest extends SQL\TestCase
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($db, ['table' => 'event']);
-        $dt = $m->addField('dt', ['type' => 'datetime', 'persist_timezone' => 'EEST']);
-        $d = $m->addField('d', ['type' => 'date', 'persist_timezone' => 'EEST']);
-        $t = $m->addField('t', ['type' => 'time', 'persist_timezone' => 'EEST']);
+        $dt = $m->addField('dt', ['type' => ['datetime', 'codec' => ['timezone' => 'EEST']]]);
+        $d = $m->addField('d', ['type' => ['date', 'codec' => ['timezone' => 'EEST']]]);
+        $t = $m->addField('t', ['type' => ['time', 'codec' => ['timezone' => 'EEST']]]);
 
         date_default_timezone_set('UTC');
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');

@@ -77,23 +77,23 @@ class ModelTest extends \Phlex\Data\Tests\SQL\TestCase
     /**
      * @doesNotPerformAssertions
      */
-    public function testMigrateTable()
-    {
-        $this->dropTableIfExists('user');
-        $migrator = $this->getMigrator();
-        $migrator->table('user')->id()
-            ->field('foo')
-            ->field('bar', ['type' => 'integer'])
-            ->field('baz', ['type' => 'text'])
-            ->create();
-        $this->db->dsql()->table('user')
-            ->set([
-                'id' => 1,
-                'foo' => 'foovalue',
-                'bar' => 123,
-                'baz' => 'long text value',
-            ])->insert();
-    }
+//     public function testMigrateTable()
+//     {
+//         $this->dropTableIfExists('user');
+//         $migrator = $this->getMigrator();
+//         $migrator->table('user')->id()
+//             ->field('foo')
+//             ->field('bar', ['type' => 'integer'])
+//             ->field('baz', ['type' => 'text'])
+//             ->create();
+//         $this->db->dsql()->table('user')
+//             ->set([
+//                 'id' => 1,
+//                 'foo' => 'foovalue',
+//                 'bar' => 123,
+//                 'baz' => 'long text value',
+//             ])->insert();
+//     }
 
     public function testCreateModel()
     {
@@ -123,17 +123,20 @@ class ModelTest extends \Phlex\Data\Tests\SQL\TestCase
     {
         $this->dropTableIfExists('user');
 
-        $this->getMigrator()->table('user')->id()
-            ->field('string')
-            ->field('text', ['type' => 'text'])
-            ->field('blob', ['type' => 'blob'])
-            ->create();
+//         $this->getMigrator()->table('user')->id()
+//             ->field('string')
+//             ->field('text', ['type' => 'text'])
+//             ->field('blob', ['type' => 'blob'])
+//             ->create();
 
         $model = new Model($this->db, ['table' => 'user']);
         $model->addField('string');
-        $model->addField('text');
-        $model->addField('blob');
+        $model->addField('text', ['type' => 'text']);
+        $model->addField('blob', ['type' => ['text', 'codec' => \Phlex\Data\Persistence\Sql\Codec\Blob::class]]);
         $model->setOrder('id');
+
+        $model->migrate();
+
         $model->import([
             ['id' => 1, 'string' => 'MixedCase'],
             ['id' => 2, 'text' => 'MixedCase'],

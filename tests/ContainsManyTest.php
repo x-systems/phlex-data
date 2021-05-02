@@ -266,33 +266,33 @@ class ContainsManyTest extends SQL\TestCase
         $this->assertSame(
             json_encode([
                 1 => [
-                    $i->lines->fieldName()->id => '1',
+                    $i->lines->fieldName()->id => 1,
                     $i->lines->fieldName()->vat_rate_id => 1,
                     $i->lines->fieldName()->price => 10,
                     $i->lines->fieldName()->qty => 2,
                     $i->lines->fieldName()->add_date => $formatDtForCompareFunc(new \DateTime('2019-06-01')),
                     $i->lines->fieldName()->discounts => json_encode([
                         1 => [
-                            $i->lines->discounts->fieldName()->id => '1',
+                            $i->lines->discounts->fieldName()->id => 1,
                             $i->lines->discounts->fieldName()->percent => 5,
                             $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-15')),
                         ],
                         2 => [
-                            $i->lines->discounts->fieldName()->id => '2',
+                            $i->lines->discounts->fieldName()->id => 2,
                             $i->lines->discounts->fieldName()->percent => 10,
                             $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-30')),
                         ],
                     ]),
                 ],
                 2 => [
-                    $i->lines->fieldName()->id => '2',
+                    $i->lines->fieldName()->id => 2,
                     $i->lines->fieldName()->vat_rate_id => 2,
                     $i->lines->fieldName()->price => 15,
                     $i->lines->fieldName()->qty => 5,
                     $i->lines->fieldName()->add_date => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
                     $i->lines->fieldName()->discounts => json_encode([
                         1 => [
-                            $i->lines->discounts->fieldName()->id => '1',
+                            $i->lines->discounts->fieldName()->id => 1,
                             $i->lines->discounts->fieldName()->percent => 20,
                             $i->lines->discounts->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-12-31')),
                         ],

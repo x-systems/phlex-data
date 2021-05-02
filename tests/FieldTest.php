@@ -502,8 +502,8 @@ class FieldTest extends SQL\TestCase
             ],
         ]);
 
-        $encrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof Persistence\Sql) {
+        $encrypt = function ($value, $field) {
+            if (!$field->getOwner()->persistence instanceof Persistence\Sql) {
                 return $value;
             }
 
@@ -517,8 +517,8 @@ class FieldTest extends SQL\TestCase
             return base64_encode($value);
         };
 
-        $decrypt = function ($value, $field, $persistence) {
-            if (!$persistence instanceof Persistence\Sql) {
+        $decrypt = function ($value, $field) {
+            if (!$field->getOwner()->persistence instanceof Persistence\Sql) {
                 return $value;
             }
 
@@ -536,7 +536,7 @@ class FieldTest extends SQL\TestCase
         $m->addField('name', ['mandatory' => true]);
         $m->addField('secret', [
             //'password'  => 'bonkers',
-            'typecast' => [$encrypt, $decrypt],
+            'type' => ['string', 'codec' => [Persistence\Sql\Codec\Dynamic::class, 'encodeFx' => $encrypt, 'decodeFx' => $decrypt]],
         ]);
         $m->save(['name' => 'John', 'secret' => 'i am a woman']);
 

@@ -112,19 +112,19 @@ class Array_ extends Persistence
         }
     }
 
-    public function typecastSaveRow(Model $model, array $row): array
-    {
-        $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
+//     public function typecastSaveRow(Model $model, array $row): array
+//     {
+//         $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
 
-        return $sqlPersistence->typecastSaveRow($model, $row);
-    }
+//         return $sqlPersistence->typecastSaveRow($model, $row);
+//     }
 
-    public function typecastLoadRow(Model $model, array $row): array
-    {
-        $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
+//     public function typecastLoadRow(Model $model, array $row): array
+//     {
+//         $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
 
-        return $sqlPersistence->typecastLoadRow($model, $row);
-    }
+//         return $sqlPersistence->typecastLoadRow($model, $row);
+//     }
 
     /**
      * {@inheritdoc}
@@ -182,7 +182,7 @@ class Array_ extends Persistence
                 $nextId = ($this->autoIncrement[$table] ?? 0) + 1;
 
                 break;
-            case Model\Field\Type\Line::class:
+            case Model\Field\Type\String_::class:
                 $nextId = uniqid();
 
                 break;

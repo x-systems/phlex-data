@@ -9,6 +9,7 @@ use Atk4\Dsql\Exception as DsqlException;
 use Atk4\Dsql\Expression;
 use Atk4\Dsql\Query;
 use Doctrine\DBAL\Platforms;
+use Phlex\Core\Factory;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
@@ -69,6 +70,28 @@ class Sql extends Persistence
      * @var array
      */
     public $_default_seed_join = [Sql\Join::class];
+
+    /**
+     * Default class when creating migration.
+     *
+     * @var array
+     */
+    public $_default_seed_migration = [Sql\Migration::class];
+
+    protected static $defaultCodecs = [
+        [Sql\Codec\String_::class],
+        Model\Field\Type\Array_::class => [Sql\Codec\Array_::class],
+        Model\Field\Type\Boolean::class => [Sql\Codec\Boolean::class],
+        Model\Field\Type\Date::class => [Sql\Codec\Date::class],
+        Model\Field\Type\DateTime::class => [Sql\Codec\DateTime::class],
+        Model\Field\Type\Time::class => [Sql\Codec\Time::class],
+        Model\Field\Type\Float_::class => [Sql\Codec\Float_::class],
+        Model\Field\Type\Integer::class => [Sql\Codec\Integer::class],
+        Model\Field\Type\String_::class => [Sql\Codec\String_::class],
+        Model\Field\Type\Text::class => [Sql\Codec\Text::class],
+        Model\Field\Type\Array_::class => [Sql\Codec\Array_::class],
+        Model\Field\Type\Object_::class => [Sql\Codec\Object_::class],
+    ];
 
     /**
      * Constructor.
@@ -179,6 +202,9 @@ class Sql extends Persistence
      */
     protected function initPersistence(Model $model): void
     {
+        $model->addMethod('migrate', static function (Model $m, ...$args) {
+            return $m->persistence->migrate($m, ...$args);
+        });
         $model->addMethod('expr', static function (Model $m, ...$args) {
             return $m->persistence->expr($m, ...$args);
         });
@@ -188,6 +214,16 @@ class Sql extends Persistence
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
             return $m->persistence->exprNow($m, ...$args);
         });
+    }
+
+    public function migrate(Model $model): Sql\Migration
+    {
+        return $this->getMigration($model)->create();
+    }
+
+    public function getMigration(Model $model = null): Sql\Migration
+    {
+        return Factory::factory(Factory::mergeSeeds($this->_default_seed_migration, ['source' => $model ?: $this->connection]));
     }
 
     /**
@@ -313,7 +349,7 @@ class Sql extends Persistence
 
         switch (get_class($field->getType())) {
             case Model\Field\Type\Generic::class:
-            case Model\Field\Type\Line::class:
+            case Model\Field\Type\String_::class:
             case Model\Field\Type\Text::class:
                 // do nothing - it's ok as it is
                 break;
@@ -321,7 +357,7 @@ class Sql extends Persistence
                 $v = (int) $v;
 
                 break;
-            case Model\Field\Type\Numeric::class:
+            case Model\Field\Type\Float_::class:
                 $v = (float) $v;
 
                 break;

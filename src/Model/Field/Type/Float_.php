@@ -7,7 +7,7 @@ namespace Phlex\Data\Model\Field\Type;
 /**
  * Basic numeric field type. Think of it as field type "float" in past.
  */
-class Numeric extends \Phlex\Data\Model\Field\Type
+class Float_ extends \Phlex\Data\Model\Field\Type
 {
     /**
      * @var int specify how many decimal numbers should be saved

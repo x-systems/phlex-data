@@ -7,7 +7,7 @@ namespace Phlex\Data\Model\Field\Type;
 /**
  * Integer field type.
  */
-class Integer extends Numeric
+class Integer extends Float_
 {
     /**
      * @var int specify how many decimal numbers should be saved

@@ -135,12 +135,10 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
 
             $first_row = current($data);
             if ($first_row) {
-                $migrator = $this->getMigrator()->table($tableName);
+                $model = new Model($this->db, ['table' => $tableName]);
 
-                $migrator->id('id');
-
-                foreach ($first_row as $field => $row) {
-                    if ($field === 'id') {
+                foreach ($first_row as $fieldName => $row) {
+                    if ($fieldName === 'id') {
                         continue;
                     }
 
@@ -154,10 +152,34 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                         $fieldType = 'string';
                     }
 
-                    $migrator->field($field, ['type' => $fieldType]);
+                    $model->addField($fieldName, ['type' => $fieldType]);
                 }
 
-                $migrator->create();
+                $model->migrate();
+
+//                 $migrator = $this->getMigrator()->table($tableName);
+
+//                 $migrator->id('id');
+
+//                 foreach ($first_row as $field => $row) {
+//                     if ($field === 'id') {
+//                         continue;
+//                     }
+
+//                     if (is_int($row)) {
+//                         $fieldType = 'integer';
+//                     } elseif (is_float($row)) {
+//                         $fieldType = 'float';
+//                     } elseif ($row instanceof \DateTimeInterface) {
+//                         $fieldType = 'datetime';
+//                     } else {
+//                         $fieldType = 'string';
+//                     }
+
+//                     $migrator->field($field, ['type' => $fieldType]);
+//                 }
+
+//                 $migrator->create();
             }
 
             // import data

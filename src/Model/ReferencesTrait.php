@@ -49,7 +49,7 @@ trait ReferencesTrait
     /**
      * @param array<string, mixed> $defaults Properties which we will pass to Reference object constructor
      */
-    protected function _hasReference(array $seed, string $link, array $defaults = []): Reference
+    protected function addReference(array $seed, string $link, array $defaults = []): Reference
     {
         $defaults[0] = $link;
 
@@ -71,7 +71,7 @@ trait ReferencesTrait
      */
     public function addRef(string $link, array $defaults): Reference
     {
-        return $this->_hasReference($this->_default_seed_addRef, $link, $defaults);
+        return $this->addReference($this->_default_seed_addRef, $link, $defaults);
     }
 
     /**
@@ -81,7 +81,7 @@ trait ReferencesTrait
      */
     public function hasOne(string $link, array $defaults = []) //: Reference
     {
-        return $this->_hasReference($this->_default_seed_hasOne, $link, $defaults); // @phpstan-ignore-line
+        return $this->addReference($this->_default_seed_hasOne, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -91,7 +91,7 @@ trait ReferencesTrait
      */
     public function hasMany(string $link, array $defaults = []) //: Reference
     {
-        return $this->_hasReference($this->_default_seed_hasMany, $link, $defaults); // @phpstan-ignore-line
+        return $this->addReference($this->_default_seed_hasMany, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -101,7 +101,7 @@ trait ReferencesTrait
      */
     public function containsOne(string $link, array $defaults = []) //: Reference
     {
-        return $this->_hasReference($this->_default_seed_containsOne, $link, $defaults); // @phpstan-ignore-line
+        return $this->addReference($this->_default_seed_containsOne, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -111,7 +111,7 @@ trait ReferencesTrait
      */
     public function containsMany(string $link, array $defaults = []) //: Reference
     {
-        return $this->_hasReference($this->_default_seed_containsMany, $link, $defaults); // @phpstan-ignore-line
+        return $this->addReference($this->_default_seed_containsMany, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**

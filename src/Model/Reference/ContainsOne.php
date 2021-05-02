@@ -74,9 +74,11 @@ class ContainsOne extends Model\Reference
 
     protected function getDefaultPersistence(Model $theirModel)
     {
-        return new Persistence\ArrayOfStrings([
+        $persistence = new Persistence\Array_([
             $this->table_alias => $this->getOurFieldValue() ? [1 => $this->getOurFieldValue()] : [],
         ]);
+
+        return $persistence->setCodecs($this->getOwner()->persistence->getCodecs());
     }
 
     /**

@@ -38,6 +38,19 @@ abstract class Persistence
     /** @const string */
     public const ID_LOAD_ANY = self::class . '@idLoadAny';
 
+    protected $codecs = [];
+
+    protected static $defaultCodecs = [
+        [Persistence\Codec::class],
+    ];
+
+    protected static $registry = [
+        [Persistence\Sql::class],
+        'oci' => [Persistence\Sql\Platform\Oracle::class],
+        'oci12' => [Persistence\Sql\Platform\Oracle::class],
+        'sqlite' => [Persistence\Sql\Platform\Sqlite::class],
+    ];
+
     /**
      * Connects database.
      *
@@ -64,13 +77,16 @@ abstract class Persistence
             case 'pgsql':
             case 'sqlsrv':
             case 'sqlite':
-                $db = new \Phlex\Data\Persistence\Sql($dsn['dsn'], $dsn['user'], $dsn['pass'], $args);
-
-                return $db;
+                return Factory::factory(self::resolve($dsn['driverSchema']), [$dsn['dsn'], $dsn['user'], $dsn['pass'], $args]);
             default:
                 throw (new Exception('Unable to determine persistence driver type from DSN'))
                     ->addMoreInfo('dsn', $dsn['dsn']);
         }
+    }
+
+    public static function resolve($driverSchema)
+    {
+        return self::$registry[$driverSchema] ?? self::$registry[0];
     }
 
     /**
@@ -78,6 +94,25 @@ abstract class Persistence
      */
     public function disconnect(): void
     {
+    }
+
+    public static function getDefaultCodecs()
+    {
+        $parentClass = get_parent_class(static::class);
+
+        return static::$defaultCodecs + ($parentClass ? $parentClass::getDefaultCodecs() : []);
+    }
+
+    public function getCodecs()
+    {
+        return (array) $this->codecs + $this->getDefaultCodecs();
+    }
+
+    public function setCodecs(array $codecs)
+    {
+        $this->codecs = $codecs;
+
+        return $this;
     }
 
     /**
@@ -405,25 +440,30 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function typecastSaveField(Model\Field $f, $value)
+    public function typecastSaveField(Model\Field $field, $value)
     {
-        try {
-            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[0]) && ($t = $f->typecast[0]) instanceof \Closure) {
-                return $t($value, $f, $this);
-            }
+//         try {
+        // use $f->typecast = [typecast_save_callback, typecast_load_callback]
+//             if (is_array($field->typecast) && isset($field->typecast[0]) && ($t = $field->typecast[0]) instanceof \Closure) {
+//                 return $t($value, $field, $this);
+//             }
 
-            // we respect null values
-            if ($value === null) {
-                return;
-            }
+        $codec = $field->getPersistenceCodec();
 
-            // run persistence-specific typecasting of field value
-            return $this->_typecastSaveField($f, $value);
-        } catch (\Exception $e) {
-            throw (new Exception('Unable to typecast field value on save', 0, $e))
-                ->addMoreInfo('field', $f->short_name);
+        if (!$codec->isEncodable($value)) {
+            return $value;
         }
+
+        // we use clones of the object for encoding
+        if (is_object($value)) {
+            $value = clone $value;
+        }
+
+        return $codec->encode($value);
+//         } catch (\Exception $e) {
+//             throw (new Exception('Unable to typecast field value on save', 0, $e))
+//                 ->addMoreInfo('field', $field->short_name);
+//         }
     }
 
     /**
@@ -434,31 +474,30 @@ abstract class Persistence
      *
      * @return mixed
      */
-    public function typecastLoadField(Model\Field $f, $value)
+    public function typecastLoadField(Model\Field $field, $value)
     {
-        try {
-            // use $f->typecast = [typecast_save_callback, typecast_load_callback]
-            if (is_array($f->typecast) && isset($f->typecast[1]) && ($t = $f->typecast[1]) instanceof \Closure) {
-                return $t($value, $f, $this);
-            }
+//         try {
+        // use $f->typecast = [typecast_save_callback, typecast_load_callback]
+//             if (is_array($field->typecast) && isset($field->typecast[1]) && ($t = $field->typecast[1]) instanceof \Closure) {
+//                 return $t($value, $field, $this);
+//             }
 
-            // only string type fields can use empty string as legit value, for all
-            // other field types empty value is the same as no-value, nothing or null
-            if ($f->type && $f->type !== 'string' && $value === '') {
-                return;
-            }
-
-            // we respect null values
-            if ($value === null) {
-                return;
-            }
-
-            // run persistence-specific typecasting of field value
-            return $this->_typecastLoadField($f, $value);
-        } catch (\Exception $e) {
-            throw (new Exception('Unable to typecast field value on load', 0, $e))
-                ->addMoreInfo('field', $f->short_name);
+        // only string type fields can use empty string as legit value, for all
+        // other field types empty value is the same as no-value, nothing or null
+        if ($field->type && $field->type !== 'string' && $value === '') {
+            return;
         }
+
+        // we respect null values
+        if ($value === null) {
+            return;
+        }
+
+        return $field->getPersistenceCodec()->decode($value);
+//         } catch (\Exception $e) {
+//             throw (new Exception('Unable to typecast field value on load', 0, $e))
+//                 ->addMoreInfo('field', $field->short_name);
+//         }
     }
 
     /**

@@ -8,12 +8,11 @@ use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Phlex\Core\AtkPhpunit;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
 // NOTE: This class should stay here in this namespace because other repos rely on it. For example, Phlex\Data tests
-class TestCase extends AtkPhpunit\TestCase
+class TestCase extends \Phlex\Core\PHPUnit\TestCase
 {
     /** @var Persistence|Persistence\Sql Persistence instance */
     public $db;
@@ -46,7 +45,7 @@ class TestCase extends AtkPhpunit\TestCase
         if ($this->debug) {
             $this->db->connection->connection()->getConfiguration()->setSQLLogger(
                 new class($this) implements SQLLogger {
-                    /** @var PhpunitTestCase */
+                    /** @var TestCase */
                     public $testCase;
 
                     public function __construct(TestCase $testCase)

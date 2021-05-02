@@ -77,8 +77,7 @@
 	},
 	"autoload-dev" : {
 		"psr-4" : {
-			"Phlex\\Data\\Tests\\" : "tests/",
-			"Phlex\\Schema\\Tests\\" : "tests-schema/"
+			"Phlex\\Data\\Tests\\" : "tests/"
 		}
 	}
 }

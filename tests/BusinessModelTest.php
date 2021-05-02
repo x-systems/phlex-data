@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Core\AtkPhpunit;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 use Phlex\Data\Tests\Model\Client;
 use Phlex\Data\Tests\Model\User;
 
-class BusinessModelTest extends AtkPhpunit\TestCase
+class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
 {
     /**
      * Test constructor.

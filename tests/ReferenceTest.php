@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Core\AtkPhpunit;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class ReferenceTest extends AtkPhpunit\TestCase
+class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
 {
     public function testBasicReferences()
     {

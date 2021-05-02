@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Core\AtkPhpunit;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class StaticPersistenceTest extends AtkPhpunit\TestCase
+class StaticPersistenceTest extends \Phlex\Core\PHPUnit\TestCase
 {
     /**
      * Test constructor.

@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Core\AtkPhpunit;
 use Phlex\Data\Model;
 
-class ConditionTest extends AtkPhpunit\TestCase
+class ConditionTest extends \Phlex\Core\PHPUnit\TestCase
 {
     public function testException1()
     {

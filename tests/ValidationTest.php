@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Core\AtkPhpunit;
 use Phlex\Data\Model;
 use Phlex\Data\Model\Field\ValidationException;
 use Phlex\Data\Persistence;
@@ -53,7 +52,7 @@ class BadValidationModel extends Model
     }
 }
 
-class ValidationTests extends AtkPhpunit\TestCase
+class ValidationTests extends \Phlex\Core\PHPUnit\TestCase
 {
     public $m;
 

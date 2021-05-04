@@ -20,6 +20,7 @@ class SmboTransferTest extends SQL\TestCase
 
         $this->dropTableIfExists('account');
         $this->dropTableIfExists('document');
+        $this->dropTableIfExists('payment');
 
         (new Account($this->db))->migrate();
         (new Document($this->db))->migrate();

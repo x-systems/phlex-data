@@ -19,6 +19,12 @@ class Integer extends Sql\Codec
 
     public function migrate(Sql\Migration $migrator): Column
     {
-        return parent::migrate($migrator)->setUnsigned(true);
+        $column = parent::migrate($migrator);
+
+        if ($this->field->getReference()) {
+            $column->setUnsigned(true);
+        }
+
+        return $column;
     }
 }

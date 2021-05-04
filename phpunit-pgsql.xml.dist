@@ -1,4 +1,4 @@
-<phpunit bootstrap="vendor/autoload.php" printerClass="Phlex\Core\AtkPhpunit\ResultPrinter" colors="true">
+<phpunit bootstrap="vendor/autoload.php" printerClass="Phlex\Core\PHPUnit\ResultPrinter" colors="true">
     <php>
         <var name="DB_DSN" value="pgsql:dbname=phlex_test__data;host=postgres" />
         <var name="DB_USER" value="phlex_test" />

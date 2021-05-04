@@ -74,9 +74,9 @@ class ModelTest extends \Phlex\Data\Tests\SQL\TestCase
         $this->assertSame($q1, $q2);
     }
 
-    /**
-     * @doesNotPerformAssertions
-     */
+//     /**
+//      * @doesNotPerformAssertions
+//      */
 //     public function testMigrateTable()
 //     {
 //         $this->dropTableIfExists('user');

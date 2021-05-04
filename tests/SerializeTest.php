@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
@@ -57,7 +56,7 @@ class SerializeTest extends SQL\TestCase
 
         $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
 
-        $this->expectException(Exception::class);
+        $this->expectException(\JsonException::class);
         $db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
     }
 
@@ -72,7 +71,7 @@ class SerializeTest extends SQL\TestCase
         $dbData = [];
         $dbData[] = &$dbData;
 
-        $this->expectException(Exception::class);
+        $this->expectException(\JsonException::class);
         $db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
     }
 

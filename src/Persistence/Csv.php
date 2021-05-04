@@ -121,16 +121,16 @@ class Csv extends Persistence
         }
 
         if ($model->primaryKey) {
-            $idField = $model->getField($model->primaryKey);
-            $idColumnName = $idField->actual ?? $idField->short_name;
+            $primaryKeyField = $model->getPrimaryKeyField();
+            $primaryKeyColumnName = $primaryKeyField->getPersistenceName();
 
-            if (array_key_exists($idColumnName, $row)) {
-                $this->assertNoIdMismatch($row[$idColumnName], $id);
-                unset($row[$idColumnName]);
+            if (array_key_exists($primaryKeyColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$primaryKeyColumnName], $id);
+                unset($row[$primaryKeyColumnName]);
             }
 
             // typecastSave value so we can use strict comparison
-            $row = [$idColumnName => $this->typecastSaveField($idField, $id)] + $row;
+            $row = [$primaryKeyColumnName => $primaryKeyField->encodePersistenceValue($id)] + $row;
         }
 
         return $row;

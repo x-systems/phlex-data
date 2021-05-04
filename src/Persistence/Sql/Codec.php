@@ -17,12 +17,17 @@ class Codec extends Persistence\Codec
      */
     protected $columnTypeName = Types::STRING;
 
-    public function encode($value)
+    public function getColumnTypeName(): string
+    {
+        return $this->columnTypeName;
+    }
+
+    protected function doEncode($value)
     {
         return (string) $value;
     }
 
-    public function isEncodable($value): bool
+    protected function isEncodable($value): bool
     {
         return parent::isEncodable($value)
             && !$value instanceof \Atk4\Dsql\Expression
@@ -33,7 +38,7 @@ class Codec extends Persistence\Codec
     {
         $columnNameIdentifier = $migrator->getDatabasePlatform()->quoteSingleIdentifier($this->field->getPersistenceName());
 
-        $column = $migrator->table->addColumn($columnNameIdentifier, $this->columnTypeName);
+        $column = $migrator->table->addColumn($columnNameIdentifier, $this->getColumnTypeName());
 
         if ($this->field->isPrimaryKey()) {
             $migrator->table->setPrimaryKey([$columnNameIdentifier]);

@@ -12,12 +12,21 @@ class String_ extends Sql\Codec
 {
     protected $columnTypeName = Types::STRING;
 
+    public function decode($value)
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        return $this->doDecode($value);
+    }
+
     public function migrate(Sql\Migration $migrator): Column
     {
         $column = parent::migrate($migrator);
 
-        if ($this->getFieldType()->maxLength ?? null) {
-            $column->setLength($this->getFieldType()->maxLength);
+        if ($this->getPersistenceValueType()->maxLength ?? null) {
+            $column->setLength($this->getPersistenceValueType()->maxLength);
         }
 
         return $column;

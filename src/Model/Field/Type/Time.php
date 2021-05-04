@@ -6,17 +6,11 @@ namespace Phlex\Data\Model\Field\Type;
 
 class Time extends DateTime
 {
-    public function normalize($value)
+    protected function doNormalize($value)
     {
-        $value = parent::normalize($value);
+        $value = parent::doNormalize($value);
 
-        if ($value !== null) {
-            // remove date portion from date type value
-            // need 1970 in place of 0 - DB
-            $value = (clone $value)->setDate(1970, 1, 1);
-        }
-
-        return $value;
+        return (clone $value)->setDate(1970, 1, 1);
     }
 
     public function toString($value): ?string

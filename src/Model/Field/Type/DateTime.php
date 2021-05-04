@@ -27,12 +27,8 @@ class DateTime extends \Phlex\Data\Model\Field\Type
      */
     public $dateTimeZoneClass = \DateTimeZone::class;
 
-    public function normalize($value)
+    protected function doNormalize($value)
     {
-        if ($value === null || $value === '') {
-            return;
-        }
-
         // we allow http://php.net/manual/en/datetime.formats.relative.php
         $class = $this->dateTimeClass ?? \DateTime::class;
 

@@ -8,13 +8,8 @@ use Phlex\Data\Persistence;
 
 class String_ extends Persistence\Codec
 {
-    public function encode($value)
+    public function doEncode($value)
     {
         return $this->field->toString($value);
-    }
-
-    public function decode($value)
-    {
-        return $this->field->normalize($value);
     }
 }

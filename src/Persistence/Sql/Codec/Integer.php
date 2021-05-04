@@ -12,12 +12,7 @@ class Integer extends Sql\Codec
 {
     protected $columnTypeName = Types::INTEGER;
 
-    public function encode($value)
-    {
-        return (int) $value;
-    }
-
-    public function decode($value)
+    protected function doEncode($value)
     {
         return (int) $value;
     }

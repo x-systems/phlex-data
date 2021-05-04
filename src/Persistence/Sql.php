@@ -8,7 +8,6 @@ use Atk4\Dsql\Connection;
 use Atk4\Dsql\Exception as DsqlException;
 use Atk4\Dsql\Expression;
 use Atk4\Dsql\Query;
-use Doctrine\DBAL\Platforms;
 use Phlex\Core\Factory;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
@@ -151,11 +150,6 @@ class Sql extends Persistence
     public function atomic(\Closure $fx)
     {
         return $this->connection->atomic($fx);
-    }
-
-    public function getDatabasePlatform(): Platforms\AbstractPlatform
-    {
-        return $this->connection->getDatabasePlatform();
     }
 
     /**

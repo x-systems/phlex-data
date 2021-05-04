@@ -22,22 +22,50 @@ class Codec
 
     public function encode($value)
     {
-        return $value;
+        if (!$this->isEncodable($value)) {
+            return $value;
+        }
+
+        // we use clones of the object for encoding
+        if (is_object($value)) {
+            $value = clone $value;
+        }
+
+        return $this->doEncode($value);
     }
 
     public function decode($value)
     {
-        return $value;
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        return $this->doDecode($value);
     }
 
-    public function isEncodable($value): bool
+    protected function isEncodable($value): bool
     {
         return $value !== null;
     }
 
-    public function getFieldType(): Model\Field\Type
+    protected function doEncode($value)
     {
-        return $this->field->getType();
+        return $value;
+    }
+
+    protected function doDecode($value)
+    {
+        return $this->field->normalize($value);
+    }
+
+    public function getField(): Model\Field
+    {
+        return $this->field;
+    }
+
+    public function getPersistenceValueType(): Model\Field\Type
+    {
+        return $this->field->getPersistenceValueType();
     }
 
     public function getQueryArguments($operator, $value): array

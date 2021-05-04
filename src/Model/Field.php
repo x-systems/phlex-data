@@ -18,6 +18,7 @@ use Phlex\Data\Persistence;
 class Field
 {
     use DiContainerTrait;
+    use Field\TypeTrait;
     use JoinLinkTrait;
     use ReadableCaptionTrait;
     use TrackableTrait;
@@ -43,11 +44,6 @@ class Field
      * @var mixed
      */
     public $default;
-
-    /**
-     * @var string|Field\Type
-     */
-    public $type;
 
     /**
      * For several types enum can provide list of available options. ['blue', 'red'].
@@ -209,20 +205,6 @@ class Field
         );
     }
 
-    public function getType(): Field\Type
-    {
-        if (!is_object($this->type)) {
-            $this->type = Factory::factory(Field\Type::resolve($this->type));
-        }
-
-        return $this->type;
-    }
-
-    public function getPersistenceCodec(): Persistence\Codec
-    {
-        return $this->getType()->createCodec($this);
-    }
-
     /**
      * Validate and normalize value.
      *
@@ -249,7 +231,7 @@ class Field
         }
 
         try {
-            return $this->getType()->normalize($value);
+            return $this->getValueType()->normalize($value);
         } catch (Field\Type\ValidationException $e) {
             throw new Field\ValidationException([$this->name => $e->getMessage()]);
         }
@@ -262,7 +244,7 @@ class Field
      */
     public function toString($value = null): ?string
     {
-        return $this->getType()->toString($value ?? $this->get());
+        return $this->getValueType()->toString($value ?? $this->get());
     }
 
     /**
@@ -378,6 +360,63 @@ class Field
     public function getPersistenceName(): string
     {
         return $this->actual ?? $this->short_name;
+    }
+
+    public function getPersistenceValueType(): Field\Type
+    {
+        if (!$serializer = $this->getSerializer()) {
+            return $this->getValueType();
+        }
+
+        return $serializer->getValueType();
+    }
+
+    public function encodePersistenceValue($value)
+    {
+        // check null values for mandatory fields
+        if ($value === null && $this->mandatory) {
+            throw new Field\ValidationException([$this->short_name => 'Mandatory field value cannot be null'], $this->getOwner());
+        }
+
+        return $this->getPersistenceCodec()->encode($this->serialize($value));
+    }
+
+    public function decodePersistenceValue($value)
+    {
+        // ignore null values
+        if ($value === null) {
+            return $value;
+        }
+
+        return $this->getPersistenceCodec()->decode($this->unserialize($value));
+    }
+
+    public function getPersistenceCodec(): Persistence\Codec
+    {
+        return $this->getPersistenceValueType()->createCodec($this);
+    }
+
+    public function getSerializer()
+    {
+        return $this->serialize ? Factory::factory(Field\Serializer::resolve($this->serialize)) : null;
+    }
+
+    protected function serialize($value)
+    {
+        if (!$serializer = $this->getSerializer()) {
+            return $value;
+        }
+
+        return $serializer->encode($value);
+    }
+
+    protected function unserialize($value)
+    {
+        if (!$serializer = $this->getSerializer()) {
+            return $value;
+        }
+
+        return $serializer->decode($value);
     }
 
     /**

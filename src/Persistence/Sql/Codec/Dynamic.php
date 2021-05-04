@@ -12,12 +12,12 @@ class Dynamic extends Sql\Codec
 
     protected $decodeFx;
 
-    public function encode($value)
+    protected function doEncode($value)
     {
         return isset($this->encodeFx) ? ($this->encodeFx)($value, $this->field) : $value;
     }
 
-    public function decode($value)
+    protected function doDecode($value)
     {
         return isset($this->decodeFx) ? ($this->decodeFx)($value, $this->field) : $value;
     }

@@ -14,17 +14,17 @@ class Date extends DateTime
 
     protected $timezone = false;
 
-    public function encode($value)
+    protected function doEncode($value)
     {
         $this->timezone = false;
 
-        return parent::encode($value);
+        return parent::doEncode($value);
     }
 
-    public function decode($value)
+    protected function doDecode($value)
     {
         $this->timezone = false;
 
-        return parent::decode($value);
+        return parent::doDecode($value);
     }
 }

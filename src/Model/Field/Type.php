@@ -8,12 +8,12 @@ use Phlex\Core\DiContainerTrait;
 use Phlex\Core\Factory;
 use Phlex\Data\Model;
 
-class Type
+abstract class Type
 {
     use DiContainerTrait;
 
     protected static $registry = [
-        'default' => [Type\Generic::class],
+        [Type\Generic::class],
         'generic' => [Type\Generic::class],
         'bool' => [Type\Boolean::class],
         'boolean' => [Type\Boolean::class],
@@ -67,7 +67,7 @@ class Type
             return self::$registry[$type[0]] + $type;
         }
 
-        return self::$registry[$type ?? 'default'];
+        return self::$registry[$type ?? 0];
     }
 
     public function createCodec(Model\Field $field)
@@ -76,7 +76,9 @@ class Type
 
         $persistenceClass = get_class($persistence);
 
-        if (!isset($this->codecs[$persistenceClass])) {
+        $codecSeed = $this->codecs[$persistenceClass] ?? null;
+
+        if (!$codecSeed/*  || (is_object($codecSeed) && $codecSeed->getField() !== $field) */) {
             // resolve codec declared with the Model\Field\Type::$codecs
             if (!$codecSeed = self::resolveCodecFromRegistry($persistenceClass, (array) $this->codecs)) {
                 // resolve codec declared with the Persistence
@@ -91,7 +93,7 @@ class Type
             $this->codecs[$persistenceClass] = $codecSeed;
         }
 
-        return Factory::factory($this->codecs[$persistenceClass], (array) $this->codec);
+        return Factory::factory($codecSeed, (array) $this->codec);
     }
 
     protected static function resolveCodecFromRegistry(string $searchClass, array $registry)
@@ -122,6 +124,15 @@ class Type
         self::$registry[$type] = $seed;
     }
 
+    public function normalize($value)
+    {
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        return $this->doNormalize($value);
+    }
+
     /**
      * Validate and normalize value.
      *
@@ -129,7 +140,7 @@ class Type
      *
      * @return mixed
      */
-    public function normalize($value)
+    protected function doNormalize($value)
     {
         return $value;
     }
@@ -157,7 +168,7 @@ class Type
      */
     public function toString($value): ?string
     {
-        return (string) $this->normalize($value);
+        return (string) $this->doNormalize($value);
     }
 
     protected function assertScalar($value): void

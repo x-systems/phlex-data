@@ -19,10 +19,8 @@ class Integer extends Float_
      */
     public $round = false;
 
-    public function normalize($value)
+    protected function doNormalize($value)
     {
-        $value = parent::normalize($value);
-
-        return $value === null || $value === '' ? null : (int) $value;
+        return (int) parent::doNormalize($value);
     }
 }

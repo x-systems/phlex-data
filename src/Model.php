@@ -746,11 +746,10 @@ class Model implements \IteratorAggregate
             return $this;
         }
 
-        // perform bunch of standard validation here. This can be re-factored in the future.
         $field->assertSetAccess();
 
         // enum property support
-        if (isset($field->enum) && $field->enum && get_class($field->getType()) !== Model\Field\Type\Boolean::class) {
+        if (isset($field->enum) && $field->enum && get_class($field->getPersistenceValueType()) !== Model\Field\Type\Boolean::class) {
             if ($value === '') {
                 $value = null;
             }

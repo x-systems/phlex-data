@@ -16,10 +16,10 @@ class DateTime extends Sql\Codec
 
     protected $timezone = 'UTC';
 
-    public function encode($value)
+    protected function doEncode($value)
     {
-        $dateTimeClass = $this->getFieldType()->dateTimeClass ?? \DateTime::class;
-        $timeZoneClass = $this->getFieldType()->dateTimeZoneClass ?? \DateTimeZone::class;
+        $dateTimeClass = $this->getPersistenceValueType()->dateTimeClass ?? \DateTime::class;
+        $timeZoneClass = $this->getPersistenceValueType()->dateTimeZoneClass ?? \DateTimeZone::class;
 
         if ($value instanceof $dateTimeClass || $value instanceof \DateTimeInterface) {
             // datetime only - set to persisting timezone
@@ -33,10 +33,10 @@ class DateTime extends Sql\Codec
         return $value;
     }
 
-    public function decode($value)
+    protected function doDecode($value)
     {
-        $dateTimeClass = $this->getFieldType()->dateTimeClass ?? \DateTime::class;
-        $timeZoneClass = $this->getFieldType()->dateTimeZoneClass ?? \DateTimeZone::class;
+        $dateTimeClass = $this->getPersistenceValueType()->dateTimeClass ?? \DateTime::class;
+        $timeZoneClass = $this->getPersistenceValueType()->dateTimeZoneClass ?? \DateTimeZone::class;
 
         if (is_numeric($value)) {
             $valueDecoded = new $dateTimeClass('@' . $value);
@@ -60,8 +60,6 @@ class DateTime extends Sql\Codec
             }
 
             if ($valueDecoded === false) {
-                var_dump($format, $value);
-
                 throw (new Exception('Incorrectly formatted date/time'))
                     ->addMoreInfo('format', $format)
                     ->addMoreInfo('value', $value)

@@ -41,12 +41,8 @@ class Float_ extends \Phlex\Data\Model\Field\Type
      *
      * @return mixed
      */
-    public function normalize($value)
+    protected function doNormalize($value)
     {
-        if ($value === null || $value === '') {
-            return;
-        }
-
         $this->assertScalar($value);
 
         // we clear out thousand separator, but will change to

@@ -12,12 +12,7 @@ class Float_ extends Sql\Codec
 {
     protected $columnTypeName = Types::FLOAT;
 
-    public function encode($value)
-    {
-        return (float) $value;
-    }
-
-    public function decode($value)
+    protected function doEncode($value)
     {
         return (float) $value;
     }

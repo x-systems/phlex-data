@@ -72,7 +72,8 @@ class Array_ extends Persistence
         }
 
         if ($model->primaryKey) {
-            $primaryKeyColumnName = $model->getPrimaryKeyField()->getPersistenceName();
+            $primaryKeyField = $model->getPrimaryKeyField();
+            $primaryKeyColumnName = $primaryKeyField->getPersistenceName();
 
             if (array_key_exists($primaryKeyColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$primaryKeyColumnName], $id);
@@ -80,7 +81,7 @@ class Array_ extends Persistence
             }
 
             // typecastSave value so we can use strict comparison
-            $row = [$primaryKeyColumnName => $this->typecastSaveField($model->getPrimaryKeyField(), $id)] + $row;
+            $row = [$primaryKeyColumnName => $primaryKeyField->encodePersistenceValue($id)] + $row;
         }
 
         return $row;
@@ -175,7 +176,7 @@ class Array_ extends Persistence
     {
         $table = $table ?? $model->table;
 
-        $type = $model->primaryKey ? get_class($model->getField($model->primaryKey)->getType()) : Model\Field\Type\Integer::class;
+        $type = $model->primaryKey ? get_class($model->getField($model->primaryKey)->getPersistenceValueType()) : Model\Field\Type\Integer::class;
 
         switch ($type) {
             case Model\Field\Type\Integer::class:

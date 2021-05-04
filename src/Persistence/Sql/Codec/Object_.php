@@ -11,12 +11,12 @@ class Object_ extends Sql\Codec
 {
     protected $columnTypeName = Types::OBJECT;
 
-    public function encode($value)
+    protected function doEncode($value)
     {
         return self::jsonEncode($value);
     }
 
-    public function decode($value)
+    protected function doDecode($value)
     {
         return self::jsonDecode($value);
     }

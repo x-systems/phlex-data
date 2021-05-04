@@ -13,11 +13,16 @@ class Text extends \Phlex\Data\Model\Field\Type
 
     public function normalize($value)
     {
-        $this->assertScalar($value);
-
         if ($value === null) {
             return;
         }
+
+        return $this->doNormalize($value);
+    }
+
+    protected function doNormalize($value)
+    {
+        $this->assertScalar($value);
 
         $value = (string) $value;
 

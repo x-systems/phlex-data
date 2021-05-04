@@ -393,32 +393,32 @@ class TypecastingTest extends SQL\TestCase
 
         date_default_timezone_set('UTC');
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+        $this->assertSame('2005-08-16 00:52:01.000000', $dt->encodePersistenceValue($s));
+        $this->assertSame('2005-08-15', $d->encodePersistenceValue($s));
+        $this->assertSame('22:52:01.000000', $t->encodePersistenceValue($s));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $dt->decodePersistenceValue('2005-08-16 00:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $d->decodePersistenceValue('2005-08-15'));
+        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $t->decodePersistenceValue('22:52:01'));
 
         date_default_timezone_set('Asia/Tokyo');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+        $this->assertSame('2005-08-16 00:52:01.000000', $dt->encodePersistenceValue($s));
+        $this->assertSame('2005-08-15', $d->encodePersistenceValue($s));
+        $this->assertSame('22:52:01.000000', $t->encodePersistenceValue($s));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $dt->decodePersistenceValue('2005-08-16 00:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $d->decodePersistenceValue('2005-08-15'));
+        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $t->decodePersistenceValue('22:52:01'));
 
         date_default_timezone_set('America/Los_Angeles');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01'); // uses servers default timezone
-        $this->assertSame('2005-08-16 07:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $db->typecastLoadField($dt, '2005-08-16 07:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+        $this->assertSame('2005-08-16 07:52:01.000000', $dt->encodePersistenceValue($s));
+        $this->assertSame('2005-08-15', $d->encodePersistenceValue($s));
+        $this->assertSame('22:52:01.000000', $t->encodePersistenceValue($s));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $dt->decodePersistenceValue('2005-08-16 07:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $d->decodePersistenceValue('2005-08-15'));
+        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $t->decodePersistenceValue('22:52:01'));
     }
 
     public function testTimestamp()

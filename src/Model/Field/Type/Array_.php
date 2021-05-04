@@ -14,12 +14,8 @@ class Array_ extends \Phlex\Data\Model\Field\Type
      */
     public $values;
 
-    public function normalize($value)
+    protected function doNormalize($value)
     {
-        if ($value === null || $value === '') {
-            return;
-        }
-
         if (is_string($value)) {
             try {
                 $value = json_decode($value, true);

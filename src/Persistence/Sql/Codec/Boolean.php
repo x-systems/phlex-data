@@ -6,25 +6,16 @@ namespace Phlex\Data\Persistence\Sql\Codec;
 
 class Boolean extends Integer
 {
-    public function encode($value)
+    protected function doEncode($value)
     {
         // if enum is set, first lets see if it matches one of those precisely
-        if ($value === $this->getFieldType()->valueTrue) {
+        if ($value === $this->getPersistenceValueType()->valueTrue) {
             $value = true;
-        } elseif ($value === $this->getFieldType()->valueFalse) {
+        } elseif ($value === $this->getPersistenceValueType()->valueFalse) {
             $value = false;
         }
 
         // finally, convert into appropriate value
         return $value ? 1 : 0;
-    }
-
-    public function decode($value)
-    {
-        if ($value === null) {
-            return;
-        }
-
-        return $value ? $this->getFieldType()->valueTrue : $this->getFieldType()->valueFalse;
     }
 }

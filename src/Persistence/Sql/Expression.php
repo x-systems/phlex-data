@@ -105,16 +105,6 @@ class Expression implements \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * @deprecated will be removed in v2.5
-     */
-    public function __toString()
-    {
-        'trigger_error'('Method is deprecated. Use $this->getOne() instead', E_USER_DEPRECATED);
-
-        return $this->getOne();
-    }
-
-    /**
      * Whether or not an offset exists.
      *
      * @param string $offset
@@ -453,12 +443,6 @@ class Expression implements \ArrayAccess, \IteratorAggregate
             $expression->_paramBase = null;
         }
 
-        if (isset($expression->allowToWrapInParenthesis)) {
-            'trigger_error'('Usage of Query::$allowToWrapInParenthesis is deprecated, use $wrapInParentheses instead - will be removed in version 2.5', E_USER_DEPRECATED);
-
-            $expression->wrapInParentheses = $expression->allowToWrapInParenthesis;
-        }
-
         // Wrap in parentheses if expression requires so
         if ($expression->wrapInParentheses === true) {
             $ret = '(' . $ret . ')';
@@ -472,10 +456,6 @@ class Expression implements \ArrayAccess, \IteratorAggregate
      */
     public function getDebugQuery(): string
     {
-        if (func_num_args() > 0) { // remove in 2020-dec
-            throw new Exception('Use of $html argument and html rendering has been deprecated');
-        }
-
         $result = $this->render();
 
         foreach (array_reverse($this->params) as $key => $val) {
@@ -625,16 +605,6 @@ class Expression implements \ArrayAccess, \IteratorAggregate
         }
 
         return $v; // throw a type error if not null nor string
-    }
-
-    /**
-     * @deprecated use "getRows" method instead - will be removed in v2.5
-     */
-    public function get(): array
-    {
-        'trigger_error'('Method is deprecated. Use getRows instead', E_USER_DEPRECATED);
-
-        return $this->getRows();
     }
 
     /**

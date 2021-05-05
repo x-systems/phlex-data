@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phlex\Data;
 
-use Atk4\Dsql\Query;
 use Phlex\Core\CollectionTrait;
 use Phlex\Core\ContainerTrait;
 use Phlex\Core\DiContainerTrait;
@@ -91,13 +90,6 @@ class Model implements \IteratorAggregate
     public const FIELD_FILTER_PERSIST = 'persist';
     /** @const string */
     public const FIELD_FILTER_ONLY_FIELDS = 'only fields';
-
-//     /** @const string */
-//     protected const ID_LOAD_ONE = self::class . '@idLoadOne';
-//     /** @const string */
-//     protected const ID_LOAD_ANY = self::class . '@idLoadAny';
-
-    // {{{ Properties of the class
 
     /**
      * The class used by addField() method.
@@ -321,10 +313,6 @@ class Model implements \IteratorAggregate
 
     /** @var Model\Reference Only for Reference class */
     public $ownerReference;
-
-    // }}}
-
-    // {{{ Basic Functionality, field definition, set() and get()
 
     /**
      * Creation of the new model can be done in two ways:.
@@ -959,10 +947,6 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    // }}}
-
-    // {{{ DataSet logic
-
     /**
      * Narrow down data-set of the current model by applying
      * additional condition. There is no way to remove
@@ -1113,10 +1097,6 @@ class Model implements \IteratorAggregate
 
         return $this;
     }
-
-    // }}}
-
-    // {{{ Persistence-related logic
 
     /**
      * Is model loaded?
@@ -1289,96 +1269,6 @@ class Model implements \IteratorAggregate
         }
     }
 
-//     /**
-//      * Load model.
-//      *
-//      * @param mixed $id
-//      *
-//      * @return $this
-//      */
-//     public function load($id)
-//     {
-//         $this->checkPersistence();
-
-//         if ($this->loaded()) {
-//             $this->unload();
-//         }
-
-//         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
-//         if ($noId) {
-//             $this->data = $this->persistence->load($this, $this->remapIdLoadToPersistence($id));
-//         } else {
-//             if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) { // @TODO pure port from loadAny. why not for tryLoad?
-//                 return $this;
-//             }
-
-//             $this->data = $this->persistence->load($this, $id);
-//         }
-
-//         if ($noId) { // @TODO pure port from loadAny, simplify
-//             if ($this->primaryKey) {
-//                 $this->setId($this->data[$this->primaryKey]);
-//             }
-//         } else {
-//             if ($this->getId() === null) { // TODO what is the usecase?
-//                 $this->setId($id);
-//             }
-//         }
-
-//         $ret = $this->hook(self::HOOK_AFTER_LOAD);
-//         if ($ret === false) {
-//             return $this->unload();
-//         } elseif (is_object($ret)) {
-//             return $ret; // @phpstan-ignore-line
-//         }
-
-//         return $this;
-//     }
-
-//     /**
-//      * Try to load one record. Will throw if more than one record exists, but not if there is no record.
-//      *
-//      * @return $this
-//      */
-//     public function tryLoadOne()
-//     {
-//         return $this->tryLoad(self::ID_LOAD_ONE);
-//     }
-
-//     /**
-//      * Load one record. Will throw if more than one record exists.
-//      *
-//      * @return $this
-//      */
-//     public function loadOne()
-//     {
-//         return $this->load(self::ID_LOAD_ONE);
-//     }
-
-//     /**
-//      * Try to load any record. Will not throw an exception if record does not exist.
-//      *
-//      * If only one record should match, use checked "tryLoadOne" method.
-//      *
-//      * @return $this
-//      */
-//     public function tryLoadAny()
-//     {
-//         return $this->tryLoad(self::ID_LOAD_ANY);
-//     }
-
-//     /**
-//      * Load any record.
-//      *
-//      * If only one record should match, use checked "loadOne" method.
-//      *
-//      * @return $this
-//      */
-//     public function loadAny()
-//     {
-//         return $this->load(self::ID_LOAD_ANY);
-//     }
-
     /**
      * Reload model by taking its current ID.
      *
@@ -1535,61 +1425,6 @@ class Model implements \IteratorAggregate
         return $model;
     }
 
-//     /**
-//      * Load record by condition.
-//      *
-//      * @param mixed $value
-//      *
-//      * @return $this
-//      */
-//     public function loadBy(string $fieldName, $value)
-//     {
-//         $field = $this->getField($fieldName);
-
-//         $scopeBak = $this->scope;
-//         $systemBak = $field->system;
-//         $defaultBak = $field->default;
-//         try {
-//             // add condition to cloned scope and try to load record
-//             $this->scope = clone $this->scope;
-//             $this->addCondition($field, $value);
-
-//             return $this->loadAny();
-//         } finally {
-//             $this->scope = $scopeBak;
-//             $field->system = $systemBak;
-//             $field->default = $defaultBak;
-//         }
-//     }
-
-//     /**
-//      * Try to load record by condition.
-//      * Will not throw exception if record doesn't exist.
-//      *
-//      * @param mixed $value
-//      *
-//      * @return $this
-//      */
-//     public function tryLoadBy(string $fieldName, $value)
-//     {
-//         $field = $this->getField($fieldName);
-
-//         $scopeBak = $this->scope;
-//         $systemBak = $field->system;
-//         $defaultBak = $field->default;
-//         try {
-//             // add condition to cloned scope and try to load record
-//             $this->scope = clone $this->scope;
-//             $this->addCondition($field, $value);
-
-//             return $this->tryLoadAny();
-//         } finally {
-//             $this->scope = $scopeBak;
-//             $field->system = $systemBak;
-//             $field->default = $defaultBak;
-//         }
-//     }
-
     /**
      * Check if model has persistence with specified method.
      */
@@ -1613,11 +1448,6 @@ class Model implements \IteratorAggregate
 
     public function save(array $data = [])
     {
-        // deprecated, remove on 2021-03
-        if (func_num_args() > 1) {
-            throw new Exception('Model::save() with 2nd param $to_persistence is no longer supported');
-        }
-
         $this->checkPersistence();
 
         if ($this->read_only) {
@@ -1894,14 +1724,6 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @return \Traversable<array<string, string|null>>
-     */
-    public function rawIterator(): \Traversable
-    {
-        return $this->persistence->prepareIterator($this);
-    }
-
-    /**
      * Executes specified callback for each record in DataSet.
      *
      * @return $this
@@ -1963,11 +1785,6 @@ class Model implements \IteratorAggregate
      */
     public function atomic(\Closure $fx)
     {
-        // deprecated, remove on 2021-03
-        if (func_num_args() > 1) {
-            throw new Exception('Model::atomic() with 2nd param $persistence is no longer supported');
-        }
-
         try {
             return $this->persistence->atomic($fx);
         } catch (\Exception $e) {
@@ -1976,25 +1793,6 @@ class Model implements \IteratorAggregate
             }
         }
     }
-
-    // }}}
-
-    // {{{ Support for actions
-
-    /**
-     * //      * Execute action.
-     * //      *
-     * //      * @param string $mode
-     * //      * @param array  $args
-     * //      *
-     * //      * @return Query
-     * //      */
-//     public function action($mode, $args = [])
-//     {
-//         $this->checkPersistence('action');
-
-//         return $this->persistence->action($this, $mode, $args);
-//     }
 
     /**
      * Get query object to perform query on raw persistence data.
@@ -2005,10 +1803,6 @@ class Model implements \IteratorAggregate
 
         return $this->persistence->query($this);
     }
-
-    // }}}
-
-    // {{{ Expressions
 
     /**
      * Add expression field.
@@ -2057,10 +1851,6 @@ class Model implements \IteratorAggregate
         return $field;
     }
 
-    // }}}
-
-    // {{{ Debug Methods
-
     /**
      * Returns array with useful debug info for var_dump.
      */
@@ -2071,6 +1861,4 @@ class Model implements \IteratorAggregate
             'scope' => $this->scope()->toWords(),
         ];
     }
-
-    // }}}
 }

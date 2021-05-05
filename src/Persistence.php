@@ -43,58 +43,6 @@ abstract class Persistence
         [Persistence\Codec::class],
     ];
 
-    protected static $registry = [
-        [Persistence\Sql::class],
-        'oci' => [Persistence\Sql\Platform\Oracle::class],
-        'oci12' => [Persistence\Sql\Platform\Oracle::class],
-        'sqlite' => [Persistence\Sql\Platform\Sqlite::class],
-    ];
-
-    /**
-     * Connects database.
-     *
-     * @param string|array $dsn Format as PDO DSN or use "mysql://user:pass@host/db;option=blah",
-     *                          leaving user and password arguments = null
-     */
-    public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
-    {
-        // parse DSN string
-        $dsn = \Atk4\Dsql\Connection::normalizeDsn($dsn, $user, $password);
-
-        switch ($dsn['driverSchema']) {
-            case 'mysql':
-            case 'oci':
-            case 'oci12':
-                // Omitting UTF8 is always a bad problem, so unless it's specified we will do that
-                // to prevent nasty problems. This is un-tested on other databases, so moving it here.
-                // It gives problem with sqlite
-                if (strpos($dsn['dsn'], ';charset=') === false) {
-                    $dsn['dsn'] .= ';charset=utf8mb4';
-                }
-
-                // no break
-            case 'pgsql':
-            case 'sqlsrv':
-            case 'sqlite':
-                return Factory::factory(self::resolve($dsn['driverSchema']), [$dsn['dsn'], $dsn['user'], $dsn['pass'], $args]);
-            default:
-                throw (new Exception('Unable to determine persistence driver type from DSN'))
-                    ->addMoreInfo('dsn', $dsn['dsn']);
-        }
-    }
-
-    public static function resolve($driverSchema)
-    {
-        return self::$registry[$driverSchema] ?? self::$registry[0];
-    }
-
-    /**
-     * Disconnect from database explicitly.
-     */
-    public function disconnect(): void
-    {
-    }
-
     public static function getDefaultCodecs()
     {
         $parentClass = get_parent_class(static::class);

@@ -102,7 +102,7 @@ class SmboTransferTest extends SQL\TestCase
     /*
     public function testBasicEntities()
     {
-        $db = Persistence::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
+        $db = Persistence\Sql::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
 
         // Create a new company
         $company = new Company($db);

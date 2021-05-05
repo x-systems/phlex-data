@@ -35,7 +35,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
         $user = $GLOBALS['DB_USER'] ?? null;
         $pass = $GLOBALS['DB_PASSWD'] ?? null;
 
-        $this->db = Persistence::connect($dsn, $user, $pass);
+        $this->db = Persistence\Sql::connect($dsn, $user, $pass);
 
         // reset DB autoincrement to 1, tests rely on it
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {

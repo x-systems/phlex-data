@@ -25,8 +25,8 @@ class String_ extends Sql\Codec
     {
         $column = parent::migrate($migrator);
 
-        if ($this->getPersistenceValueType()->maxLength ?? null) {
-            $column->setLength($this->getPersistenceValueType()->maxLength);
+        if ($maxLength = $this->getPersistenceValueType()->maxLength ?? null) {
+            $column->setLength($maxLength);
         }
 
         return $column;

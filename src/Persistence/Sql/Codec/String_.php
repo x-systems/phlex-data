@@ -8,6 +8,9 @@ use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Types\Types;
 use Phlex\Data\Persistence\Sql;
 
+/**
+ * @method \Phlex\Data\Model\Field\Type\String_ getPersistenceValueType()
+ */
 class String_ extends Sql\Codec
 {
     protected $columnTypeName = Types::STRING;

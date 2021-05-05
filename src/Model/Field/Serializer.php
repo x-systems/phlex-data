@@ -19,10 +19,10 @@ class Serializer
         'base64' => ['encodeFx' => 'base64_encode', 'decodeFx' => 'base64_encode'],
     ];
 
-    /** @var \Closure */
+    /** @var \Closure|null */
     protected $encodeFx;
 
-    /** @var \Closure */
+    /** @var \Closure|null */
     protected $decodeFx;
 
     public static function resolve($preset)

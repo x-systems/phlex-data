@@ -649,7 +649,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * @param string|array|null $filter
+     * @param string|array|null $filters
      *
      * @return Model\Field[]
      */

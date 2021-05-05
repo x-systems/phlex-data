@@ -87,23 +87,6 @@ class Array_ extends Persistence
         return $row;
     }
 
-//     /**
-//      * @deprecated TODO temporary for these:
-//      *             - https://github.com/x-systems/phlex-data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsOne.php#L119
-//      *             - https://github.com/x-systems/phlex-data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsMany.php#L66
-//      *             remove once fixed/no longer needed
-//      */
-//     public function getRawDataByTable(Model $model, string $table): array
-//     {
-//         $rows = [];
-//         foreach ($this->data[$table] as $id => $row) {
-//             $this->addIdToLoadRow($model, $row, $id);
-//             $rows[$id] = $row;
-//         }
-
-//         return $rows;
-//     }
-
     private function assertNoIdMismatch($idFromRow, $id): void
     {
         if ($idFromRow !== null && (is_int($idFromRow) ? (string) $idFromRow : $idFromRow) !== (is_int($id) ? (string) $id : $id)) {
@@ -112,20 +95,6 @@ class Array_ extends Persistence
                 ->addMoreInfo('idFromData', $idFromRow);
         }
     }
-
-//     public function typecastSaveRow(Model $model, array $row): array
-//     {
-//         $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
-
-//         return $sqlPersistence->typecastSaveRow($model, $row);
-//     }
-
-//     public function typecastLoadRow(Model $model, array $row): array
-//     {
-//         $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
-
-//         return $sqlPersistence->typecastLoadRow($model, $row);
-//     }
 
     /**
      * {@inheritdoc}
@@ -201,8 +170,6 @@ class Array_ extends Persistence
     /**
      * Last ID inserted.
      * Last inserted ID for any table is stored under '$' key.
-     *
-     * @return mixed
      */
     public function lastInsertId(Model $model = null): string
     {

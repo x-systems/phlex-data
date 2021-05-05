@@ -8,6 +8,9 @@ use Doctrine\DBAL\Types\Types;
 use Phlex\Data\Exception;
 use Phlex\Data\Persistence\Sql;
 
+/**
+ * @method \Phlex\Data\Model\Field\Type\DateTime getPersistenceValueType()
+ */
 class DateTime extends Sql\Codec
 {
     protected $columnTypeName = Types::DATETIME_MUTABLE;

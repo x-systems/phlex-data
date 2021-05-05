@@ -59,7 +59,7 @@ class PersistentArrayOfStringsTest extends \Phlex\Core\PHPUnit\TestCase
             'integer' => '123',
             'money' => '123.45',
             'float' => '123.456789',
-            'boolean' => '1',
+            'boolean' => true,
             'date' => '2019-01-20',
             'datetime' => '2019-01-20T12:23:34+00:00',
             'time' => '12:23:34',

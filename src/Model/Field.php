@@ -13,7 +13,7 @@ use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
 /**
- * @method Model getOwner()
+ * @method Model|null getOwner()
  */
 class Field
 {

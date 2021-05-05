@@ -4,8 +4,16 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql\Codec;
 
-class Boolean extends Integer
+use Doctrine\DBAL\Types\Types;
+use Phlex\Data\Persistence\Sql;
+
+/**
+ * @method \Phlex\Data\Model\Field\Type\Boolean getPersistenceValueType()
+ */
+class Boolean extends Sql\Codec
 {
+    protected $columnTypeName = Types::BOOLEAN;
+
     protected function doEncode($value)
     {
         // if enum is set, first lets see if it matches one of those precisely
@@ -15,7 +23,6 @@ class Boolean extends Integer
             $value = false;
         }
 
-        // finally, convert into appropriate value
-        return $value ? 1 : 0;
+        return (bool) $value;
     }
 }

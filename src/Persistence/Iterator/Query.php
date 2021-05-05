@@ -13,7 +13,7 @@ use Phlex\Data\Persistence;
 /**
  * Class to perform queries on Array_ persistence.
  *
- * @property Phlex\Data\Persistence\Array_ $persistence
+ * @property \Phlex\Data\Persistence\Array_ $persistence
  */
 class Query extends Persistence\Query
 {
@@ -97,10 +97,6 @@ class Query extends Persistence\Query
 
     /**
      * Applies sorting on Iterator.
-     *
-     * @param array $fields
-     *
-     * @return $this
      */
     protected function initOrder(): void
     {
@@ -134,8 +130,6 @@ class Query extends Persistence\Query
 
     /**
      * Counts number of rows and replaces our generator with just a single number.
-     *
-     * @return $this
      */
     protected function initCount($alias = null): void
     {
@@ -149,8 +143,6 @@ class Query extends Persistence\Query
 
     /**
      * Checks if iterator has any rows.
-     *
-     * @return $this
      */
     protected function initExists(): void
     {
@@ -217,8 +209,7 @@ class Query extends Persistence\Query
     /**
      * Calculates SUM|AVG|MIN|MAX aggragate values for $field.
      *
-     * @param string $fieldName
-     * @param string $alias
+     * @param string|Model\Field $field
      */
     protected function initAggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): void
     {

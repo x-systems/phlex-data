@@ -37,7 +37,7 @@ abstract class Type
      *
      * Persistence class => Codec seed
      *
-     * @var array<string, array>
+     * @var array<string, array|\Phlex\Data\Persistence\Codec>
      */
     public $codecs = [];
 

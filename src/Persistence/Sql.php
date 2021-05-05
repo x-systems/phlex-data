@@ -96,7 +96,7 @@ class Sql extends Persistence
         'oci' => [Sql\Platform\Oracle::class],
         'oci12' => [Sql\Platform\Oracle::class],
         'sqlite' => [Sql\Platform\Sqlite::class],
-        'pgsql' => [Sql\Platform\PostgreSQL::class],
+        'pgsql' => [Sql\Platform\Postgresql::class],
     ];
 
     /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Tests\SQL;
+namespace Phlex\Data\Tests\Sql;
 
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;

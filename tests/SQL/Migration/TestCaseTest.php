@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Tests\SQL;
+namespace Phlex\Data\Tests\Sql;
 
-class TestCaseTest extends \Phlex\Data\Tests\SQL\TestCase
+class TestCaseTest extends \Phlex\Data\Tests\Sql\TestCase
 {
     public function testInit()
     {

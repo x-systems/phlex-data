@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Tests\SQL\Migration;
+namespace Phlex\Data\Tests\Sql\Migration;
 
 use Phlex\Data\Model;
 
-class BasicTest extends \Phlex\Data\Tests\SQL\TestCase
+class BasicTest extends \Phlex\Data\Tests\Sql\TestCase
 {
     /**
      * Test constructor.

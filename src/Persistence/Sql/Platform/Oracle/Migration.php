@@ -80,5 +80,7 @@ class Migration extends Persistence\Sql\Migration
         if ($field->isPrimaryKey()) {
             $column->setAutoincrement(false);
         }
+
+        return $column;
     }
 }

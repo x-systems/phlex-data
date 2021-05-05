@@ -271,7 +271,7 @@ class Query extends Persistence\Query
                 $this->iterator = new \CallbackFilterIterator($this->cloneIterator(), static function (array $row) use ($filterFxWeakRef) {
                     return $filterFxWeakRef->get()($row);
                 });
-                $this->iterator->filterFx = $filterFx; // prevent filter function to be GCed
+                $this->iterator->filterFx = $filterFx; // @phpstan-ignore-line - prevent filter function to be GCed
             } else {
                 $this->iterator = new \CallbackFilterIterator($this->cloneIterator(), $filterFx);
             }

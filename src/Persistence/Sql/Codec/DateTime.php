@@ -41,6 +41,7 @@ class DateTime extends Sql\Codec
         $dateTimeClass = $this->getPersistenceValueType()->dateTimeClass ?? \DateTime::class;
         $timeZoneClass = $this->getPersistenceValueType()->dateTimeZoneClass ?? \DateTimeZone::class;
 
+        $valueDecoded = null;
         if (is_numeric($value)) {
             $valueDecoded = new $dateTimeClass('@' . $value);
         } elseif (is_string($value)) {

@@ -51,7 +51,7 @@ abstract class Type
     /**
      * Resolve field type to seed from Field::$registry.
      *
-     * @param string|array|object $type
+     * @param string|array|object|null $type
      *
      * @return array|object
      */

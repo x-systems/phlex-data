@@ -87,7 +87,6 @@ abstract class Sql extends Persistence
         Model\Field\Type\Integer::class => [Sql\Codec\Integer::class],
         Model\Field\Type\String_::class => [Sql\Codec\String_::class],
         Model\Field\Type\Text::class => [Sql\Codec\Text::class],
-        Model\Field\Type\Array_::class => [Sql\Codec\Array_::class],
         Model\Field\Type\Object_::class => [Sql\Codec\Object_::class],
     ];
 
@@ -130,6 +129,13 @@ abstract class Sql extends Persistence
                 throw (new Exception('Unable to determine persistence driver type from DSN'))
                     ->addMoreInfo('dsn', $dsn['dsn']);
         }
+    }
+
+    public static function createFromConnection(Connection $connection)
+    {
+        $driverSchema = $connection->connection()->getWrappedConnection()->getWrappedConnection()->getAttribute(\PDO::ATTR_DRIVER_NAME); // @phpstan-ignore-line
+
+        return Factory::factory($driverSchema, [$connection]);
     }
 
     public static function resolve($driverSchema)
@@ -240,16 +246,16 @@ abstract class Sql extends Persistence
     protected function initPersistence(Model $model): void
     {
         $model->addMethod('migrate', static function (Model $m, ...$args) {
-            return $m->persistence->migrate($m, ...$args);
+            return $m->persistence->migrate($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('expr', static function (Model $m, ...$args) {
-            return $m->persistence->expr($m, ...$args);
+            return $m->persistence->expr($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
-            return $m->persistence->dsql($m, ...$args);
+            return $m->persistence->dsql($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
-            return $m->persistence->exprNow($m, ...$args);
+            return $m->persistence->exprNow($m, ...$args); // @phpstan-ignore-line
         });
     }
 

@@ -14,7 +14,7 @@ use Phlex\Data\Persistence;
 // NOTE: This class should stay here in this namespace because other repos rely on it. For example, Phlex\Data tests
 class TestCase extends \Phlex\Core\PHPUnit\TestCase
 {
-    /** @var Persistence|Persistence\Sql Persistence instance */
+    /** @var Persistence\Sql Persistence instance */
     public $db;
 
     /** @var array Array of database table names */
@@ -224,7 +224,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
 
             foreach ($data as &$row) {
                 foreach ($row as &$val) {
-                    if (is_int($val)) {
+                    if (is_int($val)) { // @phpstan-ignore-line
                         $val = (int) $val;
                     }
                 }

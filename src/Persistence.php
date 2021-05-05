@@ -96,9 +96,7 @@ abstract class Persistence
     {
     }
 
-    public function query(Model $model): Persistence\Query
-    {
-    }
+    abstract public function query(Model $model): Persistence\Query;
 
     /**
      * Atomic executes operations within one begin/end transaction. Not all

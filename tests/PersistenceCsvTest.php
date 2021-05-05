@@ -34,9 +34,13 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         $fileObject->setFlags(
             \SplFileObject::READ_CSV |
             \SplFileObject::SKIP_EMPTY |
-            \SplFileObject::DROP_NEW_LINE |
-            \SplFileObject::READ_AHEAD
+            \SplFileObject::DROP_NEW_LINE
         );
+
+        // see https://bugs.php.net/bug.php?id=65601
+        if (PHP_MAJOR_VERSION < 8) {
+            $fileObject->setFlags($fileObject->getFlags() | \SplFileObject::READ_AHEAD);
+        }
 
         return $fileObject;
     }
@@ -77,6 +81,23 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         $this->setDb($data);
         $data2 = $this->getDb();
         $this->assertSame($data, $data2);
+    }
+
+    public function testBaseData()
+    {
+        $data = [
+            ['name' => 'John', 'surname' => 'Smith'],
+            ['name' => 'Sarah', 'surname' => 'Jones'],
+        ];
+
+        $this->setDb($data);
+
+        $p = new Persistence\Csv($this->file);
+        $m = new Model($p);
+        $m->addField('name');
+        $m->addField('surname');
+
+        $this->assertSame($data, $m->export(['name', 'surname']));
     }
 
     public function testLoadAny()

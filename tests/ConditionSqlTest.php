@@ -355,7 +355,12 @@ class ConditionSqlTest extends Sql\TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $this->expectError();
+        if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 3) {
+            $this->expectError();
+        } else {
+            $this->expectExceptionMessageMatches('~could not be converted to string~');
+        }
+
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 

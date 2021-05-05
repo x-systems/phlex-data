@@ -20,7 +20,7 @@ use Phlex\Data\Tests\ContainsOne\Invoice;
  * ATK Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
  */
-class ContainsOneTest extends SQL\TestCase
+class ContainsOneTest extends Sql\TestCase
 {
     protected function setUp(): void
     {

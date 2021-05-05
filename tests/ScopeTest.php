@@ -71,7 +71,7 @@ class STicket extends Model
     }
 }
 
-class ScopeTest extends SQL\TestCase
+class ScopeTest extends Sql\TestCase
 {
     protected $user;
     protected $country;

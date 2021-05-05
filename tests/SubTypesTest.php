@@ -135,7 +135,7 @@ class StTransaction_TransferIn extends StGenericTransaction
 /**
  * Implements various tests for deep copying objects.
  */
-class SubTypesTest extends SQL\TestCase
+class SubTypesTest extends Sql\TestCase
 {
     protected function setUp(): void
     {

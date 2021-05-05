@@ -27,7 +27,7 @@ class Folder extends Model
     }
 }
 
-class FolderTest extends SQL\TestCase
+class FolderTest extends Sql\TestCase
 {
     public function testRate()
     {

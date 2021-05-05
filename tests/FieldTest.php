@@ -8,7 +8,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class FieldTest extends SQL\TestCase
+class FieldTest extends Sql\TestCase
 {
     public function testExplicitPrimaryKey()
     {

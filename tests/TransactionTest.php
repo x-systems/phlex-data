@@ -10,7 +10,7 @@ use Phlex\Data\Persistence;
 /**
  * Various tests to make sure transactions work OK.
  */
-class TransactionTest extends SQL\TestCase
+class TransactionTest extends Sql\TestCase
 {
     public function testAtomicOperations()
     {

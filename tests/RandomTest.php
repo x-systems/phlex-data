@@ -66,7 +66,7 @@ class Model_Item3 extends Model
     }
 }
 
-class RandomTest extends SQL\TestCase
+class RandomTest extends Sql\TestCase
 {
     public function testRate()
     {

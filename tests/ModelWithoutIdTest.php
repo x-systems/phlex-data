@@ -12,7 +12,7 @@ use Phlex\Data\Persistence;
 /**
  * Tests cases when model have to work with data that does not have ID field.
  */
-class ModelWithoutIdTest extends SQL\TestCase
+class ModelWithoutIdTest extends Sql\TestCase
 {
     public $m;
 

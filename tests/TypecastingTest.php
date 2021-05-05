@@ -33,7 +33,7 @@ class MyDateTime extends \DateTime
     }
 }
 
-class TypecastingTest extends SQL\TestCase
+class TypecastingTest extends Sql\TestCase
 {
     public function testType()
     {

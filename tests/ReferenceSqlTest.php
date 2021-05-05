@@ -13,7 +13,7 @@ use Phlex\Data\Model;
  * also that the original model can be re-loaded with a different
  * value without making any condition stick.
  */
-class ReferenceSqlTest extends SQL\TestCase
+class ReferenceSqlTest extends Sql\TestCase
 {
     public function testBasic()
     {

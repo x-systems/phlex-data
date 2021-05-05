@@ -7,7 +7,7 @@ namespace Phlex\Data\Tests;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class SerializeTest extends SQL\TestCase
+class SerializeTest extends Sql\TestCase
 {
     public function testBasicSerialize()
     {

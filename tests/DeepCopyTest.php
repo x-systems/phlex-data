@@ -137,7 +137,7 @@ class DcPayment extends Model
 /**
  * Implements various tests for deep copying objects.
  */
-class DeepCopyTest extends SQL\TestCase
+class DeepCopyTest extends Sql\TestCase
 {
     protected function setUp(): void
     {

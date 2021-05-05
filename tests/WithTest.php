@@ -9,7 +9,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class WithTest extends SQL\TestCase
+class WithTest extends Sql\TestCase
 {
     public function testWith()
     {

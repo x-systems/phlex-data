@@ -12,7 +12,7 @@ use Phlex\Data\Tests\Model\Smbo\Payment;
 /**
  * Practical test contributed by Sortmybooks.com.
  */
-class SmboTransferTest extends SQL\TestCase
+class SmboTransferTest extends Sql\TestCase
 {
     protected function setUp(): void
     {

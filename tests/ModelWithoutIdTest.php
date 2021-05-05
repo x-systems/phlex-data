@@ -7,7 +7,6 @@ namespace Phlex\Data\Tests;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
-use Phlex\Data\Persistence;
 
 /**
  * Tests cases when model have to work with data that does not have ID field.
@@ -27,8 +26,7 @@ class ModelWithoutIdTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $this->m = new Model($db, ['table' => 'user', 'primaryKey' => false]);
+        $this->m = new Model($this->db, ['table' => 'user', 'primaryKey' => false]);
 
         $this->m->addFields(['name', 'gender']);
     }

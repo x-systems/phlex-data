@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests\Sql\Migration;
 
+use Doctrine\DBAL\Platforms\OraclePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Phlex\Data\Model;
 
 class ModelTest extends \Phlex\Data\Tests\Sql\TestCase
@@ -123,11 +126,11 @@ class ModelTest extends \Phlex\Data\Tests\Sql\TestCase
     {
         $this->dropTableIfExists('user');
 
-//         $this->getMigrator()->table('user')->id()
-//             ->field('string')
-//             ->field('text', ['type' => 'text'])
-//             ->field('blob', ['type' => 'blob'])
-//             ->create();
+        if ($this->getDatabasePlatform() instanceof SQLServer2012Platform) {
+            $this->markTestIncomplete('TODO MSSQL: Implicit conversion from data type char to varbinary(max) is not allowed. Use the CONVERT function to run this query');
+        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+            $this->markTestIncomplete('TODO Oracle: ORA-01465: invalid hex number');
+        }
 
         $model = new Model($this->db, ['table' => 'user']);
         $model->addField('string');
@@ -148,6 +151,10 @@ class ModelTest extends \Phlex\Data\Tests\Sql\TestCase
             ['text', 'MIXEDcase'],
             ['blob', 'MIXEDcase'],
         ));
+
+        if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
+            $this->markTestIncomplete('PostgreSQL does not support case insensitive column types');
+        }
 
         $this->assertSame([['id' => 1], ['id' => 2]], $model->export(['id']));
     }

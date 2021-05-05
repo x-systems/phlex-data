@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Phlex\Data\Model;
-use Phlex\Data\Persistence;
 
 /**
  * Various tests to make sure transactions work OK.
@@ -14,7 +13,6 @@ class TransactionTest extends Sql\TestCase
 {
     public function testAtomicOperations()
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -23,7 +21,7 @@ class TransactionTest extends Sql\TestCase
             ],
         ]);
 
-        $m = new Model($db, ['table' => 'item']);
+        $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $m->load(2);
 
@@ -53,7 +51,6 @@ class TransactionTest extends Sql\TestCase
 
     public function testBeforeSaveHook()
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -61,7 +58,7 @@ class TransactionTest extends Sql\TestCase
         ]);
 
         // test insert
-        $m = new Model($db, ['table' => 'item']);
+        $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $m->onHook(Model::HOOK_BEFORE_SAVE, function ($model, $is_update) {
             $this->assertFalse($is_update);
@@ -69,7 +66,7 @@ class TransactionTest extends Sql\TestCase
         $m->save(['name' => 'Foo']);
 
         // test update
-        $m = new Model($db, ['table' => 'item']);
+        $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
             $this->assertTrue($is_update);
@@ -79,7 +76,6 @@ class TransactionTest extends Sql\TestCase
 
     public function testAfterSaveHook()
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -87,7 +83,7 @@ class TransactionTest extends Sql\TestCase
         ]);
 
         // test insert
-        $m = new Model($db, ['table' => 'item']);
+        $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
             $this->assertFalse($is_update);
@@ -95,7 +91,7 @@ class TransactionTest extends Sql\TestCase
         $m->save(['name' => 'Foo']);
 
         // test update
-        $m = new Model($db, ['table' => 'item']);
+        $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
             $this->assertTrue($is_update);
@@ -105,7 +101,6 @@ class TransactionTest extends Sql\TestCase
 
     public function testOnRollbackHook()
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'item' => [
                 ['name' => 'John'],
@@ -113,7 +108,7 @@ class TransactionTest extends Sql\TestCase
         ]);
 
         // test insert
-        $m = new Model($db, ['table' => 'item']);
+        $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
         $m->addField('foo');
 

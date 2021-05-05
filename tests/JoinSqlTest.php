@@ -9,14 +9,12 @@ use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
-use Phlex\Data\Persistence;
 
 class JoinSqlTest extends Sql\TestCase
 {
     public function testDirection()
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
 
         $j = $m->join('contact');
         $this->assertFalse($this->getProtected($j, 'reverse'));
@@ -42,8 +40,7 @@ class JoinSqlTest extends Sql\TestCase
 
     public function testDirectionException()
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
 
         $this->expectException(Exception::class);
         $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
@@ -55,8 +52,7 @@ class JoinSqlTest extends Sql\TestCase
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'contact_id' => 1],
@@ -99,8 +95,7 @@ class JoinSqlTest extends Sql\TestCase
 
     public function testJoinSaving2()
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
@@ -165,8 +160,7 @@ class JoinSqlTest extends Sql\TestCase
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');
         }
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John', 'test_id' => 0],
@@ -203,8 +197,7 @@ class JoinSqlTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $m_u->addField('name');
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
@@ -242,8 +235,7 @@ class JoinSqlTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
@@ -343,8 +335,7 @@ class JoinSqlTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
@@ -370,8 +361,7 @@ class JoinSqlTest extends Sql\TestCase
 
     public function testDoubleSaveHook()
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $this->setDb([
             'user' => [
                 '_' => ['id' => 1, 'name' => 'John'],
@@ -422,8 +412,7 @@ class JoinSqlTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j_contact = $m_u->join('contact');
@@ -486,8 +475,7 @@ class JoinSqlTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
@@ -524,7 +512,6 @@ class JoinSqlTest extends Sql\TestCase
      */
     public function testJoinHasOneHasMany()
     {
-        $db = new Persistence\Sql($this->db->connection);
         $this->setDb([
             'user' => [
                 1 => ['id' => 1, 'name' => 'John', 'contact_id' => 10],
@@ -547,7 +534,7 @@ class JoinSqlTest extends Sql\TestCase
         ]);
 
         // main user model joined to contact table
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $m_u->addField('contact_id');
         $m_u->addField('name');
         $j = $m_u->join('contact');
@@ -558,7 +545,7 @@ class JoinSqlTest extends Sql\TestCase
         ], $m_u->get());
 
         // hasOne phone model
-        $m_p = new Model($db, ['table' => 'phone']);
+        $m_p = new Model($this->db, ['table' => 'phone']);
         $m_p->addField('number');
         $ref = $j->hasOne('phone_id', ['model' => $m_p]); // hasOne on JOIN
         $ref->addField('number');
@@ -569,7 +556,7 @@ class JoinSqlTest extends Sql\TestCase
         ], $m_u->get());
 
         // hasMany token model (uses default ourFieldName, theirFieldName)
-        $m_t = new Model($db, ['table' => 'token']);
+        $m_t = new Model($this->db, ['table' => 'token']);
         $m_t->addField('user_id');
         $m_t->addField('token');
         $ref = $j->hasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default ourFieldName, theirFieldName)
@@ -581,7 +568,7 @@ class JoinSqlTest extends Sql\TestCase
         ], $m_u->ref('Token')->export());
 
         // hasMany email model (uses custom ourFieldName, theirFieldName)
-        $m_e = new Model($db, ['table' => 'email']);
+        $m_e = new Model($this->db, ['table' => 'email']);
         $m_e->addField('contact_id');
         $m_e->addField('address');
         $ref = $j->hasMany('Email', ['model' => $m_e, 'ourFieldName' => 'contact_id', 'theirFieldName' => 'contact_id']); // hasMany on JOIN (use custom our_field, their_field)
@@ -605,8 +592,7 @@ class JoinSqlTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m_user = new Model($db, ['table' => 'user']);
+        $m_user = new Model($this->db, ['table' => 'user']);
         $m_user->addField('name');
         $j = $m_user->join('detail.my_user_id', [
             //'reverse' => true, // this will be reverse join by default
@@ -634,7 +620,7 @@ class JoinSqlTest extends Sql\TestCase
         $this->assertEquals(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
 
         // now test reverse join defined differently
-        $m_user = new Model($db, ['table' => 'user']);
+        $m_user = new Model($this->db, ['table' => 'user']);
         $m_user->addField('name');
         $j = $m_user->join('detail', [ // here we just set foreign table name without dot and foreign_field
             'reverse' => true, // and set it as revers join
@@ -649,7 +635,7 @@ class JoinSqlTest extends Sql\TestCase
         $this->assertEquals(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
 
         // now test reverse join with table_alias and foreign_alias
-        $m_user = new Model($db, ['table' => 'user', 'table_alias' => 'u']);
+        $m_user = new Model($this->db, ['table' => 'user', 'table_alias' => 'u']);
         $m_user->addField('name');
         $j = $m_user->join('detail', [
             'reverse' => true,
@@ -685,8 +671,7 @@ class JoinSqlTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m_u = new Model($db, ['table' => 'user']);
+        $m_u = new Model($this->db, ['table' => 'user']);
         $m_u->addField('contact_id', ['actual' => 'cid']);
         $m_u->addField('name', ['actual' => 'first_name']);
         // normal join

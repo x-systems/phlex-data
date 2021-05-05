@@ -12,7 +12,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class Sql extends Persistence
+abstract class Sql extends Persistence
 {
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
@@ -92,7 +92,7 @@ class Sql extends Persistence
     ];
 
     protected static $registry = [
-        [Persistence\Sql::class],
+        [Sql\Platform\Generic::class],
         'oci' => [Sql\Platform\Oracle::class],
         'oci12' => [Sql\Platform\Oracle::class],
         'sqlite' => [Sql\Platform\Sqlite::class],

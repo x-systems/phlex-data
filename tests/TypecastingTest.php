@@ -56,9 +56,7 @@ class TypecastingTest extends Sql\TestCase
 
         date_default_timezone_set('Asia/Seoul');
 
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
@@ -148,9 +146,7 @@ class TypecastingTest extends Sql\TestCase
 
         date_default_timezone_set('Asia/Seoul');
 
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('notype');
         $m->addField('date', ['type' => 'date']);
@@ -226,9 +222,8 @@ class TypecastingTest extends Sql\TestCase
             ],
         ];
         $this->setDb($dbData);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'test']);
+        $m = new Model($this->db, ['table' => 'test']);
         $m->addField('a');
         $m->addField('b');
         $m->addField('c');
@@ -258,11 +253,10 @@ class TypecastingTest extends Sql\TestCase
             ],
         ];
         $this->setDb($dbData);
-        $db = new Persistence\Sql($this->db->connection);
 
         date_default_timezone_set('Asia/Seoul');
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
 
         $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
         $m->addField('datetime', ['type' => ['datetime', 'dateTimeClass' => MyDateTime::class]]);
@@ -305,9 +299,8 @@ class TypecastingTest extends Sql\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
 
         $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
@@ -325,9 +318,8 @@ class TypecastingTest extends Sql\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
 
         $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
@@ -345,9 +337,8 @@ class TypecastingTest extends Sql\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
 
         $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
@@ -365,9 +356,8 @@ class TypecastingTest extends Sql\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
         $m->loadAny();
@@ -385,8 +375,7 @@ class TypecastingTest extends Sql\TestCase
 
     public function testTypecastTimezone()
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'event']);
+        $m = new Model($this->db, ['table' => 'event']);
         $dt = $m->addField('dt', ['type' => ['datetime', 'codec' => ['timezone' => 'EEST']]]);
         $d = $m->addField('d', ['type' => ['date', 'codec' => ['timezone' => 'EEST']]]);
         $t = $m->addField('t', ['type' => ['time', 'codec' => ['timezone' => 'EEST']]]);
@@ -432,9 +421,8 @@ class TypecastingTest extends Sql\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $m->loadAny();
 
@@ -453,9 +441,8 @@ class TypecastingTest extends Sql\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $this->expectException(Exception::class);
         $m->loadAny();
@@ -472,9 +459,8 @@ class TypecastingTest extends Sql\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $m->loadAny();
         $m->set('ts', clone $m->get('ts'));
@@ -491,9 +477,8 @@ class TypecastingTest extends Sql\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
         $m->loadAny();
         $m->set('ts', new \DateTime('2012-02-30'));
@@ -505,9 +490,7 @@ class TypecastingTest extends Sql\TestCase
 
     public function testIntegerSave()
     {
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('i', ['type' => 'integer']);
 
         $m->data['i'] = 1;
@@ -523,7 +506,7 @@ class TypecastingTest extends Sql\TestCase
         $this->assertSame([], $m->dirty);
 
         // same test without type integer
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('i');
 
         $m->data['i'] = 1;
@@ -554,9 +537,8 @@ class TypecastingTest extends Sql\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
         $m->loadAny();
 
@@ -582,9 +564,8 @@ class TypecastingTest extends Sql\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
         $m->loadAny();
 

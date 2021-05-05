@@ -91,8 +91,7 @@ class IteratorTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -135,8 +134,7 @@ class IteratorTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');
@@ -179,8 +177,7 @@ class IteratorTest extends Sql\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         $i->setOrder('total_net');

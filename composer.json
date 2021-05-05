@@ -42,7 +42,8 @@
 		"php" : ">=7.3.0",
 		"ext-intl" : "*",
 		"atk4/dsql" : "dev-develop",
-		"x-systems/phlex-core" : "dev-develop"
+		"x-systems/phlex-core" : "dev-develop",
+		"doctrine/dbal" : "~3"
 	},
 	"require-release" : {
 		"php" : ">=7.3.0",

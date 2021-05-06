@@ -64,4 +64,4 @@ return (new PhpCsFixer\Config())
         'php_unit_strict' => false,
     ])
     ->setFinder($finder)
-    ->setCacheFile(__DIR__ . '/.php-cs-fixer.cache');
+    ->setCacheFile(sys_get_temp_dir() . '/php-cs-fixer.' . md5(__DIR__) . '.cache');

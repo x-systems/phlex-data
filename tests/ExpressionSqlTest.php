@@ -8,14 +8,12 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Phlex\Data\Model;
-use Phlex\Data\Persistence;
 
-class ExpressionSqlTest extends SQL\TestCase
+class ExpressionSqlTest extends Sql\TestCase
 {
     public function testNakedExpression()
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => false]);
+        $m = new Model($this->db, ['table' => false]);
         $m->addExpression('x', '2+3');
         $m->tryLoadAny();
         $this->assertEquals(5, $m->get('x'));
@@ -30,8 +28,7 @@ class ExpressionSqlTest extends SQL\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
@@ -71,8 +68,7 @@ class ExpressionSqlTest extends SQL\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', function ($i, $q) {
             return '[total_net]+[total_vat]';
         });
@@ -102,8 +98,7 @@ class ExpressionSqlTest extends SQL\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = (new Model($db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
+        $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('sum_net', $i->toQuery()->aggregate('sum', 'total_net'));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
@@ -117,7 +112,7 @@ class ExpressionSqlTest extends SQL\TestCase
         $this->assertEquals(10, $i->get('total_net'));
         $this->assertEquals(30, $i->get('sum_net'));
 
-        $q = $db->dsql();
+        $q = $this->db->dsql();
         $q->field($i->toQuery()->count(), 'total_orders');
         $q->field($i->toQuery()->aggregate('sum', 'total_net'), 'total_net');
         $this->assertEquals(
@@ -135,8 +130,7 @@ class ExpressionSqlTest extends SQL\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'user']);
+        $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'surname', 'cached_name']);
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
@@ -180,8 +174,7 @@ class ExpressionSqlTest extends SQL\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'math']);
+        $m = new Model($this->db, ['table' => 'math']);
         $m->addFields(['a', 'b']);
 
         $m->addExpression('sum', '[a] + [b]');
@@ -195,7 +188,7 @@ class ExpressionSqlTest extends SQL\TestCase
         $this->assertEquals(9, $m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
 
         $this->setDb($dbData);
-        $m = new Model($db, ['table' => 'math', 'reload_after_save' => false]);
+        $m = new Model($this->db, ['table' => 'math', 'reload_after_save' => false]);
         $m->addFields(['a', 'b']);
 
         $m->addExpression('sum', '[a] + [b]');
@@ -211,8 +204,7 @@ class ExpressionSqlTest extends SQL\TestCase
 
     public function testExpressionActionAlias()
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => false]);
+        $m = new Model($this->db, ['table' => false]);
         $m->addExpression('x', '2+3');
 
         // use alias as array key if it is set
@@ -245,8 +237,7 @@ class ExpressionSqlTest extends SQL\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $i = new Model($db, ['table' => 'invoice']);
+        $i = new Model($this->db, ['table' => 'invoice']);
 
         $i->addExpression('zero_basic', [$i->expr('0'), 'type' => 'integer', 'system' => true]);
         $i->addExpression('zero_never_save', [$i->expr('0'), 'type' => 'integer', 'system' => true, 'never_save' => true]);

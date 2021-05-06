@@ -72,7 +72,8 @@ class Array_ extends Persistence
         }
 
         if ($model->primaryKey) {
-            $primaryKeyColumnName = $model->getPrimaryKeyField()->getPersistenceName();
+            $primaryKeyField = $model->getPrimaryKeyField();
+            $primaryKeyColumnName = $primaryKeyField->getPersistenceName();
 
             if (array_key_exists($primaryKeyColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$primaryKeyColumnName], $id);
@@ -80,28 +81,11 @@ class Array_ extends Persistence
             }
 
             // typecastSave value so we can use strict comparison
-            $row = [$primaryKeyColumnName => $this->typecastSaveField($model->getPrimaryKeyField(), $id)] + $row;
+            $row = [$primaryKeyColumnName => $primaryKeyField->encodePersistenceValue($id)] + $row;
         }
 
         return $row;
     }
-
-//     /**
-//      * @deprecated TODO temporary for these:
-//      *             - https://github.com/x-systems/phlex-data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsOne.php#L119
-//      *             - https://github.com/x-systems/phlex-data/blob/90ab68ac063b8fc2c72dcd66115f1bd3f70a3a92/src/Reference/ContainsMany.php#L66
-//      *             remove once fixed/no longer needed
-//      */
-//     public function getRawDataByTable(Model $model, string $table): array
-//     {
-//         $rows = [];
-//         foreach ($this->data[$table] as $id => $row) {
-//             $this->addIdToLoadRow($model, $row, $id);
-//             $rows[$id] = $row;
-//         }
-
-//         return $rows;
-//     }
 
     private function assertNoIdMismatch($idFromRow, $id): void
     {
@@ -110,20 +94,6 @@ class Array_ extends Persistence
                 ->addMoreInfo('idFromKey', $id)
                 ->addMoreInfo('idFromData', $idFromRow);
         }
-    }
-
-    public function typecastSaveRow(Model $model, array $row): array
-    {
-        $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
-
-        return $sqlPersistence->typecastSaveRow($model, $row);
-    }
-
-    public function typecastLoadRow(Model $model, array $row): array
-    {
-        $sqlPersistence = (new \ReflectionClass(Sql::class))->newInstanceWithoutConstructor();
-
-        return $sqlPersistence->typecastLoadRow($model, $row);
     }
 
     /**
@@ -175,14 +145,14 @@ class Array_ extends Persistence
     {
         $table = $table ?? $model->table;
 
-        $type = $model->primaryKey ? get_class($model->getField($model->primaryKey)->getType()) : Model\Field\Type\Integer::class;
+        $type = $model->primaryKey ? get_class($model->getField($model->primaryKey)->getPersistenceValueType()) : Model\Field\Type\Integer::class;
 
         switch ($type) {
             case Model\Field\Type\Integer::class:
                 $nextId = ($this->autoIncrement[$table] ?? 0) + 1;
 
                 break;
-            case Model\Field\Type\Line::class:
+            case Model\Field\Type\String_::class:
                 $nextId = uniqid();
 
                 break;
@@ -200,8 +170,6 @@ class Array_ extends Persistence
     /**
      * Last ID inserted.
      * Last inserted ID for any table is stored under '$' key.
-     *
-     * @return mixed
      */
     public function lastInsertId(Model $model = null): string
     {

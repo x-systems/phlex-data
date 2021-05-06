@@ -52,7 +52,7 @@ class UaClient extends Model
 /**
  * Implements various tests for UserAction.
  */
-class UserActionTest extends SQL\TestCase
+class UserActionTest extends Sql\TestCase
 {
     public $pers;
 

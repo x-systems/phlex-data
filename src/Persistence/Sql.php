@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace Phlex\Data\Persistence;
 
 use Atk4\Dsql\Connection;
-use Atk4\Dsql\Exception as DsqlException;
 use Atk4\Dsql\Expression;
 use Atk4\Dsql\Query;
-use Doctrine\DBAL\Platforms;
+use Phlex\Core\Factory;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class Sql extends Persistence
+abstract class Sql extends Persistence
 {
     /** @const string */
     public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
@@ -71,6 +70,88 @@ class Sql extends Persistence
     public $_default_seed_join = [Sql\Join::class];
 
     /**
+     * Default class when creating migration.
+     *
+     * @var array
+     */
+    public $_default_seed_migration = [Sql\Migration::class];
+
+    protected static $defaultCodecs = [
+        [Sql\Codec\String_::class],
+        Model\Field\Type\Array_::class => [Sql\Codec\Array_::class],
+        Model\Field\Type\Boolean::class => [Sql\Codec\Boolean::class],
+        Model\Field\Type\Date::class => [Sql\Codec\Date::class],
+        Model\Field\Type\DateTime::class => [Sql\Codec\DateTime::class],
+        Model\Field\Type\Time::class => [Sql\Codec\Time::class],
+        Model\Field\Type\Float_::class => [Sql\Codec\Float_::class],
+        Model\Field\Type\Integer::class => [Sql\Codec\Integer::class],
+        Model\Field\Type\String_::class => [Sql\Codec\String_::class],
+        Model\Field\Type\Text::class => [Sql\Codec\Text::class],
+        Model\Field\Type\Object_::class => [Sql\Codec\Object_::class],
+    ];
+
+    protected static $registry = [
+        [Sql\Platform\Generic::class],
+        'oci' => [Sql\Platform\Oracle::class],
+        'oci12' => [Sql\Platform\Oracle::class],
+        'sqlite' => [Sql\Platform\Sqlite::class],
+        'pgsql' => [Sql\Platform\Postgresql::class],
+    ];
+
+    /**
+     * Connects database.
+     *
+     * @param string|array $dsn Format as PDO DSN or use "mysql://user:pass@host/db;option=blah",
+     *                          leaving user and password arguments = null
+     */
+    public static function connect($dsn, string $user = null, string $password = null, array $args = []): self
+    {
+        // parse DSN string
+        $dsn = \Atk4\Dsql\Connection::normalizeDsn($dsn, $user, $password);
+
+        switch ($dsn['driverSchema']) {
+            case 'mysql':
+            case 'oci':
+            case 'oci12':
+                // Omitting UTF8 is always a bad problem, so unless it's specified we will do that
+                // to prevent nasty problems. This is un-tested on other databases, so moving it here.
+                // It gives problem with sqlite
+                if (strpos($dsn['dsn'], ';charset=') === false) {
+                    $dsn['dsn'] .= ';charset=utf8mb4';
+                }
+
+                // no break
+            case 'pgsql':
+            case 'sqlsrv':
+            case 'sqlite':
+                return Factory::factory(self::resolve($dsn['driverSchema']), [$dsn['dsn'], $dsn['user'], $dsn['pass'], $args]);
+            default:
+                throw (new Exception('Unable to determine persistence driver type from DSN'))
+                    ->addMoreInfo('dsn', $dsn['dsn']);
+        }
+    }
+
+    public static function createFromConnection(Connection $connection)
+    {
+        $driverSchema = $connection->connection()->getWrappedConnection()->getWrappedConnection()->getAttribute(\PDO::ATTR_DRIVER_NAME); // @phpstan-ignore-line
+
+        return Factory::factory($driverSchema, [$connection]);
+    }
+
+    public static function resolve($driverSchema)
+    {
+        return self::$registry[$driverSchema] ?? self::$registry[0];
+    }
+
+    /**
+     * Disconnect from database explicitly.
+     */
+    public function disconnect(): void
+    {
+        $this->connection = null; // @phpstan-ignore-line
+    }
+
+    /**
      * Constructor.
      *
      * @param Connection|string $connection
@@ -101,16 +182,6 @@ class Sql extends Persistence
     }
 
     /**
-     * Disconnect from database explicitly.
-     */
-    public function disconnect(): void
-    {
-        parent::disconnect();
-
-        $this->connection = null; // @phpstan-ignore-line
-    }
-
-    /**
      * Returns Query instance.
      */
     public function dsql(): Query
@@ -128,11 +199,6 @@ class Sql extends Persistence
     public function atomic(\Closure $fx)
     {
         return $this->connection->atomic($fx);
-    }
-
-    public function getDatabasePlatform(): Platforms\AbstractPlatform
-    {
-        return $this->connection->getDatabasePlatform();
     }
 
     /**
@@ -179,15 +245,28 @@ class Sql extends Persistence
      */
     protected function initPersistence(Model $model): void
     {
+        $model->addMethod('migrate', static function (Model $m, ...$args) {
+            return $m->persistence->migrate($m, ...$args); // @phpstan-ignore-line
+        });
         $model->addMethod('expr', static function (Model $m, ...$args) {
-            return $m->persistence->expr($m, ...$args);
+            return $m->persistence->expr($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('dsql', static function (Model $m, ...$args) {
-            return $m->persistence->dsql($m, ...$args);
+            return $m->persistence->dsql($m, ...$args); // @phpstan-ignore-line
         });
         $model->addMethod('exprNow', static function (Model $m, ...$args) {
-            return $m->persistence->exprNow($m, ...$args);
+            return $m->persistence->exprNow($m, ...$args); // @phpstan-ignore-line
         });
+    }
+
+    public function migrate(Model $model): Sql\Migration
+    {
+        return $this->getMigration($model)->create();
+    }
+
+    public function getMigration(Model $model = null): Sql\Migration
+    {
+        return Factory::factory(Factory::mergeSeeds($this->_default_seed_migration, ['source' => $model ?: $this->connection]));
     }
 
     /**
@@ -229,524 +308,13 @@ class Sql extends Persistence
         return new Sql\Query($model, $this);
     }
 
-    /**
-     * This is the actual field typecasting, which you can override in your
-     * persistence to implement necessary typecasting.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function _typecastSaveField(Model\Field $field, $value)
+    protected function getIdSequenceName(Model $model): ?string
     {
-        // work only on copied value not real one !!!
-        $v = is_object($value) ? clone $value : $value;
-
-        switch (get_class($field->getType())) {
-            case Model\Field\Type\Boolean::class:
-                // if enum is not set, then simply cast value to integer
-                if (!isset($field->enum) || !$field->enum) {
-                    $v = (int) $v;
-
-                    break;
-                }
-
-                // if enum is set, first lets see if it matches one of those precisely
-                if ($v === $field->enum[1]) {
-                    $v = true;
-                } elseif ($v === $field->enum[0]) {
-                    $v = false;
-                }
-
-                // finally, convert into appropriate value
-                $v = $v ? $field->enum[1] : $field->enum[0];
-
-                break;
-            case Model\Field\Type\Date::class:
-                $type = 'date';
-                // no break
-            case Model\Field\Type\DateTime::class:
-                $type = $type ?? 'datetime';
-                // no break
-            case Model\Field\Type\Time::class:
-                $type = $type ?? 'time';
-
-                $dt_class = $field->dateTimeClass ?? \DateTime::class;
-                $tz_class = $field->dateTimeZoneClass ?? \DateTimeZone::class;
-
-                if ($v instanceof $dt_class || $v instanceof \DateTimeInterface) {
-                    $format = ['date' => 'Y-m-d', 'datetime' => 'Y-m-d H:i:s.u', 'time' => 'H:i:s.u'];
-                    $format = $field->persist_format ?: $format[$type];
-
-                    // datetime only - set to persisting timezone
-                    if ($type === 'datetime' && isset($field->persist_timezone)) {
-                        $v = new \DateTime($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
-                        $v->setTimezone(new $tz_class($field->persist_timezone));
-                    }
-                    $v = $v->format($format);
-                }
-
-                break;
-            case Model\Field\Type\Array_::class:
-            case Model\Field\Type\Object_::class:
-                // don't encode if we already use some kind of serialization
-                $v = $field->serialize ? $v : $this->jsonEncode($field, $v);
-
-                break;
-        }
-
-        return $v;
-    }
-
-    /**
-     * This is the actual field typecasting, which you can override in your
-     * persistence to implement necessary typecasting.
-     *
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    public function _typecastLoadField(Model\Field $field, $value)
-    {
-        // work only on copied value not real one !!!
-        $v = is_object($value) ? clone $value : $value;
-
-        switch (get_class($field->getType())) {
-            case Model\Field\Type\Generic::class:
-            case Model\Field\Type\Line::class:
-            case Model\Field\Type\Text::class:
-                // do nothing - it's ok as it is
-                break;
-            case Model\Field\Type\Integer::class:
-                $v = (int) $v;
-
-                break;
-            case Model\Field\Type\Numeric::class:
-                $v = (float) $v;
-
-                break;
-            case Model\Field\Type\Money::class:
-                $v = round((float) $v, 4);
-
-                break;
-            case Model\Field\Type\Boolean::class:
-                if (is_array($field->enum ?? null)) {
-                    if (isset($field->enum[0]) && $v === $field->enum[0]) {
-                        $v = false;
-                    } elseif (isset($field->enum[1]) && $v === $field->enum[1]) {
-                        $v = true;
-                    } else {
-                        $v = null;
-                    }
-                } elseif ($v === '') {
-                    $v = null;
-                } else {
-                    $v = (bool) $v;
-                }
-
-                break;
-            case Model\Field\Type\Date::class:
-                $type = 'date';
-                // no break
-            case Model\Field\Type\DateTime::class:
-                $type = $type ?? 'datetime';
-                // no break
-            case Model\Field\Type\Time::class:
-                $type = $type ?? 'time';
-
-                $dt_class = $field->dateTimeClass ?? \DateTime::class;
-                $tz_class = $field->dateTimeZoneClass ?? \DateTimeZone::class;
-
-                if (is_numeric($v)) {
-                    $v = new $dt_class('@' . $v);
-                } elseif (is_string($v)) {
-                    // ! symbol in date format is essential here to remove time part of DateTime - don't remove, this is not a bug
-                    $format = ['date' => '+!Y-m-d', 'datetime' => '+!Y-m-d H:i:s', 'time' => '+!H:i:s'];
-                    if ($field->persist_format) {
-                        $format = $field->persist_format;
-                    } else {
-                        $format = $format[$type];
-                        if (strpos($v, '.') !== false) { // time possibly with microseconds, otherwise invalid format
-                            $format = preg_replace('~(?<=H:i:s)(?![. ]*u)~', '.u', $format);
-                        }
-                    }
-
-                    // datetime only - set from persisting timezone
-                    if ($type === 'datetime' && isset($field->persist_timezone)) {
-                        $v = $dt_class::createFromFormat($format, $v, new $tz_class($field->persist_timezone));
-                        if ($v !== false) {
-                            $v->setTimezone(new $tz_class(date_default_timezone_get()));
-                        }
-                    } else {
-                        $v = $dt_class::createFromFormat($format, $v);
-                    }
-
-                    if ($v === false) {
-                        throw (new Exception('Incorrectly formatted date/time'))
-                            ->addMoreInfo('format', $format)
-                            ->addMoreInfo('value', $value)
-                            ->addMoreInfo('field', $field);
-                    }
-
-                    // need to cast here because DateTime::createFromFormat returns DateTime object not $dt_class
-                    // this is what Carbon::instance(DateTime $dt) method does for example
-                    if ($dt_class !== 'DateTime') {
-                        $v = new $dt_class($v->format('Y-m-d H:i:s.u'), $v->getTimezone());
-                    }
-                }
-
-                break;
-            case Model\Field\Type\Array_::class:
-                // don't decode if we already use some kind of serialization
-                $v = $field->serialize ? $v : $this->jsonDecode($field, $v, true);
-
-                break;
-            case Model\Field\Type\Object_::class:
-                // don't decode if we already use some kind of serialization
-                $v = $field->serialize ? $v : $this->jsonDecode($field, $v, false);
-
-                break;
-        }
-
-        return $v;
-    }
-
-//     /**
-//      * Executing $model->action('update') will call this method.
-//      *
-//      * @return Query
-//      */
-//     public function action(Model $model, string $type, array $args = [])
-//     {
-//         $query = $this->initQuery($model);
-//         switch ($type) {
-//             case 'insert':
-//                 return $query->mode('insert');
-//                 // cannot apply conditions now
-
-//             case 'update':
-//                 $query->mode('update');
-
-//                 break;
-//             case 'delete':
-//                 $query->mode('delete');
-//                 $this->initQueryConditions($model, $query);
-//                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-//                 return $query;
-//             case 'select':
-//                 $this->initQueryFields($model, $query, $args[0] ?? null);
-
-//                 break;
-//             case 'count':
-//                 $this->initQueryConditions($model, $query);
-//                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-//                 return $query->reset('field')->field('count(*)', $args['alias'] ?? null);
-//             case 'exists':
-//                 $this->initQueryConditions($model, $query);
-//                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-//                 return $query->exists();
-//             case 'field':
-//                 if (!isset($args[0])) {
-//                     throw (new Exception('This action requires one argument with field name'))
-//                         ->addMoreInfo('action', $type);
-//                 }
-
-//                 $field = is_string($args[0]) ? $model->getField($args[0]) : $args[0];
-//                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-//                 if (isset($args['alias'])) {
-//                     $query->reset('field')->field($field, $args['alias']);
-//                 } elseif ($field instanceof Sql\Field\Expression) {
-//                     $query->reset('field')->field($field, $field->short_name);
-//                 } else {
-//                     $query->reset('field')->field($field);
-//                 }
-//                 $this->initQueryConditions($model, $query);
-//                 $this->setLimitOrder($model, $query);
-
-//                 if ($model->loaded()) {
-//                     $query->where($model->getPrimaryKeyField(), $model->getId());
-//                 }
-
-//                 return $query;
-//             case 'fx':
-//             case 'fx0':
-//                 if (!isset($args[0], $args[1])) {
-//                     throw (new Exception('fx action needs 2 arguments, eg: ["sum", "amount"]'))
-//                         ->addMoreInfo('action', $type);
-//                 }
-
-//                 [$fx, $field] = $args;
-
-//                 $field = is_string($field) ? $model->getField($field) : $field;
-
-//                 $this->initQueryConditions($model, $query);
-//                 $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-//                 if ($type === 'fx') {
-//                     $expr = "{$fx}([])";
-//                 } else {
-//                     $expr = "coalesce({$fx}([]), 0)";
-//                 }
-
-//                 if (isset($args['alias'])) {
-//                     $query->reset('field')->field($query->expr($expr, [$field]), $args['alias']);
-//                 } elseif ($field instanceof Sql\Field\Expression) {
-//                     $query->reset('field')->field($query->expr($expr, [$field]), $fx . '_' . $field->short_name);
-//                 } else {
-//                     $query->reset('field')->field($query->expr($expr, [$field]));
-//                 }
-
-//                 return $query;
-//             default:
-//                 throw (new Exception('Unsupported action mode'))
-//                     ->addMoreInfo('type', $type);
-//         }
-
-//         $this->initQueryConditions($model, $query);
-//         $this->setLimitOrder($model, $query);
-//         $model->hook(self::HOOK_INIT_SELECT_QUERY, [$query, $type]);
-
-//         return $query;
-//     }
-
-//     public function tryLoad(Model $model, $id): ?array
-//     {
-//         $noId = $id === self::ID_LOAD_ONE || $id === self::ID_LOAD_ANY;
-
-//         $query = $model->action('select');
-
-//         if (!$noId) {
-//             if (!$model->hasPrimaryKeyField()) {
-//                 throw (new Exception('Unable to load field by "id" when Model->primaryKey is not defined.'))
-//                     ->addMoreInfo('id', $id);
-//             }
-//             $query->where($model->getPrimaryKeyField(), $id);
-//         }
-//         $query->limit($id === self::ID_LOAD_ANY ? 1 : 2);
-
-//         // execute action
-//         try {
-//             $rowsRaw = $query->getRows();
-//             if (count($rowsRaw) === 0) {
-//                 return null;
-//             } elseif (count($rowsRaw) !== 1) {
-//                 throw (new Exception('Ambiguous conditions, more than one record can be loaded.'))
-//                     ->addMoreInfo('model', $model)
-//                     ->addMoreInfo('primaryKey', $model->primaryKey)
-//                     ->addMoreInfo('id', $noId ? null : $id);
-//             }
-//             $data = $this->typecastLoadRow($model, $rowsRaw[0]);
-//         } catch (DsqlException $e) {
-//             throw (new Exception('Unable to load due to query error', 0, $e))
-//                 ->addMoreInfo('query', $query->getDebugQuery())
-//                 ->addMoreInfo('message', $e->getMessage())
-//                 ->addMoreInfo('model', $model)
-//                 ->addMoreInfo('scope', $model->scope()->toWords());
-//         }
-
-//         if ($model->primaryKey && !isset($data[$model->primaryKey])) {
-//             throw (new Exception('Model uses "primaryKey" but it was not available in the database'))
-//                 ->addMoreInfo('model', $model)
-//                 ->addMoreInfo('primaryKey', $model->primaryKey)
-//                 ->addMoreInfo('id', $noId ? null : $id)
-//                 ->addMoreInfo('data', $data);
-//         }
-
-//         return $data;
-//     }
-
-//     /**
-//      * Inserts record in database and returns new record ID.
-//      */
-//     public function insert(Model $model, array $data): string
-//     {
-//         $insert = $model->action('insert');
-
-//         if ($model->primaryKey && !isset($data[$model->primaryKey])) {
-//             unset($data[$model->primaryKey]);
-
-//             $this->syncIdSequence($model);
-//         }
-
-//         $insert->set($this->typecastSaveRow($model, $data));
-
-//         $st = null;
-//         try {
-//             $model->hook(self::HOOK_BEFORE_INSERT_QUERY, [$insert]);
-//             $st = $insert->execute();
-//         } catch (DsqlException $e) {
-//             throw (new Exception('Unable to execute insert query' . $insert->getDebugQuery(), 0, $e))
-//                 ->addMoreInfo('query', $insert->getDebugQuery())
-//                 ->addMoreInfo('message', $e->getMessage())
-//                 ->addMoreInfo('model', $model)
-//                 ->addMoreInfo('scope', $model->scope()->toWords());
-//         }
-
-//         if ($model->primaryKey && isset($data[$model->primaryKey])) {
-//             $id = (string) $data[$model->primaryKey];
-
-//             $this->syncIdSequence($model);
-//         } else {
-//             $id = $this->lastInsertId($model);
-//         }
-
-//         $model->hook(self::HOOK_AFTER_INSERT_QUERY, [$insert, $st]);
-
-//         return $id;
-//     }
-
-    /**
-     * Export all DataSet.
-     */
-//     public function export(Model $model, array $fields = null, bool $typecast = true): array
-//     {
-//         $data = $model->action('select', [$fields])->getRows();
-
-//         if ($typecast) {
-//             $data = array_map(function ($row) use ($model) {
-//                 return $this->typecastLoadRow($model, $row);
-//             }, $data);
-//         }
-
-//         return $data;
-//     }
-
-//     public function prepareIterator(Model $model): \Traversable
-//     {
-//         $export = $model->action('select');
-
-//         try {
-//             return $export->getIterator();
-//         } catch (DsqlException $e) {
-//             throw (new Exception('Unable to execute iteration query', 0, $e))
-//                 ->addMoreInfo('query', $export->getDebugQuery())
-//                 ->addMoreInfo('message', $e->getMessage())
-//                 ->addMoreInfo('model', $model)
-//                 ->addMoreInfo('scope', $model->scope()->toWords());
-//         }
-//     }
-
-    /**
-     * Updates record in database.
-     *
-     * @param mixed $id
-     */
-//     public function update(Model $model, $id, array $data)
-//     {
-//         if (!$model->primaryKey) {
-//             throw new Exception('primaryKey of a model is not set. Unable to update record.');
-//         }
-
-//         $update = $this->initQuery($model);
-//         $update->mode('update');
-
-//         $data = $this->typecastSaveRow($model, $data);
-
-//         // only apply fields that has been modified
-//         $update->set($data);
-//         $update->where($model->getPrimaryKeyField(), $id);
-
-//         $st = null;
-//         try {
-//             $model->hook(self::HOOK_BEFORE_UPDATE_QUERY, [$update]);
-//             if ($data) {
-//                 $st = $update->execute();
-//             }
-//         } catch (DsqlException $e) {
-//             throw (new Exception('Unable to update due to query error', 0, $e))
-//                 ->addMoreInfo('query', $update->getDebugQuery())
-//                 ->addMoreInfo('message', $e->getMessage())
-//                 ->addMoreInfo('model', $model)
-//                 ->addMoreInfo('scope', $model->scope()->toWords());
-//         }
-
-//         if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->dirty[$model->primaryKey]) {
-//             // ID was changed
-//             $model->setId($data[$model->primaryKey]);
-//         }
-
-//         $model->hook(self::HOOK_AFTER_UPDATE_QUERY, [$update, $st]);
-
-//         // if any rows were updated in database, and we had expressions, reload
-//         if ($model->reload_after_save === true && (!$st || $st->rowCount())) {
-//             $d = $model->dirty;
-//             $model->reload();
-//             $model->_dirty_after_reload = $model->dirty;
-//             $model->dirty = $d;
-//         }
-//     }
-
-//     /**
-//      * Deletes record from database.
-//      *
-//      * @param mixed $id
-//      */
-//     public function delete(Model $model, $id)
-//     {
-//         if (!$model->primaryKey) {
-//             throw new Exception('primaryKey of a model is not set. Unable to delete record.');
-//         }
-
-//         $delete = $this->initQuery($model);
-//         $delete->mode('delete');
-//         $delete->where($model->getPrimaryKeyField(), $id);
-//         $model->hook(self::HOOK_BEFORE_DELETE_QUERY, [$delete]);
-
-//         try {
-//             $delete->execute();
-//         } catch (DsqlException $e) {
-//             throw (new Exception('Unable to delete due to query error', 0, $e))
-//                 ->addMoreInfo('query', $delete->getDebugQuery())
-//                 ->addMoreInfo('message', $e->getMessage())
-//                 ->addMoreInfo('model', $model)
-//                 ->addMoreInfo('scope', $model->scope()->toWords());
-//         }
-//     }
-
-    private function getIdSequenceName(Model $model): ?string
-    {
-        $sequenceName = $model->sequence ?: null;
-
-        if ($sequenceName === null) {
-            // PostgreSQL uses sequence internally for PK autoincrement,
-            // use default name if not set explicitly
-            if ($this->connection instanceof \Atk4\Dsql\Postgresql\Connection) {
-                $sequenceName = $model->table . '_' . $model->primaryKey . '_seq';
-            }
-        }
-
-        return $sequenceName;
+        return $model->sequence ?: null;
     }
 
     public function lastInsertId(Model $model = null): string
     {
-        // TODO: Oracle does not support lastInsertId(), only for testing
-        // as this does not support concurrent inserts
-        if ($this->connection instanceof \Atk4\Dsql\Oracle\Connection) {
-            if (!$model->primaryKey) {
-                return ''; // TODO code should never call lastInsertId() if id field is not defined
-            }
-
-            $query = $this->connection->dsql()->table($model->table);
-            $query->field($query->expr('max({id_col})', ['id_col' => $model->primaryKey]), 'max_id');
-
-            return $query->getOne();
-        }
-
         return $this->connection->lastInsertId($this->getIdSequenceName($model));
-    }
-
-    protected function syncIdSequence(Model $model): void
-    {
-        // PostgreSQL sequence must be manually synchronized if a row with explicit ID was inserted
-        if ($this->connection instanceof \Atk4\Dsql\Postgresql\Connection) {
-            $this->connection->expr(
-                'select setval([], coalesce(max({}), 0) + 1, false) from {}',
-                [$this->getIdSequenceName($model), $model->primaryKey, $model->table]
-            )->execute();
-        }
     }
 }

@@ -6,9 +6,9 @@ namespace Phlex\Data\Model\Field\Type;
 
 class Date extends DateTime
 {
-    public function normalize($value)
+    protected function doNormalize($value)
     {
-        $value = parent::normalize($value);
+        $value = parent::doNormalize($value);
 
         if ($value !== null) {
             // remove time portion from date type value

@@ -6,12 +6,11 @@ namespace Phlex\Data\Tests;
 
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
-use Phlex\Data\Persistence;
 
 /**
  * Tests cases when model have to work with data that does not have ID field.
  */
-class ReadOnlyModeTest extends SQL\TestCase
+class ReadOnlyModeTest extends Sql\TestCase
 {
     public $m;
 
@@ -26,8 +25,7 @@ class ReadOnlyModeTest extends SQL\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $this->m = new Model($db, ['table' => 'user', 'read_only' => true]);
+        $this->m = new Model($this->db, ['table' => 'user', 'read_only' => true]);
 
         $this->m->addFields(['name', 'gender']);
     }

@@ -86,11 +86,13 @@ class Csv extends Persistence
 
     public function getRawDataIterator(Model $model): \Iterator
     {
-        return (function ($iterator) use ($model) {
-            foreach ($iterator as $id => $row) {
-                $row = array_combine($this->getFileHeader(), $row);
+        $keys = $this->getFileHeader();
 
-                yield $id - 1 => $this->getRowWithId($model, $row, $id);
+        return (function ($iterator) use ($model, $keys) {
+            foreach ($iterator as $id => $row) {
+                if ($row) {
+                    yield $id - 1 => $this->getRowWithId($model, array_combine($keys, $row), $id);
+                }
             }
         })(new \LimitIterator($this->fileObject, 1));
     }
@@ -121,16 +123,16 @@ class Csv extends Persistence
         }
 
         if ($model->primaryKey) {
-            $idField = $model->getField($model->primaryKey);
-            $idColumnName = $idField->actual ?? $idField->short_name;
+            $primaryKeyField = $model->getPrimaryKeyField();
+            $primaryKeyColumnName = $primaryKeyField->getPersistenceName();
 
-            if (array_key_exists($idColumnName, $row)) {
-                $this->assertNoIdMismatch($row[$idColumnName], $id);
-                unset($row[$idColumnName]);
+            if (array_key_exists($primaryKeyColumnName, $row)) {
+                $this->assertNoIdMismatch($row[$primaryKeyColumnName], $id);
+                unset($row[$primaryKeyColumnName]);
             }
 
             // typecastSave value so we can use strict comparison
-            $row = [$idColumnName => $this->typecastSaveField($idField, $id)] + $row;
+            $row = [$primaryKeyColumnName => $primaryKeyField->encodePersistenceValue($id)] + $row;
         }
 
         return $row;
@@ -160,9 +162,13 @@ class Csv extends Persistence
         $this->fileObject->setFlags(
             \SplFileObject::READ_CSV |
             \SplFileObject::SKIP_EMPTY |
-            \SplFileObject::DROP_NEW_LINE |
-            \SplFileObject::READ_AHEAD
+            \SplFileObject::DROP_NEW_LINE
         );
+
+        // see https://bugs.php.net/bug.php?id=65601
+        if (PHP_MAJOR_VERSION < 8) {
+            $this->fileObject->setFlags($this->fileObject->getFlags() | \SplFileObject::READ_AHEAD);
+        }
 
         $this->fileObject->setCsvControl($this->delimiter, $this->enclosure, $this->escape_char);
     }

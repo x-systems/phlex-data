@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Phlex\Data\Model;
-use Phlex\Data\Model\Field\ValidationException;
 use Phlex\Data\Persistence;
 
 class ValidationTest
@@ -75,7 +74,7 @@ class ValidationTests extends \Phlex\Core\PHPUnit\TestCase
     public function testValidate2()
     {
         $this->m->set('name', 'Python');
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $this->expectExceptionMessage('Snakes');
         $this->m->save();
     }
@@ -84,7 +83,7 @@ class ValidationTests extends \Phlex\Core\PHPUnit\TestCase
     {
         $this->m->set('name', 'Python');
         $this->m->set('domain', 'example.com');
-        $this->expectException(ValidationException::class);
+        $this->expectException(Model\Field\ValidationException::class);
         $this->expectExceptionMessage('Multiple');
         $this->m->save();
     }
@@ -96,7 +95,7 @@ class ValidationTests extends \Phlex\Core\PHPUnit\TestCase
             $this->m->set('domain', 'example.com');
             $this->m->save();
             $this->fail('Expected exception');
-        } catch (\Phlex\Data\ValidationException $e) {
+        } catch (Model\Field\ValidationException $e) {
             $this->assertSame('This domain is reserved for examples only', $e->getParams()['errors']['domain']);
 
             return;
@@ -128,7 +127,7 @@ class ValidationTests extends \Phlex\Core\PHPUnit\TestCase
             $this->m->set('name', 'C#');
             $this->m->save();
             $this->fail('Expected exception');
-        } catch (\Phlex\Data\ValidationException $e) {
+        } catch (Model\Field\ValidationException $e) {
             $this->assertSame('No sharp objects allowed', $e->errors['name']);
         }
 
@@ -137,7 +136,7 @@ class ValidationTests extends \Phlex\Core\PHPUnit\TestCase
             $this->m->set('domain', 'example.com');
             $this->m->save();
             $this->fail('Expected exception');
-        } catch (\Phlex\Data\ValidationException $e) {
+        } catch (Model\Field\ValidationException $e) {
             $this->assertSame(2, count($e->errors));
         }
     }

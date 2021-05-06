@@ -10,13 +10,15 @@ use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Core\TrackableTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 /**
- * @method Model getOwner()
+ * @method Model|null getOwner()
  */
 class Field
 {
     use DiContainerTrait;
+    use Field\TypeTrait;
     use JoinLinkTrait;
     use ReadableCaptionTrait;
     use TrackableTrait;
@@ -42,11 +44,6 @@ class Field
      * @var mixed
      */
     public $default;
-
-    /**
-     * @var string|Field\Type
-     */
-    public $type;
 
     /**
      * For several types enum can provide list of available options. ['blue', 'red'].
@@ -208,15 +205,6 @@ class Field
         );
     }
 
-    public function getType(): Field\Type
-    {
-        if (!is_object($this->type)) {
-            $this->type = Factory::factory(Field\Type::resolve($this->type));
-        }
-
-        return $this->type;
-    }
-
     /**
      * Validate and normalize value.
      *
@@ -243,7 +231,7 @@ class Field
         }
 
         try {
-            return $this->getType()->normalize($value);
+            return $this->getValueType()->normalize($value);
         } catch (Field\Type\ValidationException $e) {
             throw new Field\ValidationException([$this->name => $e->getMessage()]);
         }
@@ -256,7 +244,7 @@ class Field
      */
     public function toString($value = null): ?string
     {
-        return $this->getType()->toString($value ?? $this->get());
+        return $this->getValueType()->toString($value ?? $this->get());
     }
 
     /**
@@ -374,44 +362,69 @@ class Field
         return $this->actual ?? $this->short_name;
     }
 
+    public function getPersistenceValueType(): Field\Type
+    {
+        if (!$serializer = $this->getSerializer()) {
+            return $this->getValueType();
+        }
+
+        return $serializer->getValueType();
+    }
+
+    public function encodePersistenceValue($value)
+    {
+        // check null values for mandatory fields
+        if ($value === null && $this->mandatory) {
+            throw new Field\ValidationException([$this->short_name => 'Mandatory field value cannot be null'], $this->getOwner());
+        }
+
+        return $this->getPersistenceCodec()->encode($this->serialize($value));
+    }
+
+    public function decodePersistenceValue($value)
+    {
+        // ignore null values
+        if ($value === null) {
+            return $value;
+        }
+
+        return $this->getPersistenceCodec()->decode($this->unserialize($value));
+    }
+
+    public function getPersistenceCodec(): Persistence\Codec
+    {
+        return $this->getPersistenceValueType()->createCodec($this);
+    }
+
+    public function getSerializer()
+    {
+        return $this->serialize ? Factory::factory(Field\Serializer::resolve($this->serialize)) : null;
+    }
+
+    protected function serialize($value)
+    {
+        if (!$serializer = $this->getSerializer()) {
+            return $value;
+        }
+
+        return $serializer->encode($value);
+    }
+
+    protected function unserialize($value)
+    {
+        if (!$serializer = $this->getSerializer()) {
+            return $value;
+        }
+
+        return $serializer->decode($value);
+    }
+
     /**
      * Should this field use alias?
      */
     public function useAlias(): bool
     {
         return isset($this->actual);
-    }
-
-    // }}}
-
-    // {{{ Scope condition
-
-    /**
-     * Returns arguments to be used for query on this field based on the condition.
-     *
-     * @param string|null $operator one of Scope\Condition operators
-     * @param mixed       $value    the condition value to be handled
-     */
-    public function getQueryArguments($operator, $value): array
-    {
-        $skipValueTypecast = [
-            Scope\Condition::OPERATOR_LIKE,
-            Scope\Condition::OPERATOR_NOT_LIKE,
-            Scope\Condition::OPERATOR_REGEXP,
-            Scope\Condition::OPERATOR_NOT_REGEXP,
-        ];
-
-        if (!in_array($operator, $skipValueTypecast, true)) {
-            if (is_array($value)) {
-                $value = array_map(function ($option) {
-                    return $this->getOwner()->persistence->typecastSaveField($this, $option);
-                }, $value);
-            } else {
-                $value = $this->getOwner()->persistence->typecastSaveField($this, $value);
-            }
-        }
-
-        return [$this, $operator, $value];
     }
 
     // }}}

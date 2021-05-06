@@ -97,8 +97,6 @@ abstract class Query implements \IteratorAggregate
     /**
      * Setup query as deleting record(s) within the Query::$scope.
      * If $id argument provided only record with $id will be deleted if within the scope.
-     *
-     * @param int|string $id
      */
     public function delete(): self
     {

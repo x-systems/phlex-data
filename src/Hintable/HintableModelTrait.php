@@ -211,8 +211,6 @@ trait HintableModelTrait
     /**
      * Returns a magic class that pretends to be instance of this class, but in reality
      * only non-static hinting methods are supported.
-     *
-     * @return static
      */
     public static function hinting()
     {

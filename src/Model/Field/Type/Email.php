@@ -46,12 +46,8 @@ class Email extends Model\Field\Type
      *
      * @return mixed
      */
-    public function normalize($value)
+    protected function doNormalize($value)
     {
-        if ($value === null || $value === '') {
-            return;
-        }
-
         // split value by any number of separator characters
         $emails = preg_split('/[' . implode('', array_map('preg_quote', $this->separator)) . ']+/', (string) $value, -1, PREG_SPLIT_NO_EMPTY);
 
@@ -85,7 +81,7 @@ class Email extends Model\Field\Type
             return $email;
         }, $emails);
 
-        return parent::normalize(implode(', ', $emails));
+        return parent::doNormalize(implode(', ', $emails));
     }
 
     /**

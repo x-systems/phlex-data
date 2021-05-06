@@ -8,13 +8,13 @@ use Traversable;
 
 class Result extends \Doctrine\DBAL\Result
 {
-    /** @var Traversable */
+    /** @var \Iterator|null */
     protected $iterator;
 
-    /** @var \Closure */
+    /** @var \Closure|null */
     protected $generatorClosure;
 
-    /** @var int */
+    /** @var int|null */
     protected $rowsCount;
 
     public function __construct($iterator = null, int $rowsCount = null)
@@ -25,7 +25,7 @@ class Result extends \Doctrine\DBAL\Result
             $iterator = ($this->generatorClosure)();
         }
 
-        if ($iterator instanceof Traversable) {
+        if ($iterator instanceof \Iterator) {
             $iterator->rewind();
         }
 
@@ -62,8 +62,12 @@ class Result extends \Doctrine\DBAL\Result
 
     public function fetchAllNumeric(): array
     {
-        // @todo: convert each row to numeric key => value pairs
-        return $this->fetchAllAssociative();
+        $result = [];
+        foreach ($this->fetchAllAssociative() as $key => $row) {
+            $result[$key] = array_values($row);
+        }
+
+        return $result;
     }
 
     public function fetchAllAssociative(): array
@@ -114,6 +118,14 @@ class Result extends \Doctrine\DBAL\Result
 
     public function columnCount(): int
     {
+        $firstRow = [];
+        foreach ($this->getFreshIterator() as $row) {
+            $firstRow = $row;
+
+            break;
+        }
+
+        return count($firstRow);
     }
 
     public function free(): void

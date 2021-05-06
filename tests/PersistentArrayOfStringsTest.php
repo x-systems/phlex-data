@@ -14,9 +14,14 @@ class PersistentArrayOfStringsTest extends \Phlex\Core\PHPUnit\TestCase
      */
     public function testTypecasting()
     {
-        $p = new Persistence\ArrayOfStrings([
+        $p = new Persistence\Array_([
             'user' => [],
         ]);
+
+        $p->setCodecs([
+            [Persistence\Array_\Codec\String_::class],
+        ]);
+
         $m = new Model($p, ['table' => 'user']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('text', ['type' => 'text']);
@@ -51,13 +56,13 @@ class PersistentArrayOfStringsTest extends \Phlex\Core\PHPUnit\TestCase
             'id' => '1',
             'string' => 'TwoLines',
             'text' => "Two\nLines",
-            'integer' => 123,
-            'money' => 123.45,
-            'float' => 123.456789,
-            'boolean' => 1,
+            'integer' => '123',
+            'money' => '123.45',
+            'float' => '123.456789',
+            'boolean' => '1',
             'date' => '2019-01-20',
-            'datetime' => '2019-01-20 12:23:34.000000',
-            'time' => '12:23:34.000000',
+            'datetime' => '2019-01-20T12:23:34+00:00',
+            'time' => '12:23:34',
             'array' => '{"foo":"bar","int":123,"rows":["a","b"]}',
             'object' => '{"foo":"bar","int":123,"rows":["a","b"]}',
         ]], $data);

@@ -13,7 +13,7 @@ use Phlex\Data\Model;
  * also that the original model can be re-loaded with a different
  * value without making any condition stick.
  */
-class ReferenceSqlTest extends SQL\TestCase
+class ReferenceSqlTest extends Sql\TestCase
 {
     public function testBasic()
     {
@@ -263,10 +263,10 @@ class ReferenceSqlTest extends SQL\TestCase
         $i->load('1');
 
         // type was set explicitly
-        $this->assertSame(Model\Field\Type\Money::class, get_class($i->getField('total_vat')->getType()));
+        $this->assertSame(Model\Field\Type\Money::class, get_class($i->getField('total_vat')->getPersistenceValueType()));
 
         // type was not set and is not inherited
-        $this->assertSame(Model\Field\Type\Generic::class, get_class($i->getField('total_net')->getType()));
+        $this->assertSame(Model\Field\Type\Generic::class, get_class($i->getField('total_net')->getPersistenceValueType()));
 
         $this->assertEquals(40, $i->get('total_net'));
         $this->assertEquals(9.2, $i->get('total_vat'));

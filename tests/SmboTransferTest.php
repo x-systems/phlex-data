@@ -4,44 +4,36 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Data\Persistence;
+use Phlex\Data\Model;
 use Phlex\Data\Tests\Model\Smbo\Account;
-use Phlex\Data\Tests\Model\Smbo\Company;
+use Phlex\Data\Tests\Model\Smbo\Document;
 use Phlex\Data\Tests\Model\Smbo\Payment;
-use Phlex\Data\Tests\Model\Smbo\Transfer;
 
 /**
  * Practical test contributed by Sortmybooks.com.
  */
-class SmboTransferTest extends SQL\TestCase
+class SmboTransferTest extends Sql\TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->getMigrator()->table('account')->dropIfExists()
-            ->id()
-            ->field('name')
-            ->create();
+        $this->dropTableIfExists('account');
+        $this->dropTableIfExists('document');
+        $this->dropTableIfExists('payment');
 
-        $this->getMigrator()->table('document')->dropIfExists()
-            ->id()
-            ->field('reference')
-            ->field('contact_from_id')
-            ->field('contact_to_id')
-            ->field('doc_type')
-            ->field('amount', ['type' => 'float'])
-            ->create();
+        (new Account($this->db))->migrate();
+        (new Document($this->db))->migrate();
 
-        $this->getMigrator()->table('payment')->dropIfExists()
-            ->id()
-            ->field('document_id', ['type' => 'integer'])
-            ->field('account_id', ['type' => 'integer'])
-            ->field('cheque_no')
-            //->field('misc_payment', ['type' => 'enum(\'N\',\'Y\')'])
-            ->field('misc_payment')
-            ->field('transfer_document_id')
-            ->create();
+        $payment = new Model($this->db, ['table' => 'payment']);
+
+        $payment->addField('document_id', ['type' => 'integer']);
+        $payment->addField('account_id', ['type' => 'integer']);
+        $payment->addField('cheque_no');
+        $payment->addField('misc_payment');
+        $payment->addField('transfer_document_id');
+
+        $payment->migrate();
     }
 
     /**
@@ -110,7 +102,7 @@ class SmboTransferTest extends SQL\TestCase
     /*
     public function testBasicEntities()
     {
-        $db = Persistence::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
+        $db = Persistence\Sql::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
 
         // Create a new company
         $company = new Company($db);

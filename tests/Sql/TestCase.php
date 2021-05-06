@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Tests\SQL;
+namespace Phlex\Data\Tests\Sql;
 
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
@@ -14,7 +14,7 @@ use Phlex\Data\Persistence;
 // NOTE: This class should stay here in this namespace because other repos rely on it. For example, Phlex\Data tests
 class TestCase extends \Phlex\Core\PHPUnit\TestCase
 {
-    /** @var Persistence|Persistence\Sql Persistence instance */
+    /** @var Persistence\Sql Persistence instance */
     public $db;
 
     /** @var array Array of database table names */
@@ -35,7 +35,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
         $user = $GLOBALS['DB_USER'] ?? null;
         $pass = $GLOBALS['DB_PASSWD'] ?? null;
 
-        $this->db = Persistence::connect($dsn, $user, $pass);
+        $this->db = Persistence\Sql::connect($dsn, $user, $pass);
 
         // reset DB autoincrement to 1, tests rely on it
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
@@ -135,12 +135,10 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
 
             $first_row = current($data);
             if ($first_row) {
-                $migrator = $this->getMigrator()->table($tableName);
+                $model = new Model($this->db, ['table' => $tableName]);
 
-                $migrator->id('id');
-
-                foreach ($first_row as $field => $row) {
-                    if ($field === 'id') {
+                foreach ($first_row as $fieldName => $row) {
+                    if ($fieldName === 'id') {
                         continue;
                     }
 
@@ -154,10 +152,34 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                         $fieldType = 'string';
                     }
 
-                    $migrator->field($field, ['type' => $fieldType]);
+                    $model->addField($fieldName, ['type' => $fieldType]);
                 }
 
-                $migrator->create();
+                $model->migrate();
+
+//                 $migrator = $this->getMigrator()->table($tableName);
+
+//                 $migrator->id('id');
+
+//                 foreach ($first_row as $field => $row) {
+//                     if ($field === 'id') {
+//                         continue;
+//                     }
+
+//                     if (is_int($row)) {
+//                         $fieldType = 'integer';
+//                     } elseif (is_float($row)) {
+//                         $fieldType = 'float';
+//                     } elseif ($row instanceof \DateTimeInterface) {
+//                         $fieldType = 'datetime';
+//                     } else {
+//                         $fieldType = 'string';
+//                     }
+
+//                     $migrator->field($field, ['type' => $fieldType]);
+//                 }
+
+//                 $migrator->create();
             }
 
             // import data
@@ -202,7 +224,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
 
             foreach ($data as &$row) {
                 foreach ($row as &$val) {
-                    if (is_int($val)) {
+                    if (is_int($val)) { // @phpstan-ignore-line
                         $val = (int) $val;
                     }
                 }

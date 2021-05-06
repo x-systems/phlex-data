@@ -7,7 +7,7 @@ namespace Phlex\Data\Model\Field\Type;
 /**
  * Integer field type.
  */
-class Integer extends Numeric
+class Integer extends Float_
 {
     /**
      * @var int specify how many decimal numbers should be saved
@@ -19,10 +19,8 @@ class Integer extends Numeric
      */
     public $round = false;
 
-    public function normalize($value)
+    protected function doNormalize($value)
     {
-        $value = parent::normalize($value);
-
-        return $value === null || $value === '' ? null : (int) $value;
+        return (int) parent::doNormalize($value);
     }
 }

@@ -186,12 +186,25 @@ class Condition extends AbstractScope
 
                     foreach (array_reverse($refModels) as $refModel) {
                         if ($field === '#') {
-                            $field = $value ? $refModel->toQuery()->count() : $refModel->toQuery()->exists();
+                            if (is_string($value) && $value === (string) (int) $value) {
+                                $value = (int) $value;
+                            }
+
+                            if ($value === 0) {
+                                $field = $refModel->toQuery()->exists();
+                                $value = false;
+                            } elseif ($value === 1 && $operator === self::OPERATOR_GREATER_EQUAL) {
+                                $field = $refModel->toQuery()->exists();
+                                $operator = self::OPERATOR_EQUALS;
+                                $value = true;
+                            } else {
+                                $field = $refModel->toQuery()->count();
+                            }
                         } else {
                             $refModel->addCondition($field, $operator, $value);
                             $field = $refModel->toQuery()->exists();
-                            $operator = '>';
-                            $value = 0;
+                            $operator = self::OPERATOR_EQUALS;
+                            $value = true;
                         }
                     }
                 } else {
@@ -201,7 +214,7 @@ class Condition extends AbstractScope
 
             // handle the query arguments using field
             if ($field instanceof Model\Field) {
-                [$field, $operator, $value] = $field->getQueryArguments($operator, $value);
+                [$field, $operator, $value] = $field->getPersistenceCodec()->getQueryArguments($operator, $value);
             }
 
             // only expression contained in $field

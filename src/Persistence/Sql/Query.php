@@ -16,6 +16,8 @@ use Phlex\Data\Persistence;
  * Class to perform queries on Sql persistence.
  * Utilizes Atk4\Dsql\Query to perform the operations.
  *
+ * @property Persistence\Sql $persistence
+ *
  * @method DsqlQuery getDebugQuery()
  * @method DsqlQuery render()
  * @method DsqlQuery mode()
@@ -115,7 +117,7 @@ class Query extends Persistence\Query implements Expressionable
         }
     }
 
-    protected function addField(Field $field): void
+    protected function addField(Model\Field $field): void
     {
         $this->dsql->field($field, $field->useAlias() ? $field->short_name : null);
     }

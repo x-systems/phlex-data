@@ -7,7 +7,7 @@ namespace Phlex\Data\Model\Field\Type;
 /**
  * Class Money offers a lightweight implementation of currencies.
  */
-class Money extends Numeric
+class Money extends Float_
 {
     /**
      * @var int specify how many decimal numbers should be saved

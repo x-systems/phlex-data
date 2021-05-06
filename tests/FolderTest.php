@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Phlex\Data\Model;
-use Phlex\Data\Persistence;
 
 class Folder extends Model
 {
@@ -27,7 +26,7 @@ class Folder extends Model
     }
 }
 
-class FolderTest extends SQL\TestCase
+class FolderTest extends Sql\TestCase
 {
     public function testRate()
     {
@@ -44,8 +43,7 @@ class FolderTest extends SQL\TestCase
             ],
         ]);
 
-        $db = new Persistence\Sql($this->db->connection);
-        $f = new Folder($db);
+        $f = new Folder($this->db);
         $f->load(4);
 
         $this->assertEquals([

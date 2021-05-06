@@ -6,4 +6,8 @@ namespace Phlex\Data\Model\Field\Type;
 
 class Generic extends \Phlex\Data\Model\Field\Type
 {
+    public function normalize($value)
+    {
+        return $value;
+    }
 }

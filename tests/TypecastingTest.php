@@ -33,7 +33,7 @@ class MyDateTime extends \DateTime
     }
 }
 
-class TypecastingTest extends SQL\TestCase
+class TypecastingTest extends Sql\TestCase
 {
     public function testType()
     {
@@ -56,9 +56,7 @@ class TypecastingTest extends SQL\TestCase
 
         date_default_timezone_set('Asia/Seoul');
 
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('date', ['type' => 'date']);
         $m->addField('datetime', ['type' => 'datetime']);
@@ -148,9 +146,7 @@ class TypecastingTest extends SQL\TestCase
 
         date_default_timezone_set('Asia/Seoul');
 
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('string', ['type' => 'string']);
         $m->addField('notype');
         $m->addField('date', ['type' => 'date']);
@@ -226,9 +222,8 @@ class TypecastingTest extends SQL\TestCase
             ],
         ];
         $this->setDb($dbData);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'test']);
+        $m = new Model($this->db, ['table' => 'test']);
         $m->addField('a');
         $m->addField('b');
         $m->addField('c');
@@ -258,15 +253,14 @@ class TypecastingTest extends SQL\TestCase
             ],
         ];
         $this->setDb($dbData);
-        $db = new Persistence\Sql($this->db->connection);
 
         date_default_timezone_set('Asia/Seoul');
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
-        $m->addField('datetime', ['type' => 'datetime', 'dateTimeClass' => MyDateTime::class]);
-        $m->addField('time', ['type' => 'time', 'dateTimeClass' => MyTime::class]);
+        $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
+        $m->addField('datetime', ['type' => ['datetime', 'dateTimeClass' => MyDateTime::class]]);
+        $m->addField('time', ['type' => ['time', 'dateTimeClass' => MyTime::class]]);
         $m->addField('money', ['type' => 'money']);
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
@@ -275,7 +269,7 @@ class TypecastingTest extends SQL\TestCase
             return str_rot13($v);
         };
 
-        $m->addField('rot13', ['typecast' => [$rot, $rot]]);
+        $m->addField('rot13', ['type' => ['string', 'codec' => [Persistence\Sql\Codec\Dynamic::class, 'encodeFx' => $rot, 'decodeFx' => $rot]]]);
 
         $mm = (clone $m)->load(1);
 
@@ -305,11 +299,10 @@ class TypecastingTest extends SQL\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
         $m->tryLoad(1);
 
@@ -325,11 +318,10 @@ class TypecastingTest extends SQL\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
         $m->tryLoadAny();
 
@@ -345,11 +337,10 @@ class TypecastingTest extends SQL\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
 
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
         $m->loadBy('id', 1);
 
@@ -365,10 +356,9 @@ class TypecastingTest extends SQL\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
-        $m->addField('date', ['type' => 'date', 'dateTimeClass' => MyDate::class]);
+        $m = new Model($this->db, ['table' => 'types']);
+        $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
         $m->loadAny();
         $this->assertTrue($m->loaded());
@@ -385,40 +375,39 @@ class TypecastingTest extends SQL\TestCase
 
     public function testTypecastTimezone()
     {
-        $db = new Persistence\Sql($this->db->connection);
-        $m = new Model($db, ['table' => 'event']);
-        $dt = $m->addField('dt', ['type' => 'datetime', 'persist_timezone' => 'EEST']);
-        $d = $m->addField('d', ['type' => 'date', 'persist_timezone' => 'EEST']);
-        $t = $m->addField('t', ['type' => 'time', 'persist_timezone' => 'EEST']);
+        $m = new Model($this->db, ['table' => 'event']);
+        $dt = $m->addField('dt', ['type' => ['datetime', 'codec' => ['timezone' => 'EEST']]]);
+        $d = $m->addField('d', ['type' => ['date', 'codec' => ['timezone' => 'EEST']]]);
+        $t = $m->addField('t', ['type' => ['time', 'codec' => ['timezone' => 'EEST']]]);
 
         date_default_timezone_set('UTC');
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+        $this->assertSame('2005-08-16 00:52:01.000000', $dt->encodePersistenceValue($s));
+        $this->assertSame('2005-08-15', $d->encodePersistenceValue($s));
+        $this->assertSame('22:52:01.000000', $t->encodePersistenceValue($s));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $dt->decodePersistenceValue('2005-08-16 00:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $d->decodePersistenceValue('2005-08-15'));
+        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $t->decodePersistenceValue('22:52:01'));
 
         date_default_timezone_set('Asia/Tokyo');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $db->typecastLoadField($dt, '2005-08-16 00:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+        $this->assertSame('2005-08-16 00:52:01.000000', $dt->encodePersistenceValue($s));
+        $this->assertSame('2005-08-15', $d->encodePersistenceValue($s));
+        $this->assertSame('22:52:01.000000', $t->encodePersistenceValue($s));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $dt->decodePersistenceValue('2005-08-16 00:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $d->decodePersistenceValue('2005-08-15'));
+        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $t->decodePersistenceValue('22:52:01'));
 
         date_default_timezone_set('America/Los_Angeles');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01'); // uses servers default timezone
-        $this->assertSame('2005-08-16 07:52:01.000000', $db->typecastSaveField($dt, $s));
-        $this->assertSame('2005-08-15', $db->typecastSaveField($d, $s));
-        $this->assertSame('22:52:01.000000', $db->typecastSaveField($t, $s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $db->typecastLoadField($dt, '2005-08-16 07:52:01'));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $db->typecastLoadField($d, '2005-08-15'));
-        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $db->typecastLoadField($t, '22:52:01'));
+        $this->assertSame('2005-08-16 07:52:01.000000', $dt->encodePersistenceValue($s));
+        $this->assertSame('2005-08-15', $d->encodePersistenceValue($s));
+        $this->assertSame('22:52:01.000000', $t->encodePersistenceValue($s));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $dt->decodePersistenceValue('2005-08-16 07:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $d->decodePersistenceValue('2005-08-15'));
+        $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $t->decodePersistenceValue('22:52:01'));
     }
 
     public function testTimestamp()
@@ -432,9 +421,8 @@ class TypecastingTest extends SQL\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $m->loadAny();
 
@@ -453,9 +441,8 @@ class TypecastingTest extends SQL\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $this->expectException(Exception::class);
         $m->loadAny();
@@ -472,9 +459,8 @@ class TypecastingTest extends SQL\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $m->loadAny();
         $m->set('ts', clone $m->get('ts'));
@@ -491,9 +477,8 @@ class TypecastingTest extends SQL\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
         $m->loadAny();
         $m->set('ts', new \DateTime('2012-02-30'));
@@ -505,9 +490,7 @@ class TypecastingTest extends SQL\TestCase
 
     public function testIntegerSave()
     {
-        $db = new Persistence\Sql($this->db->connection);
-
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('i', ['type' => 'integer']);
 
         $m->data['i'] = 1;
@@ -523,7 +506,7 @@ class TypecastingTest extends SQL\TestCase
         $this->assertSame([], $m->dirty);
 
         // same test without type integer
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('i');
 
         $m->data['i'] = 1;
@@ -554,9 +537,8 @@ class TypecastingTest extends SQL\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
         $m->loadAny();
 
@@ -582,9 +564,8 @@ class TypecastingTest extends SQL\TestCase
                 ],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
-        $m = new Model($db, ['table' => 'types']);
+        $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
         $m->loadAny();
 

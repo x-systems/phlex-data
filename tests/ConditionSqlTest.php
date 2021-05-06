@@ -8,7 +8,7 @@ use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Phlex\Data\Model;
 
-class ConditionSqlTest extends SQL\TestCase
+class ConditionSqlTest extends Sql\TestCase
 {
     public function testBasic()
     {
@@ -355,7 +355,12 @@ class ConditionSqlTest extends SQL\TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $this->expectException(\Atk4\Dsql\Exception::class);
+        if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 3) {
+            $this->expectError();
+        } else {
+            $this->expectExceptionMessageMatches('~could not be converted to string~');
+        }
+
         $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 

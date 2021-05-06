@@ -7,9 +7,8 @@ namespace Phlex\Data\Tests;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
-use Phlex\Data\Persistence;
 
-class WithTest extends SQL\TestCase
+class WithTest extends Sql\TestCase
 {
     public function testWith()
     {
@@ -27,14 +26,13 @@ class WithTest extends SQL\TestCase
                 3 => ['id' => 3, 'net' => 100, 'user_id' => 20],
             ],
         ]);
-        $db = new Persistence\Sql($this->db->connection);
 
         // setup models
-        $m_user = new Model($db, ['table' => 'user']);
+        $m_user = new Model($this->db, ['table' => 'user']);
         $m_user->addField('name');
         $m_user->addField('salary', ['type' => 'money']);
 
-        $m_invoice = new Model($db, ['table' => 'invoice']);
+        $m_invoice = new Model($this->db, ['table' => 'invoice']);
         $m_invoice->addField('net', ['type' => 'money']);
         $m_invoice->hasOne('user_id', ['model' => $m_user]);
         $m_invoice->addCondition('net', '>', 100);

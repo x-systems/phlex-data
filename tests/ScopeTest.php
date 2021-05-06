@@ -71,7 +71,7 @@ class STicket extends Model
     }
 }
 
-class ScopeTest extends SQL\TestCase
+class ScopeTest extends Sql\TestCase
 {
     protected $user;
     protected $country;
@@ -185,11 +185,11 @@ class ScopeTest extends SQL\TestCase
 
         $condition = new Condition('country_id', 2);
 
-        $originalReferenceModelData = $user->getField('country_id')->reference->getOwner()->data;
+        $originalReferenceModelData = $user->getField('country_id')->getReference()->getOwner()->data;
 
         $this->assertEquals('Country Id is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
-        $this->assertSame($originalReferenceModelData, $user->getField('country_id')->reference->getOwner()->data);
+        $this->assertSame($originalReferenceModelData, $user->getField('country_id')->getReference()->getOwner()->data);
     }
 
     public function testConditionUnsupportedToWords()

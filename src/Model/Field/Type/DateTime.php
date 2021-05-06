@@ -10,22 +10,11 @@ namespace Phlex\Data\Model\Field\Type;
 class DateTime extends \Phlex\Data\Model\Field\Type
 {
     /**
-     * Array with Persistence settings like format, timezone etc.
-     * It's job of Persistence to take these settings into account if needed.
-     *
-     * @var array
-     */
-    public $persistence = [
-        'format' => null, // for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s' etc.
-        'timezone' => 'UTC', // 'IST', 'UTC', 'Europe/Riga' etc.
-    ];
-
-    /**
      * DateTime class used for type = 'data', 'datetime', 'time' fields.
      *
      * For example, 'DateTime', 'Carbon' etc.
      *
-     * @param string
+     * @var string
      */
     public $dateTimeClass = \DateTime::class;
 
@@ -34,16 +23,12 @@ class DateTime extends \Phlex\Data\Model\Field\Type
      *
      * For example, 'DateTimeZone', 'Carbon' etc.
      *
-     * @param string
+     * @var string
      */
     public $dateTimeZoneClass = \DateTimeZone::class;
 
-    public function normalize($value)
+    protected function doNormalize($value)
     {
-        if ($value === null || $value === '') {
-            return;
-        }
-
         // we allow http://php.net/manual/en/datetime.formats.relative.php
         $class = $this->dateTimeClass ?? \DateTime::class;
 

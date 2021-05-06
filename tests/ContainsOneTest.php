@@ -20,7 +20,7 @@ use Phlex\Data\Tests\ContainsOne\Invoice;
  * ATK Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
  */
-class ContainsOneTest extends SQL\TestCase
+class ContainsOneTest extends Sql\TestCase
 {
     protected function setUp(): void
     {
@@ -134,13 +134,13 @@ class ContainsOneTest extends SQL\TestCase
         };
         $this->assertSame(
             json_encode([
-                $i->addr->fieldName()->id => '1',
+                $i->addr->fieldName()->id => 1,
                 $i->addr->fieldName()->country_id => 2,
                 $i->addr->fieldName()->address => 'bar',
                 $i->addr->fieldName()->built_date => $formatDtForCompareFunc(new \DateTime('2019-01-01')),
                 $i->addr->fieldName()->tags => json_encode(['foo', 'bar']),
                 $i->addr->fieldName()->door_code => json_encode([
-                    $i->addr->door_code->fieldName()->id => '1',
+                    $i->addr->door_code->fieldName()->id => 1,
                     $i->addr->door_code->fieldName()->code => 'DEF',
                     $i->addr->door_code->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
                 ]),

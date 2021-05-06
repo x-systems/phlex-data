@@ -8,7 +8,7 @@ $finder = PhpCsFixer\Finder::create()
         'vendor',
     ]);
 
-return PhpCsFixer\Config::create()
+return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
     ->setRules([
         '@PhpCsFixer' => true,
@@ -64,4 +64,4 @@ return PhpCsFixer\Config::create()
         'php_unit_strict' => false,
     ])
     ->setFinder($finder)
-    ->setCacheFile(__DIR__ . '/.php_cs.cache');
+    ->setCacheFile(__DIR__ . '/.php-cs-fixer.cache');

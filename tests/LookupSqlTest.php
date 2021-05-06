@@ -137,7 +137,7 @@ class LFriend extends Model
 /**
  * ATK Data has an option to lookup ID values if their "lookup" values are specified.
  */
-class LookupSqlTest extends SQL\TestCase
+class LookupSqlTest extends Sql\TestCase
 {
     protected function setUp(): void
     {

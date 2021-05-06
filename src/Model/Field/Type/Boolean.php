@@ -20,12 +20,8 @@ class Boolean extends \Phlex\Data\Model\Field\Type
      */
     public $valueFalse = false;
 
-    public function normalize($value)
+    protected function doNormalize($value)
     {
-        if ($value === null || $value === '') {
-            return;
-        }
-
         if (is_bool($value)) {
             return $value;
         }
@@ -47,8 +43,6 @@ class Boolean extends \Phlex\Data\Model\Field\Type
 
     public function toString($value): ?string
     {
-        $value = $this->normalize($value);
-
-        return $value === $this->valueTrue ? '1' : '0';
+        return $this->normalize($value) === $this->valueTrue ? '1' : '0';
     }
 }

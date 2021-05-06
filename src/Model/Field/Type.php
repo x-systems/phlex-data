@@ -5,21 +5,25 @@ declare(strict_types=1);
 namespace Phlex\Data\Model\Field;
 
 use Phlex\Core\DiContainerTrait;
+use Phlex\Core\Factory;
+use Phlex\Data\Model;
 
-class Type
+abstract class Type
 {
     use DiContainerTrait;
 
     protected static $registry = [
-        'default' => [Type\Generic::class],
+        [Type\Generic::class],
         'generic' => [Type\Generic::class],
+        'bool' => [Type\Boolean::class],
         'boolean' => [Type\Boolean::class],
-        'float' => [Type\Numeric::class],
+        'float' => [Type\Float_::class],
         'integer' => [Type\Integer::class],
         'int' => [Type\Integer::class],
         'money' => [Type\Money::class],
         'text' => [Type\Text::class],
-        'string' => [Type\Line::class],
+        'string' => [Type\String_::class],
+        'password' => [Type\Password::class],
         'email' => [Type\Email::class],
         'datetime' => [Type\DateTime::class],
         'date' => [Type\Date::class],
@@ -29,9 +33,25 @@ class Type
     ];
 
     /**
+     * Registry of codecs to be used.
+     *
+     * Persistence class => Codec seed
+     *
+     * @var array<string, array|\Phlex\Data\Persistence\Codec>
+     */
+    public $codecs = [];
+
+    /**
+     * Defaults to be set to the codec.
+     *
+     * @var array<string, mixed>
+     */
+    public $codec = [];
+
+    /**
      * Resolve field type to seed from Field::$registry.
      *
-     * @param string|array|object $type
+     * @param string|array|object|null $type
      *
      * @return array|object
      */
@@ -43,11 +63,48 @@ class Type
 
         // using seed with alias e.g. ['string', 'maxLength' => 50]
         // convert the alias to actual class name and proper seed array
-        if (is_array($type) && !class_exists($type[0])) {
+        if (is_array($type) && isset(self::$registry[$type[0] ?? null])) {
             return self::$registry[$type[0]] + $type;
         }
 
-        return self::$registry[$type ?? 'default'];
+        return self::$registry[$type ?? 0];
+    }
+
+    public function createCodec(Model\Field $field)
+    {
+        $persistence = $field->getOwner()->persistence;
+
+        $persistenceClass = get_class($persistence);
+
+        $codecSeed = $this->codecs[$persistenceClass] ?? null;
+
+        if (!$codecSeed/*  || (is_object($codecSeed) && $codecSeed->getField() !== $field) */) {
+            // resolve codec declared with the Model\Field\Type::$codecs
+            if (!$codecSeed = self::resolveCodecFromRegistry($persistenceClass, (array) $this->codecs)) {
+                // resolve codec declared with the Persistence
+                $codecSeed = self::resolveCodecFromRegistry(static::class, $persistence->getCodecs());
+            }
+
+            if (!is_object($codecSeed)) {
+                $codecSeed = Factory::factory(Factory::mergeSeeds((array) $this->codec, $codecSeed), [$field]);
+            }
+
+            // cache resolved codec
+            $this->codecs[$persistenceClass] = $codecSeed;
+        }
+
+        return Factory::factory($codecSeed, (array) $this->codec);
+    }
+
+    protected static function resolveCodecFromRegistry(string $searchClass, array $registry)
+    {
+        foreach (array_merge([$searchClass], class_parents($searchClass)) as $class) {
+            if ($codecClass = $registry[$class] ?? null) {
+                break;
+            }
+        }
+
+        return $codecClass ?? $registry[0] ?? null;
     }
 
     /**
@@ -67,6 +124,15 @@ class Type
         self::$registry[$type] = $seed;
     }
 
+    public function normalize($value)
+    {
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        return $this->doNormalize($value);
+    }
+
     /**
      * Validate and normalize value.
      *
@@ -74,7 +140,7 @@ class Type
      *
      * @return mixed
      */
-    public function normalize($value)
+    protected function doNormalize($value)
     {
         return $value;
     }
@@ -102,7 +168,7 @@ class Type
      */
     public function toString($value): ?string
     {
-        return (string) $this->normalize($value);
+        return (string) $this->doNormalize($value);
     }
 
     protected function assertScalar($value): void

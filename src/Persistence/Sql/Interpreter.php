@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
-class Expression implements Expressionable
+class Interpreter
 {
-    protected $template;
+    protected $templates = [
+        Query::MODE_SELECT      => '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]',
+        Query::MODE_INSERT      => 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])',
+        Query::MODE_REPLACE     => 'replace[option] into [table_noalias] ([set_fields]) values ([set_values])',
+        Query::MODE_DELETE      => '[with]delete [from] [table_noalias][where][having]',
+        Query::MODE_UPDATE      => '[with]update [table_noalias] set [set] [where]',
+        Query::MODE_TRUNCATE    => 'truncate table [table_noalias]',
+    ];
     
-    public function toExpression(): Expression
-    {
-        return $this;
-    }
-    
-    public function render(Interpreter $interpreter)
+    public function render($expression)
     {
         return preg_replace_callback(
             <<<'EOF'
@@ -71,7 +73,7 @@ class Expression implements Expressionable
                 
                 return is_array($value) ? '(' . implode(',', $value) . ')' : $value;
             },
-            $this->template
+            $expression->template
         );
     }
 }

@@ -26,6 +26,9 @@ use Phlex\Data\Persistence;
  */
 class Query extends Persistence\Query implements Expressionable
 {
+    public const MODE_REPLACE = 'replace';
+    public const MODE_TRUNCATE = 'truncate';
+    
     /** @var DsqlQuery */
     protected $dsql;
 

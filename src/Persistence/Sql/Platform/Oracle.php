@@ -11,6 +11,11 @@ class Oracle extends Persistence\Sql
 {
     public $_default_seed_migration = [Oracle\Migration::class];
 
+    public function query(Model $model): Persistence\Query
+    {
+        return new Oracle\Query($model, $this);
+    }
+
     public function lastInsertId(Model $model = null): string
     {
         // TODO: Oracle does not support lastInsertId(), only for testing

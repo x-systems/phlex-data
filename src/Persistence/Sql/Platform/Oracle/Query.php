@@ -35,14 +35,10 @@ class Query extends Persistence\Sql\Query
 
     public function getIterator(): \Traversable
     {
-        return (function ($iterator) {
-            foreach ($iterator as $row) {
-                if ($row !== null) {
-                    unset($row['__dsql_rownum']);
-                }
+        foreach (parent::getIterator() as $row) {
+            unset($row['__dsql_rownum']);
 
-                yield $row;
-            }
-        })($this->execute()->iterateAssociative());
+            yield $row;
+        }
     }
 }

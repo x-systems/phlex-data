@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
-use Atk4\Dsql\Connection;
-use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Schema\Column;
-use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL;
 use Phlex\Core\DiContainerTrait;
 use Phlex\Core\Exception;
 use Phlex\Data\Model;
@@ -19,16 +15,16 @@ class Migration
 {
     use DiContainerTrait;
 
-    /** @var Connection */
+    /** @var DBAL\Connection */
     public $connection;
 
-    /** @var Table */
+    /** @var DBAL\Schema\Table */
     public $table;
 
     /**
      * Create new migration.
      *
-     * @param Connection|Persistence|Model $source
+     * @param DBAL\Connection|Persistence|Model $source
      */
     public function __construct($source = null)
     {
@@ -39,7 +35,7 @@ class Migration
 
     protected function setSource($source)
     {
-        if ($source instanceof Connection) {
+        if ($source instanceof DBAL\Connection) {
             $this->connection = $source;
         } elseif ($source instanceof Persistence\Sql) {
             $this->connection = $source->connection;
@@ -55,19 +51,19 @@ class Migration
         }
     }
 
-    public function getDatabasePlatform(): AbstractPlatform
+    public function getDatabasePlatform(): DBAL\Platforms\AbstractPlatform
     {
         return $this->connection->getDatabasePlatform();
     }
 
-    public function getSchemaManager(): AbstractSchemaManager
+    public function getSchemaManager(): DBAL\Schema\AbstractSchemaManager
     {
-        return $this->connection->connection()->getSchemaManager();
+        return $this->connection->getSchemaManager();
     }
 
     public function table($tableName): self
     {
-        $this->table = new Table($this->getDatabasePlatform()->quoteSingleIdentifier($tableName));
+        $this->table = new DBAL\Schema\Table($this->getDatabasePlatform()->quoteSingleIdentifier($tableName));
 
         return $this;
     }
@@ -111,7 +107,7 @@ class Migration
         return $model;
     }
 
-    public function addColumn(Model\Field $field): Column
+    public function addColumn(Model\Field $field): DBAL\Schema\Column
     {
         return $field->getPersistenceCodec()->migrate($this); // @phpstan-ignore-line
     }

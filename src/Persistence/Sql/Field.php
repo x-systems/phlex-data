@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Expressionable;
 use Phlex\Data\Exception;
+use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 /**
  * @property Persistence\Sql\Join $join
  */
-class Field extends \Phlex\Data\Model\Field implements Expressionable
+class Field extends Model\Field implements Expressionable
 {
     /**
      * SQL fields are allowed to have expressions inside of them.
@@ -33,7 +33,7 @@ class Field extends \Phlex\Data\Model\Field implements Expressionable
      * When field is used as expression, this method will be called.
      * Universal way to convert ourselves to expression. Off-load implementation into persistence.
      */
-    public function getDsqlExpression(Expression $expression): Expression
+    public function toExpression(Persistence\Sql $persistence): Expression
     {
         $model = $this->getOwner();
 
@@ -62,7 +62,7 @@ class Field extends \Phlex\Data\Model\Field implements Expressionable
         }
 
         // Otherwise call method from expression
-        return $expression->expr($template, $args);
+        return $persistence->expr($template, $args);
     }
 
     protected function getTablePrefix(): string

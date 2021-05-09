@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Scope;
 
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Expressionable;
 use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence\Sql;
 
 class Condition extends AbstractScope
 {
     use ReadableCaptionTrait;
 
-    /** @var string|Model\Field|Expression */
+    /** @var string|Model\Field|Sql\Expression */
     public $key;
 
     /** @var string */
@@ -93,8 +92,8 @@ class Condition extends AbstractScope
             throw new Exception('Only Scope can contain another conditions');
         } elseif ($key instanceof Model\Field) { // for BC
             $key = $key->short_name;
-        } elseif (!is_string($key) && !($key instanceof Expression) && !($key instanceof Expressionable)) {
-            throw new Exception('Field must be a string or an instance of Expression');
+        } elseif (!is_string($key) && !($key instanceof Sql\Expressionable)) {
+            throw new Exception('Field must be a string or an instance of Sql\Expressionable');
         }
 
         if (func_num_args() === 2) {
@@ -107,7 +106,7 @@ class Condition extends AbstractScope
 
         if ($operator === null) {
             // at least MSSQL database always requires an operator
-            if (!($key instanceof Expression) && !($key instanceof Expressionable)) {
+            if (!($key instanceof Sql\Expressionable)) {
                 throw new Exception('Operator must be specified');
             }
         } else {
@@ -223,7 +222,7 @@ class Condition extends AbstractScope
             }
 
             // skip explicitly using OPERATOR_EQUALS as in some cases it is transformed to OPERATOR_IN
-            // for instance in dsql so let exact operator be handled by Persistence
+            // for instance in a statement so let exact operator be handled by Persistence
             if ($operator === self::OPERATOR_EQUALS) {
                 return [$field, $value];
             }
@@ -305,7 +304,7 @@ class Condition extends AbstractScope
 
         if ($field instanceof Model\Field) {
             $words[] = $field->getCaption();
-        } elseif ($field instanceof Expression) {
+        } elseif ($field instanceof Sql\Expressionable) {
             $words[] = "expression '{$field->getDebugQuery()}'";
         }
 
@@ -337,8 +336,8 @@ class Condition extends AbstractScope
                 return $value->getOwner()->getModelCaption() . ' ' . $value->getCaption();
             }
 
-            if ($value instanceof Expression || $value instanceof Expressionable) {
-                return "expression '{$value->getDebugQuery()}'";
+            if ($value instanceof Sql\Expressionable) {
+                return "expression '{$value->toExpression($model->persistence)->getDebugQuery()}'"; // @phpstan-ignore-line
             }
 
             return 'object ' . print_r($value, true);

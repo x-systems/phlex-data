@@ -107,7 +107,7 @@ class HasMany extends Model\Reference
         $field = $alias ?? $fieldName;
 
         if (isset($defaults['concat'])) {
-            $defaults['aggregate'] = $this->getOurModel()->dsql()->groupConcat($field, $defaults['concat']);
+            $defaults['aggregate'] = $this->getOurModel()->toQuery()->groupConcat($field, $defaults['concat']);
             $defaults['read_only'] = false;
             $defaults['never_save'] = true;
         }

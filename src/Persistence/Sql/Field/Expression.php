@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql\Field;
 
-use Atk4\Dsql\Expression as SqlExpression;
-use Atk4\Dsql\Expressionable;
 use Phlex\Core\InitializerTrait;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence;
+use Phlex\Data\Persistence\Sql;
 
-class Expression extends \Phlex\Data\Persistence\Sql\Field
+class Expression extends Sql\Field
 {
     use InitializerTrait {
         init as _init;
@@ -18,7 +18,7 @@ class Expression extends \Phlex\Data\Persistence\Sql\Field
     /**
      * Used expression.
      *
-     * @var \Closure|string|SqlExpression
+     * @var \Closure|string|Sql\Expression
      */
     public $expr;
 
@@ -84,15 +84,15 @@ class Expression extends \Phlex\Data\Persistence\Sql\Field
     /**
      * When field is used as expression, this method will be called.
      */
-    public function getDsqlExpression(SqlExpression $expression): SqlExpression
+    public function toExpression(Persistence\Sql $persistence): Sql\Expression
     {
         $expr = $this->expr;
         if ($expr instanceof \Closure) {
-            $expr = $expr($this->getOwner(), $expression);
+            $expr = $expr($this->getOwner(), $persistence);
         }
 
-        if ($expr instanceof Expressionable) {
-            $expr = $expr->getDsqlExpression($expression);
+        if ($expr instanceof Sql\Expressionable) {
+            $expr = $expr->toExpression($persistence);
         }
 
         if (is_string($expr)) {
@@ -102,7 +102,7 @@ class Expression extends \Phlex\Data\Persistence\Sql\Field
             }
 
             // Otherwise call it from expression itself
-            return $expression->expr('([])', [$expression->expr($expr)]);
+            return $persistence->expr('([])', [$persistence->expr($expr)]);
         }
 
         return $expr;

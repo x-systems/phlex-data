@@ -12,6 +12,7 @@ use Phlex\Core\Factory;
 use Phlex\Core\HookTrait;
 use Phlex\Core\InitializerTrait;
 use Phlex\Core\ReadableCaptionTrait;
+use Phlex\Data\Persistence\Sql;
 
 /**
  * Data model class.
@@ -730,7 +731,7 @@ class Model implements \IteratorAggregate
         $currentValue = array_key_exists($fieldName, $this->data)
             ? $this->data[$fieldName]
             : (array_key_exists($fieldName, $this->dirty) ? $this->dirty[$fieldName] : $field->default);
-        if (!$value instanceof \Atk4\Dsql\Expression && $field->compare($value, $currentValue)) {
+        if (!$value instanceof Sql\Expressionable && $field->compare($value, $currentValue)) {
             return $this;
         }
 
@@ -1807,7 +1808,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|\Atk4\Dsql\Expression|\Closure $expression
+     * @param string|array|Sql\Expression|\Closure $expression
      *
      * @return Model\Field\Callback
      */

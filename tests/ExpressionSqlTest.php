@@ -112,12 +112,13 @@ class ExpressionSqlTest extends Sql\TestCase
         $this->assertEquals(10, $i->get('total_net'));
         $this->assertEquals(30, $i->get('sum_net'));
 
-        $q = $this->db->dsql();
-        $q->field($i->toQuery()->count(), 'total_orders');
-        $q->field($i->toQuery()->aggregate('sum', 'total_net'), 'total_net');
+        $q = $this->db->statement()
+            ->field($i->toQuery()->count(), 'total_orders')
+            ->field($i->toQuery()->aggregate('sum', 'total_net'), 'total_net');
+
         $this->assertEquals(
             ['total_orders' => 2, 'total_net' => 30],
-            $q->getRow()
+            $q->execute()->fetchAssociative()
         );
     }
 

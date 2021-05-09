@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Atk4\Dsql\Expression;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Model\Scope;
 use Phlex\Data\Model\Scope\Condition;
+use Phlex\Data\Persistence\Sql\Expression;
 
 class SCountry extends Model
 {

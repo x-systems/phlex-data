@@ -76,6 +76,7 @@ jobs:
   unit-test:
     name: Unit
     runs-on: ubuntu-latest
+    needs: "smoke-test"
     container:
       image: atk4/image:${{ matrix.php }}
     strategy:

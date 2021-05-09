@@ -39,11 +39,11 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
 
         // reset DB autoincrement to 1, tests rely on it
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->db->connection->expr('SET @@auto_increment_offset=1, @@auto_increment_increment=1')->execute();
+            $this->db->execute('SET @@auto_increment_offset=1, @@auto_increment_increment=1');
         }
 
         if ($this->debug) {
-            $this->db->connection->connection()->getConfiguration()->setSQLLogger(
+            $this->db->getConnection()->getConfiguration()->setSQLLogger(
                 new class($this) implements SQLLogger {
                     /** @var TestCase */
                     public $testCase;
@@ -77,12 +77,12 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
 
     protected function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->db->connection->getDatabasePlatform();
+        return $this->db->getConnection()->getDatabasePlatform();
     }
 
     protected function getSchemaManager(): AbstractSchemaManager
     {
-        return $this->db->connection->connection()->getSchemaManager();
+        return $this->db->getConnection()->createSchemaManager();
     }
 
     private function convertSqlFromSqlite(string $sql): string
@@ -187,7 +187,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                 $hasId = (bool) key($data);
 
                 foreach ($data as $id => $row) {
-                    $query = $this->db->dsql();
+                    $query = $this->db->statement();
                     if ($id === '_') {
                         continue;
                     }
@@ -219,12 +219,11 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
         foreach ($tableNames as $table) {
             $data2 = [];
 
-            $s = $this->db->dsql();
-            $data = $s->table($table)->getRows();
+            $data = $this->db->statement()->table($table)->execute()->fetchAllAssociative();
 
             foreach ($data as &$row) {
                 foreach ($row as &$val) {
-                    if (is_int($val)) { // @phpstan-ignore-line
+                    if (is_int($val)) {
                         $val = (int) $val;
                     }
                 }

@@ -324,7 +324,7 @@ class ReferenceSqlTest extends Sql\TestCase
                 ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
                 ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
                 ['items_c:',  'concat' => '::', 'field' => 'name'],
-                ['items_c-',  'aggregate' => $i->dsql()->groupConcat($i->expr('[name]'), '-')],
+                ['items_c-',  'aggregate' => $i->persistence->statement()->groupConcat($i->expr('[name]'), '-')], // @phpstan-ignore-line
                 ['len',       'aggregate' => $i->expr('sum(length([name]))')],
                 ['len2',      'expr' => 'sum(length([name]))'],
                 ['chicken5',  'expr' => 'sum([])', 'args' => ['5']],

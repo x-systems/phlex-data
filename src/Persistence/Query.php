@@ -16,7 +16,7 @@ abstract class Query implements \IteratorAggregate
     public const MODE_INSERT = 'insert';
     public const MODE_DELETE = 'delete';
 
-    /** @var Model */
+    /** @var Model|null */
     protected $model;
 
     /** @var Persistence */
@@ -35,6 +35,7 @@ abstract class Query implements \IteratorAggregate
     protected $mode;
 
     public function __construct(Model $model, Persistence $persistence = null)
+//     public function setModel(Model $model)
     {
         $this->model = $model;
 
@@ -159,7 +160,7 @@ abstract class Query implements \IteratorAggregate
         $this->initOrder();
         $this->initField(...func_get_args());
 
-        if ($this->model->loaded()) {
+        if ($this->model && $this->model->loaded()) {
             $this->whereId($this->model->getId());
         }
 
@@ -215,14 +216,14 @@ abstract class Query implements \IteratorAggregate
 
     public function whereId($id): self
     {
-        if (!$this->model->primaryKey) {
+        if (!$this->model || !$this->model->primaryKey) {
             throw (new Exception('Unable to find record by "id" when Model::primaryKey is not defined.'))
                 ->addMoreInfo('id', $id);
         }
 
-        $idField = $this->model->getField($this->model->primaryKey);
+        $primaryKeyField = $this->model->getPrimaryKeyField();
 
-        return $this->where($idField, $idField->normalize($id));
+        return $this->where($primaryKeyField, $primaryKeyField->normalize($id));
     }
 
     abstract protected function initWhere(): void;
@@ -358,7 +359,7 @@ abstract class Query implements \IteratorAggregate
         return $this->execute()->iterateAssociative();
     }
 
-    public function getModel(): Model
+    public function getModel(): ?Model
     {
         return $this->model;
     }

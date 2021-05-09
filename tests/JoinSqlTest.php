@@ -131,7 +131,7 @@ class JoinSqlTest extends Sql\TestCase
             ],
         ], $this->getDb(['user', 'contact']));
 
-        $this->db->connection->dsql()->table('contact')->where('id', 2)->delete();
+        $this->db->statement()->table('contact')->where('id', 2)->delete();
 
         if ($this->getDatabasePlatform() instanceof OraclePlatform) { // TODO
             $this->markTestIncomplete('TODO - for some reasons, result below has one different key');

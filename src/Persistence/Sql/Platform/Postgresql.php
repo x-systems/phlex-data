@@ -9,6 +9,8 @@ use Phlex\Data\Persistence;
 
 class Postgresql extends Persistence\Sql
 {
+    public $_default_seed_statement = [Postgresql\Statement::class];
+
     protected function getIdSequenceName(Model $model): ?string
     {
         $sequenceName = parent::getIdSequenceName($model);

@@ -13,19 +13,6 @@ use Phlex\Data\Persistence;
 
 abstract class Sql extends Persistence
 {
-    /** @const string */
-    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelectQuery';
-    /** @const string */
-    public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsertQuery';
-    /** @const string */
-    public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsertQuery';
-    /** @const string */
-    public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdateQuery';
-    /** @const string */
-    public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdateQuery';
-    /** @const string */
-    public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDeleteQuery';
-
     /**
      * Connection object.
      *

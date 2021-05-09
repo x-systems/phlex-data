@@ -65,7 +65,7 @@ class Join extends Model\Join implements Expressionable
             $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
-        $this->onHookShortToOwner(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
+        $this->onHookShortToOwner(Persistence\Query::HOOK_INIT_SELECT, \Closure::fromCallable([$this, 'initSelectQuery']));
 
         // Add necessary hooks
         if ($this->reverse) {

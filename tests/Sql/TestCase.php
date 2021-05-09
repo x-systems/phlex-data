@@ -156,30 +156,6 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                 }
 
                 $model->migrate();
-
-//                 $migrator = $this->getMigrator()->table($tableName);
-
-//                 $migrator->id('id');
-
-//                 foreach ($first_row as $field => $row) {
-//                     if ($field === 'id') {
-//                         continue;
-//                     }
-
-//                     if (is_int($row)) {
-//                         $fieldType = 'integer';
-//                     } elseif (is_float($row)) {
-//                         $fieldType = 'float';
-//                     } elseif ($row instanceof \DateTimeInterface) {
-//                         $fieldType = 'datetime';
-//                     } else {
-//                         $fieldType = 'string';
-//                     }
-
-//                     $migrator->field($field, ['type' => $fieldType]);
-//                 }
-
-//                 $migrator->create();
             }
 
             // import data

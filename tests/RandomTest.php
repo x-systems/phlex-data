@@ -242,7 +242,7 @@ class RandomTest extends Sql\TestCase
         $m->addField('name');
         $m->load(2);
 
-        $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, static function ($m, $update, $st) {
+        $m->onHook(Persistence\Query::HOOK_AFTER_UPDATE, static function ($m, $update, $st) {
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {

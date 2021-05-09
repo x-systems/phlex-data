@@ -11,6 +11,19 @@ use Phlex\Data\Persistence;
 
 abstract class Query implements \IteratorAggregate
 {
+    /** @const string */
+    public const HOOK_INIT_SELECT = self::class . '@initSelect';
+    /** @const string */
+    public const HOOK_BEFORE_INSERT = self::class . '@beforeInsert';
+    /** @const string */
+    public const HOOK_AFTER_INSERT = self::class . '@afterInsert';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE = self::class . '@beforeUpdate';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE = self::class . '@afterUpdate';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE = self::class . '@beforeDelete';
+
     public const MODE_SELECT = 'select';
     public const MODE_UPDATE = 'update';
     public const MODE_INSERT = 'insert';
@@ -45,7 +58,7 @@ abstract class Query implements \IteratorAggregate
 
         $this->limit = $model->limit;
 
-        $this->persistence = $persistence ?? $model->persistence;
+        $this->persistence = /* $persistence ?? */ $model->persistence;
     }
 
     public function find($id): ?array
@@ -299,7 +312,7 @@ abstract class Query implements \IteratorAggregate
      */
     protected function hookOnModel(string $stage, array $args = []): void
     {
-        $hookSpotConst = get_class($this->persistence) . '::' . strtoupper('HOOK_' . $stage . '_' . $this->getMode() . '_QUERY');
+        $hookSpotConst = static::class . '::' . strtoupper('HOOK_' . $stage . '_' . $this->getMode());
         if (defined($hookSpotConst)) {
             $this->model->hook(constant($hookSpotConst), $args);
         }

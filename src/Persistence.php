@@ -17,19 +17,6 @@ abstract class Persistence
     use \Phlex\Core\NameTrait;
 
     /** @const string */
-    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelect';
-    /** @const string */
-    public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsert';
-    /** @const string */
-    public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsert';
-    /** @const string */
-    public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdate';
-    /** @const string */
-    public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdate';
-    /** @const string */
-    public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDelete';
-
-    /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
     /** @const string */
@@ -165,7 +152,7 @@ abstract class Persistence
     {
         $data = $this->typecastSaveRow($model, $data);
 
-        $model->onHook(self::HOOK_AFTER_UPDATE_QUERY, function (Model $model, Persistence\Query $query, $result) use ($data) {
+        $model->onHook(Persistence\Query::HOOK_AFTER_UPDATE, function (Model $model, Persistence\Query $query, $result) use ($data) {
             if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->dirty[$model->primaryKey]) {
                 // ID was changed
                 $model->id = $data[$model->primaryKey];

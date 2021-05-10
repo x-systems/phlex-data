@@ -1347,23 +1347,6 @@ class Statement extends Expression
     }
 
     /**
-     * Returns a query for a function, which can be used as part of the GROUP
-     * query which would concatenate all matching fields.
-     *
-     * MySQL, SQLite - group_concat
-     * PostgreSQL - string_agg
-     * Oracle - listagg
-     *
-     * @param mixed $field
-     *
-     * @return Expression
-     */
-    public function groupConcat($field, string $delimiter = ',')
-    {
-        throw new Exception('groupConcat() is SQL-dependent, so use a correct class');
-    }
-
-    /**
      * Add when/then condition for [case] expression.
      *
      * @param mixed $when Condition as array for normal form [case] statement or just value in case of short form [case] statement

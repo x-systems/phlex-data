@@ -15,6 +15,11 @@ class Oracle extends Persistence\Sql
 
     public $_default_seed_migration = [Oracle\Migration::class];
 
+    public function groupConcat($field, string $delimiter = ','): Persistence\Sql\Expression
+    {
+        return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $delimiter]);
+    }
+
     protected function createConnection(array $dsn): DBAL\Connection
     {
         $connection = parent::createConnection($dsn);

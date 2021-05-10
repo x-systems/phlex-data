@@ -530,6 +530,18 @@ abstract class Sql extends Persistence
         return new Sql\Query($model, $this);
     }
 
+    /**
+     * Returns a query for a function, which can be used as part of the GROUP
+     * query which would concatenate all matching fields.
+     *
+     * MySQL, SQLite - group_concat
+     * PostgreSQL - string_agg
+     * Oracle - listagg
+     *
+     * @param mixed $field
+     */
+    abstract public function groupConcat($field, string $delimiter = ','): Sql\Expression;
+
     protected function getIdSequenceName(Model $model): ?string
     {
         return $model->sequence ?: null;

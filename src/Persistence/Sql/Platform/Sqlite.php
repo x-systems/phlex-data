@@ -16,4 +16,9 @@ class Sqlite extends Persistence\Sql
     ];
 
     public $_default_seed_statement = [Sqlite\Statement::class];
+
+    public function groupConcat($field, string $delimiter = ','): Persistence\Sql\Expression
+    {
+        return $this->expr('group_concat({}, [])', [$field, $delimiter]);
+    }
 }

@@ -40,9 +40,4 @@ abstract class AbstractStatement extends Sql\Statement
     {
         return $this->args['sequence'];
     }
-
-    public function groupConcat($field, string $delimiter = ',')
-    {
-        return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $delimiter]);
-    }
 }

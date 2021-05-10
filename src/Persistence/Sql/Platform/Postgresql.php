@@ -11,6 +11,11 @@ class Postgresql extends Persistence\Sql
 {
     public $_default_seed_statement = [Postgresql\Statement::class];
 
+    public function groupConcat($field, string $delimiter = ','): Persistence\Sql\Expression
+    {
+        return $this->expr('string_agg({}, [])', [$field, $delimiter]);
+    }
+
     protected function getIdSequenceName(Model $model): ?string
     {
         $sequenceName = parent::getIdSequenceName($model);

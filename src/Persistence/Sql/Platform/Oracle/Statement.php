@@ -34,35 +34,6 @@ class Statement extends AbstractStatement
             max((int) ($this->args['limit']['cnt'] + $this->args['limit']['shift']), (int) $this->args['limit']['cnt']);
     }
 
-    public function getIterator(): \Traversable
-    {
-        foreach (parent::getIterator() as $row) {
-            unset($row['__dsql_rownum']);
-
-            yield $row;
-        }
-    }
-
-    public function getRows(): array
-    {
-        return array_map(function ($row) {
-            unset($row['__dsql_rownum']);
-
-            return $row;
-        }, parent::getRows());
-    }
-
-    public function getRow(): ?array
-    {
-        $row = parent::getRow();
-
-        if ($row !== null) {
-            unset($row['__dsql_rownum']);
-        }
-
-        return $row;
-    }
-
     /// }}}
 
     public function exists()

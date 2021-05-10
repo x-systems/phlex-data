@@ -30,11 +30,6 @@ class Statement extends Sql\Statement
         }
     }
 
-    public function groupConcat($field, string $delimiter = ',')
-    {
-        return $this->expr('string_agg({}, \'' . $delimiter . '\')', [$field]);
-    }
-
     public function exists()
     {
         return $this->dsql()->mode('select')->field(

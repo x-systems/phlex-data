@@ -29,11 +29,4 @@ class Statement extends Sql\Statement
                 . ' fetch next ' . $cnt . ' rows only';
         }
     }
-
-    public function exists()
-    {
-        return $this->dsql()->mode('select')->field(
-            $this->dsql()->expr('case when exists[] then 1 else 0 end', [$this])
-        );
-    }
 }

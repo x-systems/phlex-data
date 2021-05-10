@@ -33,13 +33,4 @@ class Statement extends AbstractStatement
         return ' and "__dsql_rownum" <= ' .
             max((int) ($this->args['limit']['cnt'] + $this->args['limit']['shift']), (int) $this->args['limit']['cnt']);
     }
-
-    /// }}}
-
-    public function exists()
-    {
-        return $this->dsql()->mode('select')->field(
-            $this->dsql()->expr('case when exists[] then 1 else 0 end', [$this])
-        );
-    }
 }

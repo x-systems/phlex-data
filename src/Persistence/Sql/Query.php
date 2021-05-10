@@ -147,7 +147,7 @@ class Query extends Persistence\Query implements Expressionable
 
     protected function initExists(): void
     {
-        $this->statement = $this->statement->exists();
+        $this->statement = $this->persistence->statement()->mode('select')->option('exists')->field($this->statement);
     }
 
     protected function initCount($alias = null): void

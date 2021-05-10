@@ -45,4 +45,11 @@ class Query extends Persistence\Sql\Query
             }
         })($this->execute()->iterateAssociative());
     }
+
+    protected function initExists()
+    {
+        $this->statement = $this->persistence->statement()->mode('select')->field(
+            $this->persistence->expr('case when exists[] then 1 else 0 end', [$this->statement])
+        );
+    }
 }

@@ -32,9 +32,6 @@ abstract class Query implements \IteratorAggregate
     /** @var Model|null */
     protected $model;
 
-    /** @var Persistence */
-    protected $persistence;
-
     /** @var Model\Scope */
     protected $scope;
 
@@ -47,8 +44,7 @@ abstract class Query implements \IteratorAggregate
     /** @var string */
     protected $mode;
 
-    public function __construct(Model $model, Persistence $persistence = null)
-//     public function setModel(Model $model)
+    public function __construct(Model $model)
     {
         $this->model = $model;
 
@@ -57,8 +53,11 @@ abstract class Query implements \IteratorAggregate
         $this->order = $model->order;
 
         $this->limit = $model->limit;
+    }
 
-        $this->persistence = /* $persistence ?? */ $model->persistence;
+    public function getPersistence(): ?Persistence
+    {
+        return $this->model->persistence;
     }
 
     public function find($id): ?array

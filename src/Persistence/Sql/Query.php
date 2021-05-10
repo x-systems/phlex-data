@@ -12,8 +12,6 @@ use Phlex\Data\Persistence;
 /**
  * Class to perform queries on Sql persistence.
  *
- * @property Persistence\Sql $persistence
- *
  * @method Statement getDebugQuery()
  * @method Statement render()
  * @method Statement mode()
@@ -28,16 +26,11 @@ class Query extends Persistence\Query implements Expressionable
     /** @var Statement */
     protected $statement;
 
-    public function __construct(Model $model, Persistence\Sql $persistence)
+    public function __construct(Model $model)
     {
-        parent::__construct($model, $persistence);
+        parent::__construct($model);
 
-        $this->statement = $persistence->statement();
-//     }
-
-//     public function setModel(Model $model)
-//     {
-//         parent::setModel($model);
+        $this->statement = $model->persistence->statement();
 
         if ($model->table) {
             $this->statement->table($model->table, $model->table_alias ?? null);
@@ -147,7 +140,7 @@ class Query extends Persistence\Query implements Expressionable
 
     protected function initExists(): void
     {
-        $this->statement = $this->persistence->statement()->mode('select')->option('exists')->field($this->statement);
+        $this->statement = $this->getPersistence()->statement()->mode('select')->option('exists')->field($this->statement);
     }
 
     protected function initCount($alias = null): void
@@ -192,7 +185,7 @@ class Query extends Persistence\Query implements Expressionable
                 $field = $this->model->getField($field);
             }
 
-            if (!$field instanceof Expression && !$field instanceof Expressionable) {
+            if (!$field instanceof Expressionable) {
                 throw (new Exception('Unsupported order parameter'))
                     ->addMoreInfo('model', $this->model)
                     ->addMoreInfo('field', $field);
@@ -213,7 +206,7 @@ class Query extends Persistence\Query implements Expressionable
 
     protected function doExecute(): DBAL\Result
     {
-        return $this->persistence->execute($this);
+        return $this->getPersistence()->execute($this);
     }
 
     public function doGetRows(): array

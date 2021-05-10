@@ -527,7 +527,7 @@ abstract class Sql extends Persistence
 
     public function query(Model $model = null): Persistence\Query
     {
-        return new Sql\Query($model, $this);
+        return new Sql\Query($model);
     }
 
     /**

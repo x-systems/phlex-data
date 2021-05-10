@@ -8,7 +8,6 @@ use Doctrine\DBAL;
 use Phlex\Core\DiContainerTrait;
 use Phlex\Core\Exception;
 use Phlex\Data\Model;
-use Phlex\Data\Model\Field;
 use Phlex\Data\Persistence;
 
 class Migration
@@ -107,7 +106,7 @@ class Migration
         return $model;
     }
 
-    public function addColumn(Model\Field $field): DBAL\Schema\Column
+    public function addColumn(Field $field): DBAL\Schema\Column
     {
         return $field->getPersistenceCodec()->migrate($this); // @phpstan-ignore-line
     }

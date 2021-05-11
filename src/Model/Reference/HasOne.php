@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Model\Reference;
 
 use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 /**
  * Reference\HasOne class.
@@ -185,7 +186,7 @@ class HasOne extends Model\Reference
      */
     protected function referenceOurValue(): Model\Field
     {
-        $this->getOurModel()->persistence_data['use_table_prefixes'] = true;
+        $this->getOurModel()->persistenceOptions[Persistence\Sql::OPTION_USE_TABLE_PREFIX] = true;
 
         return $this->getOurField();
     }

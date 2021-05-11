@@ -156,7 +156,7 @@ class Model implements \IteratorAggregate
      *
      * @var array
      */
-    public $persistence_data = [];
+    public $persistenceOptions = [];
 
     /** @var Model\Scope\RootScope */
     protected $scope;

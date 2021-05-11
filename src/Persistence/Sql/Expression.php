@@ -172,14 +172,12 @@ class Expression implements Expressionable
     }
 
     /**
-     * Returns Expression object
+     * Returns Expression object.
      *
      * @param array $properties
      * @param array $arguments
-     *
-     * @return Expression
      */
-    public function expr($properties = [], $arguments = null): Expression
+    public function expr($properties = [], $arguments = null): self
     {
         return new self($properties, $arguments);
     }

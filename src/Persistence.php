@@ -65,7 +65,7 @@ abstract class Persistence
         }
 
         $m->persistence = $this;
-        $m->persistence_data = [];
+        $m->persistenceOptions = [];
         $this->initPersistence($m);
         $m = $this->_add($m);
 

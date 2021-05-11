@@ -1314,7 +1314,7 @@ class Statement extends Expression
 
         return ' case' . $ret . ' end';
     }
-    
+
     public function sequence($sequence)
     {
         return $this;

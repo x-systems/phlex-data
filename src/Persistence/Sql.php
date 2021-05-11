@@ -13,6 +13,8 @@ use Phlex\Data\Persistence;
 
 abstract class Sql extends Persistence
 {
+    public const OPTION_USE_TABLE_PREFIX = self::class . '@use_table_prefix';
+
     /**
      * Connection object.
      *

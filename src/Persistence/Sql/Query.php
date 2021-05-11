@@ -13,11 +13,11 @@ use Phlex\Data\Persistence;
  * Class to perform queries on Sql persistence.
  *
  * @method Persistence\Sql getPersistence()
- * @method Statement getDebugQuery()
- * @method Statement render()
- * @method Statement mode()
- * @method Statement reset()
- * @method Statement join()
+ * @method Statement       getDebugQuery()
+ * @method Statement       render()
+ * @method Statement       mode()
+ * @method Statement       reset()
+ * @method Statement       join()
  */
 class Query extends Persistence\Query implements Expressionable
 {

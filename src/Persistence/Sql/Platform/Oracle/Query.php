@@ -39,7 +39,7 @@ class Query extends Persistence\Sql\Query
             if ($row !== null) {
                 unset($row['__dsql_rownum']);
             }
-            
+
             yield $row;
         }
     }

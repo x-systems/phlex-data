@@ -53,7 +53,7 @@ class Join extends Model\Join implements Expressionable
     {
         parent::init();
 
-        $this->getOwner()->persistence_data['use_table_prefixes'] = true;
+        $this->getOwner()->persistenceOptions[Persistence\Sql::OPTION_USE_TABLE_PREFIX] = true;
 
         // If kind is not specified, figure out join type
         if (!isset($this->kind)) {

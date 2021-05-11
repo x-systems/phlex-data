@@ -6,6 +6,7 @@ namespace Phlex\Data\Model\Reference;
 
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 /**
  * Reference\HasMany class.
@@ -56,7 +57,7 @@ class HasMany extends Model\Reference
     {
         $ourModel = $this->getOurModel();
 
-        $ourModel->persistence_data['use_table_prefixes'] = true;
+        $ourModel->persistenceOptions[Persistence\Sql::OPTION_USE_TABLE_PREFIX] = true;
 
         return $this->getOurField();
     }

@@ -346,11 +346,11 @@ class RandomTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         // caption is not set, so generate it from class name Model
-        $this->assertSame('Phlex Data Model', $m->getModelCaption());
+        $this->assertSame('Phlex Data Model', $m->getCaption());
 
         // caption is set
         $m->caption = 'test';
-        $this->assertSame('test', $m->getModelCaption());
+        $this->assertSame('test', $m->getCaption());
     }
 
     public function testGetTitle()

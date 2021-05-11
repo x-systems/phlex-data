@@ -385,7 +385,7 @@ class Model implements \IteratorAggregate
             'modifier' => Model\UserAction::MODIFIER_CREATE,
             'appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS,
             'callback' => 'save',
-            'description' => 'Add ' . $this->getModelCaption(),
+            'description' => 'Add ' . $this->getCaption(),
         ]);
 
         $this->addUserAction('edit', [
@@ -880,7 +880,7 @@ class Model implements \IteratorAggregate
      * Return (possibly localized) $model->caption.
      * If caption is not set, then generate it from model class name.
      */
-    public function getModelCaption(): string
+    public function getCaption(): string
     {
         return $this->caption ?: $this->readableCaption(
             (new \ReflectionClass(static::class))->isAnonymous() ? get_parent_class(static::class) : static::class

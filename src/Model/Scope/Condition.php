@@ -280,7 +280,7 @@ class Condition extends AbstractScope
             if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
-                $words[] = $model->getModelCaption();
+                $words[] = $model->getCaption();
 
                 $field = array_pop($references);
 
@@ -333,7 +333,7 @@ class Condition extends AbstractScope
 
         if (is_object($value)) {
             if ($value instanceof Model\Field) {
-                return $value->getOwner()->getModelCaption() . ' ' . $value->getCaption();
+                return $value->getOwner()->getCaption() . ' ' . $value->getCaption();
             }
 
             if ($value instanceof Sql\Expressionable) {

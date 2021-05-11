@@ -70,8 +70,8 @@ class ContainsManyTest extends Sql\TestCase
 
         // test caption of containsMany reference
         $this->assertSame('My Invoice Lines', $i->getField($i->fieldName()->lines)->getCaption());
-        $this->assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getModelCaption());
-        $this->assertSame('My Invoice Lines', $i->lines->getModelCaption());
+        $this->assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getCaption());
+        $this->assertSame('My Invoice Lines', $i->lines->getCaption());
     }
 
     /**

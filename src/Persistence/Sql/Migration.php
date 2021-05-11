@@ -6,7 +6,7 @@ namespace Phlex\Data\Persistence\Sql;
 
 use Doctrine\DBAL;
 use Phlex\Core\DiContainerTrait;
-use Phlex\Core\Exception;
+use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
@@ -85,7 +85,7 @@ class Migration
     {
         try {
             $this->drop();
-        } catch (\Doctrine\DBAL\Exception $e) {
+        } catch (DBAL\Exception $e) {
         }
 
         return $this;
@@ -106,12 +106,18 @@ class Migration
         return $model;
     }
 
-    public function addColumn(Field $field): DBAL\Schema\Column
+    public function addColumn(Model\Field $field): DBAL\Schema\Column
     {
-        return $field->getPersistenceCodec()->migrate($this); // @phpstan-ignore-line
+        $codec = $field->getPersistenceCodec();
+
+        if (!$codec instanceof Persistence\Sql\Codec) {
+            throw new Exception('Only fields with Persistence\Sql\Codec can be migrated to Persistence\Sql');
+        }
+
+        return $codec->migrate($this);
     }
 
-    protected function getReferenceField(Field $field): ?Field
+    protected function getReferenceField(Model\Field $field): ?Model\Field
     {
         $reference = $field->getReference();
         if ($reference instanceof Model\Reference\HasOne) {

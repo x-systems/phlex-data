@@ -66,8 +66,6 @@ class HasMany extends Model\Reference
      */
     public function ref(array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
-
         return $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
             $this->getOurValue()
@@ -79,8 +77,6 @@ class HasMany extends Model\Reference
      */
     public function refLink(array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
-
         $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
             $this->referenceOurValue()
@@ -107,7 +103,7 @@ class HasMany extends Model\Reference
         $field = $alias ?? $fieldName;
 
         if (isset($defaults['concat'])) {
-            $defaults['aggregate'] = $this->getOurModel()->persistence->groupConcat($field, $defaults['concat']);
+            $defaults['aggregate'] = $this->getOurModel()->persistence->groupConcat($field, $defaults['concat']); // @phpstan-ignore-line
             $defaults['read_only'] = false;
             $defaults['never_save'] = true;
         }

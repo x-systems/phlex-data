@@ -37,7 +37,7 @@ class Field extends Model\Field implements Expressionable
     {
         $model = $this->getOwner();
 
-        if (!$model->persistence || !$model->persistence instanceof \Phlex\Data\Persistence\Sql) {
+        if (!$model->persistence || !$model->persistence instanceof Persistence\Sql) {
             throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
                 ->addMoreInfo('persistence', $model->persistence ?? null);
         }

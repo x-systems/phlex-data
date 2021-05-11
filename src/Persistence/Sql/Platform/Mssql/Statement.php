@@ -8,8 +8,6 @@ use Phlex\Data\Persistence\Sql;
 
 class Statement extends Sql\Statement
 {
-    use ExpressionTrait;
-
     protected $template_insert = 'begin try'
         . "\n" . 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])'
         . "\n" . 'end try begin catch if ERROR_NUMBER() = 544 begin'

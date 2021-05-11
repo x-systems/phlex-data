@@ -35,18 +35,16 @@ class Query extends Persistence\Sql\Query
 
     public function getIterator(): \Traversable
     {
-        return (function ($iterator) {
-            foreach ($iterator as $row) {
-                if ($row !== null) {
-                    unset($row['__dsql_rownum']);
-                }
-
-                yield $row;
+        foreach ($this->execute()->iterateAssociative() as $row) {
+            if ($row !== null) {
+                unset($row['__dsql_rownum']);
             }
-        })($this->execute()->iterateAssociative());
+            
+            yield $row;
+        }
     }
 
-    protected function initExists()
+    protected function initExists(): void
     {
         $this->statement = $this->persistence->statement()->select()->field(
             $this->persistence->expr('case when exists[] then 1 else 0 end', [$this->statement])

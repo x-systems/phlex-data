@@ -101,7 +101,7 @@ abstract class Sql extends Persistence
     public static function connect($dsn, string $user = null, string $password = null, array $options = []): self
     {
         // parse DSN string
-        $dsn = self::normalizeDsn($dsn, $user, $password);
+        $dsn = self::normalizeDsn($dsn, $user, $password, $options);
 
         switch ($dsn['driverSchema']) {
             case 'mysql':
@@ -136,7 +136,7 @@ abstract class Sql extends Persistence
      *
      * @return array
      */
-    public static function normalizeDsn($dsn, $user = null, $pass = null)
+    public static function normalizeDsn($dsn, $user = null, $pass = null, $options = [])
     {
         // Try to dissect DSN into parts
         $parts = is_array($dsn) ? $dsn : parse_url($dsn);
@@ -170,7 +170,7 @@ abstract class Sql extends Persistence
             $rest = null;
         }
 
-        return ['dsn' => $dsn, 'user' => $user ?: null, 'pass' => $pass ?: null, 'driverSchema' => $driverSchema, 'rest' => $rest];
+        return array_merge($options, ['dsn' => $dsn, 'user' => $user ?: null, 'pass' => $pass ?: null, 'driverSchema' => $driverSchema, 'rest' => $rest]);
     }
 
     public static function createFromConnection(DBAL\Connection $connection)
@@ -216,7 +216,7 @@ abstract class Sql extends Persistence
 
         // attempt to connect.
         $this->connection = self::createConnection(
-            static::normalizeDsn($connection, $user, $password)
+            static::normalizeDsn($connection, $user, $password, $options)
         );
     }
 

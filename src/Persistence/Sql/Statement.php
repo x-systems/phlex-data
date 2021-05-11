@@ -1193,23 +1193,6 @@ class Statement extends Expression
     }
 
     /**
-     * Returns Expression object for the corresponding Query
-     * sub-class (e.g. Mysql\Query will return Mysql\Expression).
-     *
-     * Connection is not mandatory, but if set, will be preserved. This
-     * method should be used for building parts of the query internally.
-     *
-     * @param array $properties
-     * @param array $arguments
-     *
-     * @return Expression
-     */
-    public function expr($properties = [], $arguments = null)
-    {
-        return new Expression($properties, $arguments);
-    }
-
-    /**
      * Returns Expression object for NOW() or CURRENT_TIMESTAMP() method.
      */
     public function exprNow(int $precision = null): Expression
@@ -1227,7 +1210,7 @@ class Statement extends Expression
      */
     public function orExpr()
     {
-        return new static(['template' => '[orwhere]']);
+        return new static('[orwhere]');
     }
 
     /**
@@ -1237,7 +1220,7 @@ class Statement extends Expression
      */
     public function andExpr()
     {
-        return new static(['template' => '[andwhere]']);
+        return new static('[andwhere]');
     }
 
     /**
@@ -1249,7 +1232,7 @@ class Statement extends Expression
      */
     public function caseExpr($operand = null)
     {
-        $q = new static(['template' => '[case]']);
+        $q = new static('[case]');
 
         if ($operand !== null) {
             $q->args['case_operand'] = $operand;
@@ -1330,6 +1313,11 @@ class Statement extends Expression
         }
 
         return ' case' . $ret . ' end';
+    }
+    
+    public function sequence($sequence)
+    {
+        return $this;
     }
 
     /**

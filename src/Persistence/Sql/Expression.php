@@ -141,36 +141,6 @@ class Expression implements Expressionable
     }
 
     /**
-     * Use this instead of "new Expression()" if you want to automatically bind
-     * new expression to the same connection as the parent.
-     *
-     * @param array|string $properties
-     * @param array        $arguments
-     *
-     * @return Expression
-     */
-    public function expr($properties = [], $arguments = null)
-    {
-        // If we use DSQL Connection, then we should call expr() from there.
-        // Connection->expr() will return correct, connection specific Expression class.
-//         if ($this->persistence instanceof Persistence\Sql) {
-//             // TODO - condition above always satisfied when connection is set - adjust tests,
-//             // so connection is always set and remove the code below
-//             return $this->persistence->expr($properties, $arguments);
-//         }
-
-        // Otherwise, connection is probably PDO and we don't know which Expression
-        // class to use, so we make a smart guess :)
-        if ($this instanceof Query) {
-            $e = new self($properties, $arguments);
-        } else {
-            $e = new static($properties, $arguments);
-        }
-
-        return $e;
-    }
-
-    /**
      * Resets arguments.
      *
      * @param string $tag
@@ -202,87 +172,21 @@ class Expression implements Expressionable
     }
 
     /**
-     * Recursively renders sub-query or expression, combining parameters.
+     * Returns Expression object
      *
-     * @param mixed  $expression Expression
-     * @param string $escapeMode Fall-back escaping mode - using one of the Expression::ESCAPE_* constants
+     * @param array $properties
+     * @param array $arguments
      *
-     * @return string|array Quoted expression or array of param names
+     * @return Expression
      */
-//     protected function consume($expression, string $escapeMode = self::ESCAPE_PARAM)
-//     {
-//         if (!is_object($expression)) {
-//             switch ($escapeMode) {
-//                 case self::ESCAPE_PARAM:
-//                     return $this->escapeParam($expression);
-//                 case self::ESCAPE_IDENTIFIER:
-//                     return $this->escapeIdentifier($expression);
-//                 case self::ESCAPE_IDENTIFIER_SOFT:
-//                     return $this->escapeIdentifierSoft($expression);
-//                 case self::ESCAPE_NONE:
-//                     return $expression;
-//             }
-
-//             throw (new Exception('$escapeMode value is incorrect'))
-//                 ->addMoreInfo('escapeMode', $escapeMode);
-//         }
-
-//         // User may add Expressionable trait to any class, then pass it's objects
-    // //         if ($expression instanceof Expressionable) {
-    // //             $expression = $expression->getDsqlExpression($this);
-    // //         }
-
-//         $expression = $expression->toExpression($this->persistence);
-
-//         if (!$expression instanceof self) {
-//             throw (new Exception('Only Expressions or Expressionable objects may be used in Expression' . print_r($expression, true)))
-//                 ->addMoreInfo('object', $expression);
-//         }
-
-//         // at this point $sql_code is instance of Expression
-//         $expression->params = $this->params;
-//         $expression->_paramBase = $this->_paramBase;
-//         try {
-//             $ret = $expression->render();
-//             $this->params = $expression->params;
-//             $this->_paramBase = $expression->_paramBase;
-//         } finally {
-//             $expression->params = [];
-//             $expression->_paramBase = null;
-//         }
-
-//         if (isset($expression->allowToWrapInParenthesis)) {
-//             'trigger_error'('Usage of Query::$allowToWrapInParenthesis is deprecated, use $wrapInParentheses instead - will be removed in version 2.5', E_USER_DEPRECATED);
-
-//             $expression->wrapInParentheses = $expression->allowToWrapInParenthesis;
-//         }
-
-//         // Wrap in parentheses if expression requires so
-//         if ($expression->wrapInParentheses === true) {
-//             $ret = '(' . $ret . ')';
-//         }
-
-//         return $ret;
-//     }
+    public function expr($properties = [], $arguments = null): Expression
+    {
+        return new self($properties, $arguments);
+    }
 
     public function getIdentifierQuoteCharacter()
     {
         return $this->identifierQuoteCharacter;
-    }
-
-    /**
-     * Creates new expression where $value appears escaped. Use this
-     * method as a conventional means of specifying arguments when you
-     * think they might have a nasty back-ticks or commas in the field
-     * names.
-     *
-     * @param string $value
-     *
-     * @return Expression
-     */
-    public function escape($value)
-    {
-        return $this->expr('{}', [$value]);
     }
 
     /**

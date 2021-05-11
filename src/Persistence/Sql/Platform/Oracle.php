@@ -63,7 +63,7 @@ class Oracle extends Persistence\Sql
 
     public function query(Model $model = null): Persistence\Query
     {
-        return new Oracle\Query($model, $this);
+        return new Oracle\Query($model);
     }
 
     public function lastInsertId(Model $model = null): string

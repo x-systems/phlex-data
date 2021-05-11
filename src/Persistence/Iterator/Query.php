@@ -12,6 +12,8 @@ use Phlex\Data\Persistence;
 
 /**
  * Class to perform queries on Array_ persistence.
+ *
+ * @method Persistence\Array_ getPersistence()
  */
 class Query extends Persistence\Query
 {
@@ -27,9 +29,9 @@ class Query extends Persistence\Query
      */
     protected $fx;
 
-    public function __construct(Model $model, Persistence $persistence = null)
+    public function __construct(Model $model)
     {
-        parent::__construct($model, $persistence);
+        parent::__construct($model);
 
         $this->iterator = $this->getPersistence()->getRawDataIterator($model);
 

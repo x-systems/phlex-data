@@ -91,20 +91,16 @@ class Expression extends Sql\Field
             $expr = $expr($this->getOwner());
         }
 
-        if ($expr instanceof Sql\Expressionable) {
-            $expr = $expr->toExpression();
-        }
-
         if (is_string($expr)) {
             // If our Model has expr() method (inherited from Persistence\Sql) then use it
             if ($this->getOwner()->hasMethod('expr')) {
-                return $this->getOwner()->expr('([])', [$this->getOwner()->expr($expr)]);
+                $expr = $this->getOwner()->expr($expr);
             }
 
             // Otherwise call it from expression itself
-            return new self('([])', [$expr]);
+            return new Sql\Expression('([])', [$expr]);
         }
 
-        return $expr;
+        return $expr->toExpression();
     }
 }

@@ -182,6 +182,6 @@ class Array_ extends Persistence
 
     public function query(Model $model): Persistence\Query
     {
-        return new Array_\Query($model, $this);
+        return new Array_\Query($model);
     }
 }

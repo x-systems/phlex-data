@@ -13,13 +13,13 @@ abstract class AbstractStatement extends Sql\Statement
     /** @var string */
     protected $template_seq_nextval = '[sequence].NEXTVAL';
 
-    public function render()
+    public function mode($mode)
     {
-        if ($this->mode === 'select' && $this->main_table === null) {
+        if ($mode === 'select' && $this->main_table === null) {
             $this->table('DUAL');
         }
 
-        return parent::render();
+        return parent::mode($mode);
     }
 
     /**

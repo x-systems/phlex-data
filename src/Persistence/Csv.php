@@ -223,7 +223,7 @@ class Csv extends Persistence
 
     public function query(Model $model): Persistence\Query
     {
-        return new Csv\Query($model, $this);
+        return new Csv\Query($model);
     }
 
     public function generateNewId(Model $model)

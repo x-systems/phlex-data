@@ -12,6 +12,7 @@ use Phlex\Data\Persistence;
 /**
  * Class to perform queries on Sql persistence.
  *
+ * @method Persistence\Sql getPersistence()
  * @method Statement getDebugQuery()
  * @method Statement render()
  * @method Statement mode()
@@ -23,15 +24,6 @@ class Query extends Persistence\Query implements Expressionable
     public const MODE_REPLACE = 'replace';
     public const MODE_TRUNCATE = 'truncate';
 
-    protected static $templates = [
-        self::MODE_SELECT => '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]',
-        self::MODE_INSERT => 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])',
-        self::MODE_REPLACE => 'replace[option] into [table_noalias] ([set_fields]) values ([set_values])',
-        self::MODE_DELETE => '[with]delete [from] [table_noalias][where][having]',
-        self::MODE_UPDATE => '[with]update [table_noalias] set [set] [where]',
-        self::MODE_TRUNCATE => 'truncate table [table_noalias]',
-    ];
-
     /** @var Statement */
     protected $statement;
 
@@ -39,7 +31,7 @@ class Query extends Persistence\Query implements Expressionable
     {
         parent::__construct($model);
 
-        $this->statement = $model->persistence->statement();
+        $this->statement = $this->getPersistence()->statement();
 
         if ($model->table) {
             $this->statement->table($model->table, $model->table_alias ?? null);

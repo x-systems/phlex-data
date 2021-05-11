@@ -45,72 +45,27 @@ class Statement extends Sql\Statement
         return preg_replace('~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K\]([^\[\]\'"(){}]*?)\]~s', '[$1]', $v);
     }
 
-    // {{{ MSSQL does not support named parameters, so convert them to numerical inside execute
-
-    private $numQueryParamsBackup;
-    private $numQueryRender;
-
     /**
-     * @return DbalResult|\PDOStatement PDOStatement iff for DBAL 2.x
+     * MSSQL does not support named parameters, so convert them to numerical inside execute.
      */
-    public function execute(object $connection = null): object
+    public function render($expressionable = null, ?string $escapeMode = self::ESCAPE_PARAM): string
     {
-        if ($this->numQueryParamsBackup !== null) {
-            return parent::execute($connection);
-        }
+        $numParams = [];
+        $i = 0;
+        $j = 0;
 
-        $this->numQueryParamsBackup = $this->params;
-        try {
-            $numParams = [];
-            $i = 0;
-            $j = 0;
-            $this->numQueryRender = preg_replace_callback(
-                '~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K(?:\?|:\w+)~s',
-                function ($matches) use (&$numParams, &$i, &$j) {
-                    $numParams[++$i] = $this->params[$matches[0] === '?' ? ++$j : $matches[0]];
+        $result = preg_replace_callback(
+            '~(?:\'(?:\'\'|\\\\\'|[^\'])*\')?+\K(?:\?|:\w+)~s',
+            function ($matches) use (&$numParams, &$i, &$j) {
+                $numParams[++$i] = $this->params[$matches[0] === '?' ? ++$j : $matches[0]];
 
-                    return '?';
-                },
-                parent::render()
-                );
-            $this->params = $numParams;
+                return '?';
+            },
+            parent::render($expressionable, $escapeMode)
+        );
 
-            return parent::execute($connection);
-        } finally {
-            $this->params = $this->numQueryParamsBackup;
-            $this->numQueryParamsBackup = null;
-            $this->numQueryRender = null;
-        }
-    }
+        $this->params = $numParams;
 
-    public function render()
-    {
-        if ($this->numQueryParamsBackup !== null) {
-            return $this->numQueryRender;
-        }
-
-        return parent::render();
-    }
-
-    public function getDebugQuery(): string
-    {
-        if ($this->numQueryParamsBackup === null) {
-            return parent::getDebugQuery();
-        }
-
-        $paramsBackup = $this->params;
-        $numQueryRenderBackupBackup = $this->numQueryParamsBackup;
-        $numQueryRenderBackup = $this->numQueryRender;
-        try {
-            $this->params = $this->numQueryParamsBackup;
-            $this->numQueryParamsBackup = null;
-            $this->numQueryRender = null;
-
-            return parent::getDebugQuery();
-        } finally {
-            $this->params = $paramsBackup;
-            $this->numQueryParamsBackup = $numQueryRenderBackupBackup;
-            $this->numQueryRender = $numQueryRenderBackup;
-        }
+        return $result;
     }
 }

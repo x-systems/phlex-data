@@ -498,10 +498,10 @@ abstract class Sql extends Persistence
 
     public function migrate(Model $model): Sql\Migration
     {
-        return $this->getMigration($model)->create();
+        return $this->createMigrator($model)->create();
     }
 
-    public function getMigration(Model $model = null): Sql\Migration
+    public function createMigrator(Model $model = null): Sql\Migration
     {
         return Factory::factory(Factory::mergeSeeds($this->_default_seed_migration, ['source' => $model ?: $this->connection]));
     }

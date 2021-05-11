@@ -80,7 +80,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
         return $this->db->getConnection()->getDatabasePlatform();
     }
 
-    protected function getSchemaManager(): AbstractSchemaManager
+    protected function createSchemaManager(): AbstractSchemaManager
     {
         return $this->db->getConnection()->createSchemaManager();
     }
@@ -106,7 +106,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
-    public function getMigrator(Model $model = null): Persistence\Sql\Migration
+    public function createMigrator(Model $model = null): Persistence\Sql\Migration
     {
         return new Persistence\Sql\Migration($model ?: $this->db);
     }
@@ -119,7 +119,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
     {
         // we can not use SchemaManager::dropTable directly because of
         // our custom Oracle sequence for PK/AI
-        $this->getMigrator()->table($tableName)->dropIfExists();
+        $this->createMigrator()->table($tableName)->dropIfExists();
     }
 
     /**
@@ -176,7 +176,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                         $query->set('id', $id);
                     }
 
-                    $this->db->execute($query);
+                    $query->execute();
                 }
             }
         }

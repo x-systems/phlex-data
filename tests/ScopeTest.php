@@ -83,7 +83,7 @@ class ScopeTest extends Sql\TestCase
 
         $this->country = new SCountry($this->db);
 
-        $this->getMigrator($this->country)->dropIfExists()->create();
+        $this->createMigrator($this->country)->dropIfExists()->create();
 
         // Specifying hasMany here will perform input
         $this->country->import([
@@ -98,7 +98,7 @@ class ScopeTest extends Sql\TestCase
 
         $this->user = new SUser($this->db);
 
-        $this->getMigrator($this->user)->dropIfExists()->create();
+        $this->createMigrator($this->user)->dropIfExists()->create();
 
         $this->user->import([
             ['name' => 'John', 'surname' => 'Smith', 'country_code' => 'CA'],
@@ -110,7 +110,7 @@ class ScopeTest extends Sql\TestCase
 
         $this->ticket = new STicket($this->db);
 
-        $this->getMigrator($this->ticket)->dropIfExists()->create();
+        $this->createMigrator($this->ticket)->dropIfExists()->create();
 
         $this->ticket->import([
             ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],

@@ -263,7 +263,10 @@ abstract class Sql extends Persistence
 
     public function statement($defaults = []): Sql\Statement
     {
-        return Factory::factory($this->_default_seed_statement, array_merge($defaults, ['persistence' => $this]));
+        return Factory::factory($this->_default_seed_statement, array_merge($defaults, [
+            'persistence' => $this,
+            'identifierQuoteCharacter' => $this->connection->getDatabasePlatform()->getIdentifierQuoteCharacter(),
+        ]));
     }
 
     /**
@@ -352,14 +355,17 @@ abstract class Sql extends Persistence
             $expressionable = new Sql\Expression($expressionable);
         }
 
-        $expression = $expressionable->toExpression($this);
+        $expression = $expressionable->toExpression();
+        $expression->wrapInParentheses = false;
 
-        $query = $expression->render();
+        $query = $this->statement();
+
+        $sql = $query->render($expression);
 
         try {
-            $statement = $this->connection->prepare($query);
+            $statement = $this->connection->prepare($sql);
 
-            foreach ($expression->params as $key => $value) {
+            foreach ($query->params as $key => $value) {
                 if (is_int($value)) {
                     $type = \PDO::PARAM_INT;
                 } elseif (is_bool($value)) {
@@ -400,7 +406,7 @@ abstract class Sql extends Persistence
             }
             $errorInfo = $firstException instanceof \PDOException ? $firstException->errorInfo : null;
 
-            throw (new Sql\ExecuteException('Query execute error' . $expression->getDebugQuery(), $errorInfo[1] ?? 0, $e))
+            throw (new Sql\ExecuteException('Query execute error ' . ($errorInfo[2] ?? 'n/a (' . $errorInfo[0] . ')') . ' ' . $expression->getDebugQuery(), $errorInfo[1] ?? 0, $e))
                 ->addMoreInfo('error', $errorInfo[2] ?? 'n/a (' . $errorInfo[0] . ')')
                 ->addMoreInfo('query', $expression->getDebugQuery());
         }
@@ -502,16 +508,11 @@ abstract class Sql extends Persistence
 
     /**
      * Creates new Expression object from expression string.
-     *
-     * @param mixed $expr
      */
     public function expr($expr, array $args = []): Sql\Expression
     {
-//         if (!is_string($expr)) {
-//             return $this->connection->expr($expr, $args);
-//         }
-
         $expression = new Sql\Expression($expr, $args);
+
         $expression->persistence = $this;
 
         return $expression;

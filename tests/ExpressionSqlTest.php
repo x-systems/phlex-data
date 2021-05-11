@@ -69,7 +69,7 @@ class ExpressionSqlTest extends Sql\TestCase
         ]);
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', function ($i, $q) {
+        $i->addExpression('total_gross', function ($i) {
             return '[total_net]+[total_vat]';
         });
 
@@ -118,7 +118,7 @@ class ExpressionSqlTest extends Sql\TestCase
 
         $this->assertEquals(
             ['total_orders' => 2, 'total_net' => 30],
-            $q->execute()->fetchAssociative()
+            $this->db->execute($q)->fetchAssociative()
         );
     }
 

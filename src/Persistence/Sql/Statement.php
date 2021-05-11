@@ -4,36 +4,6 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
-// class Statement extends Expression
-// {
-//     /**
-//      * Query will use one of the predefined templates. The $mode will contain
-//      * name of template used. Basically it's part of Query property name -
-//      * Query::template_[$mode].
-//      *
-//      * @var string
-//      */
-//     public $mode = Query::MODE_SELECT;
-
-//     /**
-//      * If no fields are defined, this field is used.
-//      *
-//      * @var string|Expression
-//      */
-//     public $defaultField = '*';
-
-//     /** @var string */
-//     protected $templates = [
-//         Query::MODE_SELECT      => '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]',
-//         Query::MODE_INSERT      => 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])',
-//         Query::MODE_REPLACE     => 'replace[option] into [table_noalias] ([set_fields]) values ([set_values])',
-//         Query::MODE_DELETE      => '[with]delete [from] [table_noalias][where][having]',
-//         Query::MODE_UPDATE      => '[with]update [table_noalias] set [set] [where]',
-//         Query::MODE_TRUNCATE    => 'truncate table [table_noalias]',
-//     ];
-// }
-
-use Doctrine\DBAL;
 use Phlex\Core\DiContainerTrait;
 use Phlex\Data\Exception;
 
@@ -57,13 +27,7 @@ class Statement extends Expression
      */
     public $defaultField = '*';
 
-    /** @var string Expression classname */
-    protected $expression_class = Expression::class;
-
     public $wrapInParentheses = true;
-
-    /** @deprecated use $consumeWrappedInParenthesis instead - will be removed in version 2.5 */
-    public $allowToWrapInParenthesis;
 
     /** @var string */
     protected $template_select = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
@@ -82,6 +46,8 @@ class Statement extends Expression
 
     /** @var string */
     protected $template_truncate = 'truncate table [table_noalias]';
+
+    protected $template = 'select';
 
     /**
      * Name or alias of base table to use when using default join().
@@ -159,11 +125,11 @@ class Statement extends Expression
     /**
      * Returns template component for [field].
      *
-     * @param bool $add_alias Should we add aliases, see _render_field_noalias()
+     * @param bool $withAlias Should we add aliases, see _render_field_noalias()
      *
      * @return string Parsed template chunk
      */
-    protected function _render_field($add_alias = true)
+    protected function _render_field($withAlias = true)
     {
         // will be joined for output
         $ret = [];
@@ -171,7 +137,7 @@ class Statement extends Expression
         // If no fields were defined, use defaultField
         if (empty($this->args['field'])) {
             if ($this->defaultField instanceof Expression) {
-                return $this->consume($this->defaultField);
+                return $this->render($this->defaultField);
             }
 
             return (string) $this->defaultField;
@@ -184,7 +150,7 @@ class Statement extends Expression
             //  - alias is the same as field OR
             //  - alias is numeric
             if (
-                $add_alias === false
+                $withAlias === false
                 || (is_string($field) && $alias === $field)
                 || is_numeric($alias)
                 ) {
@@ -192,7 +158,7 @@ class Statement extends Expression
             }
 
             // Will parameterize the value and escape if necessary
-            $field = $this->consume($field, self::ESCAPE_IDENTIFIER_SOFT);
+            $field = $this->render($field, self::ESCAPE_IDENTIFIER_SOFT);
 
             if ($alias) {
                 // field alias cannot be expression, so simply escape it
@@ -298,8 +264,8 @@ class Statement extends Expression
                 $alias = null;
             }
 
-            // consume or escape table
-            $table = $this->consume($table, self::ESCAPE_IDENTIFIER_SOFT);
+            // render or escape table
+            $table = $this->render($table, self::ESCAPE_IDENTIFIER_SOFT);
 
             // add alias if needed
             if ($alias) {
@@ -383,7 +349,7 @@ class Statement extends Expression
             }
 
             // will parameterize the value and escape if necessary
-            $s .= 'as ' . $this->consume($cursor, self::ESCAPE_IDENTIFIER_SOFT);
+            $s .= 'as ' . $this->render($cursor, self::ESCAPE_IDENTIFIER_SOFT);
 
             // is at least one recursive ?
             $isRecursive = $isRecursive || $recursive;
@@ -525,7 +491,7 @@ class Statement extends Expression
             $jj .= ' on ';
 
             if (isset($j['expr'])) {
-                $jj .= $this->consume($j['expr']);
+                $jj .= $this->render($j['expr']);
             } else {
                 $jj .=
                 $this->escapeIdentifier($j['fa'] ?: $j['f1']) . '.' .
@@ -730,7 +696,7 @@ class Statement extends Expression
             throw new \InvalidArgumentException();
         }
 
-        $field = $this->consume($field, self::ESCAPE_IDENTIFIER_SOFT);
+        $field = $this->render($field, self::ESCAPE_IDENTIFIER_SOFT);
 
         if (count($row) === 1) {
             // Only a single parameter was passed, so we simply include all
@@ -744,7 +710,7 @@ class Statement extends Expression
             $value = $cond; // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
 
             if ($value instanceof Expressionable) {
-                $value = $value->toExpression($this->persistence);
+                $value = $value->toExpression();
             }
 
             if (is_array($value)) {
@@ -794,7 +760,7 @@ class Statement extends Expression
 
         // if value is object, then it should be Expression or Query itself
         // otherwise just escape value
-        $value = $this->consume($value, self::ESCAPE_PARAM);
+        $value = $this->render($value, self::ESCAPE_PARAM);
 
         return $field . ' ' . $cond . ' ' . $value;
     }
@@ -882,7 +848,7 @@ class Statement extends Expression
         }
 
         $g = array_map(function ($a) {
-            return $this->consume($a, self::ESCAPE_IDENTIFIER_SOFT);
+            return $this->render($a, self::ESCAPE_IDENTIFIER_SOFT);
         }, $this->args['group']);
 
         return ' group by ' . implode(', ', $g);
@@ -916,7 +882,7 @@ class Statement extends Expression
             return $this;
         }
 
-        if (is_string($field) || $field instanceof Expression || $field instanceof Expressionable) {
+        if (is_string($field) || $field instanceof Expressionable) {
             $this->args['set'][] = [$field, $value];
         } else {
             throw (new Exception('Field name should be string or Expressionable'))
@@ -933,8 +899,8 @@ class Statement extends Expression
 
         if (isset($this->args['set']) && $this->args['set']) {
             foreach ($this->args['set'] as [$field, $value]) {
-                $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
-                $value = $this->consume($value, self::ESCAPE_PARAM);
+                $field = $this->render($field, self::ESCAPE_IDENTIFIER);
+                $value = $this->render($value, self::ESCAPE_PARAM);
 
                 $ret[] = $field . '=' . $value;
             }
@@ -950,7 +916,7 @@ class Statement extends Expression
 
         if ($this->args['set']) {
             foreach ($this->args['set'] as [$field/*, $value*/]) {
-                $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
+                $field = $this->render($field, self::ESCAPE_IDENTIFIER);
 
                 $ret[] = $field;
             }
@@ -966,7 +932,7 @@ class Statement extends Expression
 
         if ($this->args['set']) {
             foreach ($this->args['set'] as [/*$field*/ , $value]) {
-                $value = $this->consume($value, self::ESCAPE_PARAM);
+                $value = $this->render($value, self::ESCAPE_PARAM);
 
                 $ret[] = $value;
             }
@@ -1023,57 +989,49 @@ class Statement extends Expression
     /**
      * Execute select statement.
      */
-    public function select(): DBAL\Result
+    public function select()
     {
-        return $this->mode('select')->execute();
+        return $this->mode('select');
     }
 
     /**
      * Execute insert statement.
      */
-    public function insert(): DBAL\Result
+    public function insert()
     {
-        return $this->mode('insert')->execute();
+        return $this->mode('insert');
     }
 
     /**
      * Execute update statement.
      */
-    public function update(): DBAL\Result
+    public function update()
     {
-        return $this->mode('update')->execute();
+        return $this->mode('update');
     }
 
     /**
      * Execute replace statement.
      */
-    public function replace(): DBAL\Result
+    public function replace()
     {
-        return $this->mode('replace')->execute();
+        return $this->mode('replace');
     }
 
     /**
      * Execute delete statement.
      */
-    public function delete(): DBAL\Result
+    public function delete()
     {
-        return $this->mode('delete')->execute();
+        return $this->mode('delete');
     }
 
     /**
      * Execute truncate statement.
      */
-    public function truncate(): DBAL\Result
+    public function truncate()
     {
-        return $this->mode('truncate')->execute();
-    }
-
-    /**
-     * Execute statement.
-     */
-    public function execute(): DBAL\Result
-    {
-        return $this->persistence->execute($this);
+        return $this->mode('truncate');
     }
 
     // }}}
@@ -1178,7 +1136,7 @@ class Statement extends Expression
         $x = [];
         foreach ($this->args['order'] as $tmp) {
             [$arg, $desc] = $tmp;
-            $x[] = $this->consume($arg, self::ESCAPE_IDENTIFIER_SOFT) . ($desc ? (' ' . $desc) : '');
+            $x[] = $this->render($arg, self::ESCAPE_IDENTIFIER_SOFT) . ($desc ? (' ' . $desc) : '');
         }
 
         return ' order by ' . implode(', ', array_reverse($x));
@@ -1210,18 +1168,6 @@ class Statement extends Expression
     // {{{ Miscelanious
 
     /**
-     * Renders query template. If the template is not explicitly set will use "select" mode.
-     */
-    public function render()
-    {
-        if (!$this->template) {
-            $this->mode('select');
-        }
-
-        return parent::render();
-    }
-
-    /**
      * Switch template for this query. Determines what would be done
      * on execute.
      *
@@ -1237,7 +1183,7 @@ class Statement extends Expression
 
         if (isset($this->{$prop})) {
             $this->mode = $mode;
-            $this->template = $this->{$prop};
+            $this->template = $mode; //$this->{$prop};
         } else {
             throw (new Exception('Query does not have this mode'))
                 ->addMoreInfo('mode', $mode);
@@ -1245,22 +1191,6 @@ class Statement extends Expression
 
         return $this;
     }
-
-    /**
-     * Use this instead of "new Query()" if you want to automatically bind
-     * query to the same connection as the parent.
-     *
-     * @param array $properties
-     *
-     * @return Query
-     */
-//     public function dsql($properties = [])
-//     {
-//         $q = new static($properties);
-//         $q->persistence = $this->persistence;
-
-//         return $q;
-//     }
 
     /**
      * Returns Expression object for the corresponding Query
@@ -1276,11 +1206,7 @@ class Statement extends Expression
      */
     public function expr($properties = [], $arguments = null)
     {
-        $c = $this->expression_class;
-        $e = new $c($properties, $arguments);
-        $e->connection = $this->persistence;
-
-        return $e;
+        return new Expression($properties, $arguments);
     }
 
     /**
@@ -1291,7 +1217,7 @@ class Statement extends Expression
         return $this->expr(
             'current_timestamp(' . ($precision !== null ? '[]' : '') . ')',
             $precision !== null ? [$precision] : []
-            );
+        );
     }
 
     /**
@@ -1301,7 +1227,7 @@ class Statement extends Expression
      */
     public function orExpr()
     {
-        return $this->persistence->statement(['template' => '[orwhere]']);
+        return new static(['template' => '[orwhere]']);
     }
 
     /**
@@ -1311,7 +1237,7 @@ class Statement extends Expression
      */
     public function andExpr()
     {
-        return $this->persistence->statement(['template' => '[andwhere]']);
+        return new static(['template' => '[andwhere]']);
     }
 
     /**
@@ -1323,7 +1249,7 @@ class Statement extends Expression
      */
     public function caseExpr($operand = null)
     {
-        $q = $this->persistence->statement(['template' => '[case]']);
+        $q = new static(['template' => '[case]']);
 
         if ($operand !== null) {
             $q->args['case_operand'] = $operand;
@@ -1372,7 +1298,7 @@ class Statement extends Expression
 
         // operand
         if ($short_form = isset($this->args['case_operand'])) {
-            $ret .= ' ' . $this->consume($this->args['case_operand'], self::ESCAPE_IDENTIFIER_SOFT);
+            $ret .= ' ' . $this->render($this->args['case_operand'], self::ESCAPE_IDENTIFIER_SOFT);
         }
 
         // when, then
@@ -1389,18 +1315,18 @@ class Statement extends Expression
                     throw (new Exception('When using short form CASE statement, then you should not set array as when() method 1st parameter'))
                         ->addMoreInfo('when', $row[0]);
                 }
-                $ret .= $this->consume($row[0], self::ESCAPE_PARAM);
+                $ret .= $this->render($row[0], self::ESCAPE_PARAM);
             } else {
                 $ret .= $this->_sub_render_condition($row[0]);
             }
 
             // then
-            $ret .= ' then ' . $this->consume($row[1], self::ESCAPE_PARAM);
+            $ret .= ' then ' . $this->render($row[1], self::ESCAPE_PARAM);
         }
 
         // else
         if (array_key_exists('case_else', $this->args)) {
-            $ret .= ' else ' . $this->consume($this->args['case_else'], self::ESCAPE_PARAM);
+            $ret .= ' else ' . $this->render($this->args['case_else'], self::ESCAPE_PARAM);
         }
 
         return ' case' . $ret . ' end';

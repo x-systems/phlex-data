@@ -337,7 +337,7 @@ class Condition extends AbstractScope
             }
 
             if ($value instanceof Sql\Expressionable) {
-                return "expression '{$value->toExpression($model->persistence)->getDebugQuery()}'"; // @phpstan-ignore-line
+                return "expression '{$value->toExpression()->getDebugQuery()}'"; // @phpstan-ignore-line
             }
 
             return 'object ' . print_r($value, true);

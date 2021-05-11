@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
-use Phlex\Core\Exception;
+use Phlex\Data\Exception;
 use Phlex\Data\Persistence;
 
 class Expression implements Expressionable
@@ -38,10 +38,9 @@ class Expression implements Expressionable
      *
      * @var string
      */
-    protected $paramBase = 'a';
+    protected $placeholder = 'a';
 
-    /** @var string used for linking */
-    private $_paramBase;
+    public $identifierQuoteCharacter = '"';
 
     /** @var array Populated with actual values by escapeParam() */
     public $params = [];
@@ -154,11 +153,11 @@ class Expression implements Expressionable
     {
         // If we use DSQL Connection, then we should call expr() from there.
         // Connection->expr() will return correct, connection specific Expression class.
-        if ($this->persistence instanceof Persistence\Sql) {
-            // TODO - condition above always satisfied when connection is set - adjust tests,
-            // so connection is always set and remove the code below
-            return $this->persistence->expr($properties, $arguments);
-        }
+//         if ($this->persistence instanceof Persistence\Sql) {
+//             // TODO - condition above always satisfied when connection is set - adjust tests,
+//             // so connection is always set and remove the code below
+//             return $this->persistence->expr($properties, $arguments);
+//         }
 
         // Otherwise, connection is probably PDO and we don't know which Expression
         // class to use, so we make a smart guess :)
@@ -167,8 +166,6 @@ class Expression implements Expressionable
         } else {
             $e = new static($properties, $arguments);
         }
-
-        $e->persistence = $this->persistence;
 
         return $e;
     }
@@ -212,69 +209,65 @@ class Expression implements Expressionable
      *
      * @return string|array Quoted expression or array of param names
      */
-    protected function consume($expression, string $escapeMode = self::ESCAPE_PARAM)
-    {
-        if (!is_object($expression)) {
-            switch ($escapeMode) {
-                case self::ESCAPE_PARAM:
-                    return $this->escapeParam($expression);
-                case self::ESCAPE_IDENTIFIER:
-                    return $this->escapeIdentifier($expression);
-                case self::ESCAPE_IDENTIFIER_SOFT:
-                    return $this->escapeIdentifierSoft($expression);
-                case self::ESCAPE_NONE:
-                    return $expression;
-            }
+//     protected function consume($expression, string $escapeMode = self::ESCAPE_PARAM)
+//     {
+//         if (!is_object($expression)) {
+//             switch ($escapeMode) {
+//                 case self::ESCAPE_PARAM:
+//                     return $this->escapeParam($expression);
+//                 case self::ESCAPE_IDENTIFIER:
+//                     return $this->escapeIdentifier($expression);
+//                 case self::ESCAPE_IDENTIFIER_SOFT:
+//                     return $this->escapeIdentifierSoft($expression);
+//                 case self::ESCAPE_NONE:
+//                     return $expression;
+//             }
 
-            throw (new Exception('$escapeMode value is incorrect'))
-                ->addMoreInfo('escapeMode', $escapeMode);
-        }
-
-        // User may add Expressionable trait to any class, then pass it's objects
-//         if ($expression instanceof Expressionable) {
-//             $expression = $expression->getDsqlExpression($this);
+//             throw (new Exception('$escapeMode value is incorrect'))
+//                 ->addMoreInfo('escapeMode', $escapeMode);
 //         }
 
-        $expression = $expression->toExpression($this->persistence);
+//         // User may add Expressionable trait to any class, then pass it's objects
+    // //         if ($expression instanceof Expressionable) {
+    // //             $expression = $expression->getDsqlExpression($this);
+    // //         }
 
-        if (!$expression instanceof self) {
-            throw (new Exception('Only Expressions or Expressionable objects may be used in Expression' . print_r($expression, true)))
-                ->addMoreInfo('object', $expression);
-        }
+//         $expression = $expression->toExpression($this->persistence);
 
-        // at this point $sql_code is instance of Expression
-        $expression->params = $this->params;
-        $expression->_paramBase = $this->_paramBase;
-        try {
-            $ret = $expression->render();
-            $this->params = $expression->params;
-            $this->_paramBase = $expression->_paramBase;
-        } finally {
-            $expression->params = [];
-            $expression->_paramBase = null;
-        }
+//         if (!$expression instanceof self) {
+//             throw (new Exception('Only Expressions or Expressionable objects may be used in Expression' . print_r($expression, true)))
+//                 ->addMoreInfo('object', $expression);
+//         }
 
-        if (isset($expression->allowToWrapInParenthesis)) {
-            'trigger_error'('Usage of Query::$allowToWrapInParenthesis is deprecated, use $wrapInParentheses instead - will be removed in version 2.5', E_USER_DEPRECATED);
+//         // at this point $sql_code is instance of Expression
+//         $expression->params = $this->params;
+//         $expression->_paramBase = $this->_paramBase;
+//         try {
+//             $ret = $expression->render();
+//             $this->params = $expression->params;
+//             $this->_paramBase = $expression->_paramBase;
+//         } finally {
+//             $expression->params = [];
+//             $expression->_paramBase = null;
+//         }
 
-            $expression->wrapInParentheses = $expression->allowToWrapInParenthesis;
-        }
+//         if (isset($expression->allowToWrapInParenthesis)) {
+//             'trigger_error'('Usage of Query::$allowToWrapInParenthesis is deprecated, use $wrapInParentheses instead - will be removed in version 2.5', E_USER_DEPRECATED);
 
-        // Wrap in parentheses if expression requires so
-        if ($expression->wrapInParentheses === true) {
-            $ret = '(' . $ret . ')';
-        }
+//             $expression->wrapInParentheses = $expression->allowToWrapInParenthesis;
+//         }
 
-        return $ret;
-    }
+//         // Wrap in parentheses if expression requires so
+//         if ($expression->wrapInParentheses === true) {
+//             $ret = '(' . $ret . ')';
+//         }
+
+//         return $ret;
+//     }
 
     public function getIdentifierQuoteCharacter()
     {
-        if ($this->persistence instanceof Persistence\Sql) {
-            return $this->persistence->connection->getDatabasePlatform()->getIdentifierQuoteCharacter();
-        }
-
-        return '"';
+        return $this->identifierQuoteCharacter;
     }
 
     /**
@@ -294,7 +287,7 @@ class Expression implements Expressionable
 
     /**
      * Converts value into parameter and returns reference. Use only during
-     * query rendering. Consider using `consume()` instead, which will
+     * query rendering. Consider using `render()` instead, which will
      * also handle nested expressions properly.
      *
      * @param string|int|float $value
@@ -303,8 +296,8 @@ class Expression implements Expressionable
      */
     protected function escapeParam($value): string
     {
-        $name = ':' . $this->_paramBase;
-        ++$this->_paramBase;
+        $name = ':' . $this->placeholder;
+        ++$this->placeholder;
         $this->params[$name] = $value;
 
         return $name;
@@ -357,29 +350,49 @@ class Expression implements Expressionable
     protected function isUnescapablePattern($value)
     {
         return is_object($value)
-        || $value === '*'
+            || $value === '*'
             || strpos($value, '(') !== false
             || strpos($value, $this->getIdentifierQuoteCharacter()) !== false;
     }
 
     /**
      * Render expression and return it as string.
-     *
-     * @return string Rendered query
      */
-    public function render()
+    public function render($expressionable = null, ?string $escapeMode = self::ESCAPE_PARAM): string
     {
-        $hadUnderscoreParamBase = isset($this->_paramBase);
-        if (!$hadUnderscoreParamBase) {
-            $hadUnderscoreParamBase = false;
-            $this->_paramBase = $this->paramBase;
+        if (func_num_args() === 0) {
+            $expressionable = clone $this;
+
+            $expressionable->wrapInParentheses = false;
         }
 
-        if ($this->template === null) {
+        if (!is_object($expressionable)) {
+            switch ($escapeMode) {
+                case self::ESCAPE_PARAM:
+                    return $this->escapeParam($expressionable);
+                case self::ESCAPE_IDENTIFIER:
+                    return $this->escapeIdentifier($expressionable);
+                case self::ESCAPE_IDENTIFIER_SOFT:
+                    return $this->escapeIdentifierSoft($expressionable);
+                case self::ESCAPE_NONE:
+                case null:
+                    return $expressionable;
+            }
+
+            throw (new Exception('$escapeMode value is incorrect'))
+                ->addMoreInfo('escapeMode', $escapeMode);
+        }
+
+        $expression = $expressionable->toExpression();
+        $expression->identifierQuoteCharacter = $this->identifierQuoteCharacter;
+
+        if ($expression->template === null) {
             throw new Exception('Template is not defined for Expression');
         }
 
-        $nameless_count = 0;
+        $template = $this->{'template_' . $expression->template} ?? $expression->{'template_' . $expression->template} ?? $expression->template;
+
+        $namelessCount = 0;
 
         // - [xxx] = param
         // - {xxx} = escape
@@ -395,58 +408,86 @@ class Expression implements Expressionable
                 |\{\{\w*\}\}
                 ~xs
                 EOF,
-            function ($matches) use (&$nameless_count) {
+            function ($matches) use (&$namelessCount, $expression) {
                 if ($matches[0] === '') {
                     return '';
                 }
 
-                $identifier = substr($matches[0], 1, -1);
-
-                $escaping = null;
-                if (substr($matches[0], 0, 1) === '[') {
-                    if (substr($matches[0], 1, 1) === '[') {
-                        $escaping = self::ESCAPE_NONE;
-                    } else {
-                        $escaping = self::ESCAPE_PARAM;
-                    }
-                } elseif (substr($matches[0], 0, 1) === '{') {
-                    if (substr($matches[0], 1, 1) === '{') {
-                        $escaping = self::ESCAPE_IDENTIFIER_SOFT;
-                        $identifier = substr($identifier, 1, -1);
-                    } else {
-                        $escaping = self::ESCAPE_IDENTIFIER;
-                    }
-                }
+                [$identifier, $escaping] = $this->decodeIdentifier($matches[0]);
 
                 // allow template to contain []
                 if ($identifier === '') {
-                    $identifier = $nameless_count++;
+                    $identifier = $namelessCount++;
 
                     // use rendering only with named tags
                 }
+
                 $fx = '_render_' . $identifier;
 
-                // [foo] will attempt to call $this->_render_foo()
+                // [foo] will attempt to call $this->_render_foo() or $expression->_render_foo()
 
-                if (array_key_exists($identifier, $this->args['custom'])) {
-                    $value = $this->consume($this->args['custom'][$identifier], $escaping);
+                if (array_key_exists($identifier, $expression->args['custom'])) {
+                    $value = $this->render($expression->args['custom'][$identifier], $escaping);
                 } elseif (method_exists($this, $fx)) {
+                    $args = $this->args;
+                    $this->args = $expression->args;
                     $value = $this->{$fx}();
+                    $this->args = $args;
+                } elseif (method_exists($expression, $fx)) {
+                    $value = $expression->{$fx}();
                 } else {
-                    throw (new Exception('Expression could not render tag'))
+                    throw (new Exception('Expression could not render tag' . $identifier . print_r($expression, true)))
                         ->addMoreInfo('tag', $identifier);
                 }
 
                 return is_array($value) ? '(' . implode(',', $value) . ')' : $value;
             },
-            $this->template
-            );
+            $template
+        );
 
-        if (!$hadUnderscoreParamBase) {
-            $this->_paramBase = null;
+        // Wrap in parentheses if expression requires so
+        if ($expression->wrapInParentheses === true) {
+            $res = '(' . $res . ')';
         }
 
         return trim($res);
+    }
+
+    public function execute(Persistence\Sql $persistence = null)
+    {
+        $persistence = $persistence ?? $this->persistence;
+
+        if (!$persistence) {
+            throw new Exception('Expression can only be executed when persistence is specified');
+        }
+
+        return $persistence->execute($this);
+    }
+
+    /**
+     * Decode the identifier and escaping required from a template.
+     *
+     * [xxx] = param
+     * {xxx} = escape
+     * {{xxx}} = escapeSoft
+     */
+    protected static function decodeIdentifier(string $identifierTemplate): array
+    {
+        $identifier = substr($identifierTemplate, 1, -1);
+
+        $escaping = null;
+        if (substr($identifierTemplate, 0, 1) === '[') {
+            $escaping = self::ESCAPE_PARAM;
+        } elseif (substr($identifierTemplate, 0, 1) === '{') {
+            if (substr($identifierTemplate, 1, 1) === '{') {
+                $escaping = self::ESCAPE_IDENTIFIER_SOFT;
+                $identifier = substr($identifier, 1, -1);
+            } else {
+                $escaping = self::ESCAPE_IDENTIFIER;
+            }
+        }
+
+        return [$identifier, $escaping];
     }
 
     /**
@@ -491,7 +532,6 @@ class Expression implements Expressionable
             'R' => false,
             'template' => $this->template,
             'params' => $this->params,
-            // 'connection' => $this->connection,
             'args' => $this->args,
         ];
 
@@ -504,10 +544,8 @@ class Expression implements Expressionable
         return $arr;
     }
 
-    public function toExpression(Persistence\Sql $persistence): self
+    public function toExpression(): self
     {
-        $this->persistence = $persistence;
-
         return $this;
     }
 }

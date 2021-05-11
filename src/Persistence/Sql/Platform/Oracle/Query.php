@@ -13,6 +13,13 @@ use Phlex\Data\Persistence;
  */
 class Query extends Persistence\Sql\Query
 {
+    public const MODE_SELECT_LIMIT = 'select_limit';
+
+    protected static $templates = [
+        self::MODE_SELECT => '[with]select[option] [field] [from] [table][join][where][group][having][order]',
+        self::MODE_SELECT_LIMIT => 'select * from (select "__t".*, rownum "__dsql_rownum" [from] ([with]select[option] [field] [from] [table][join][where][group][having][order]) "__t") where "__dsql_rownum" > [limit_start][and_limit_end]',
+    ];
+
     public function doGetRows(): array
     {
         return array_map(function ($row) {
@@ -48,7 +55,7 @@ class Query extends Persistence\Sql\Query
 
     protected function initExists()
     {
-        $this->statement = $this->persistence->statement()->mode('select')->field(
+        $this->statement = $this->persistence->statement()->select()->field(
             $this->persistence->expr('case when exists[] then 1 else 0 end', [$this->statement])
         );
     }

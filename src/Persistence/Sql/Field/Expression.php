@@ -84,15 +84,15 @@ class Expression extends Sql\Field
     /**
      * When field is used as expression, this method will be called.
      */
-    public function toExpression(Persistence\Sql $persistence): Sql\Expression
+    public function toExpression(): Sql\Expression
     {
         $expr = $this->expr;
         if ($expr instanceof \Closure) {
-            $expr = $expr($this->getOwner(), $persistence);
+            $expr = $expr($this->getOwner());
         }
 
         if ($expr instanceof Sql\Expressionable) {
-            $expr = $expr->toExpression($persistence);
+            $expr = $expr->toExpression();
         }
 
         if (is_string($expr)) {
@@ -102,7 +102,7 @@ class Expression extends Sql\Field
             }
 
             // Otherwise call it from expression itself
-            return $persistence->expr('([])', [$persistence->expr($expr)]);
+            return new self('([])', [$expr]);
         }
 
         return $expr;

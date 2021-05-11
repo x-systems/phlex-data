@@ -30,7 +30,7 @@ class Join extends Model\Join implements Expressionable
         return '_' . ($this->foreign_alias ?: $this->foreign_table[0]);
     }
 
-    public function toExpression(Persistence\Sql $persistence): Expression
+    public function toExpression(): Expression
     {
         /*
         // If our Model has expr() method (inherited from Persistence\Sql) then use it
@@ -43,7 +43,7 @@ class Join extends Model\Join implements Expressionable
         */
 
         // Romans: Join\Sql shouldn't even be called if expr is undefined. I think we should leave it here to produce error.
-        return $this->getOwner()->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
+        return new Expression('{}.{}', [$this->foreign_alias, $this->foreign_field]);
     }
 
     /**
@@ -178,12 +178,13 @@ class Join extends Model\Join implements Expressionable
         }
 
         $query = $this->statement()
-            ->mode('insert')
+            ->insert()
             ->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
 
         $this->save_buffer = [];
-        $query->set($this->foreign_field, null);
-        $query->execute();
+        $query
+            ->set($this->foreign_field, null)
+            ->execute();
 
         $this->id = $model->persistence->lastInsertId($model);
 
@@ -207,13 +208,17 @@ class Join extends Model\Join implements Expressionable
 
         $model = $this->getOwner();
 
-        $query = $this->statement()->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+        $query = $this->statement()
+            ->insert()
+            ->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+
         $this->save_buffer = [];
-        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
 
-        $query->insert();
+        $query
+            ->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id)
+            ->execute();
 
-        $this->id = $query->persistence->lastInsertId($model);
+        $this->id = $model->persistence->lastInsertId($model);
     }
 
     /**
@@ -230,13 +235,17 @@ class Join extends Model\Join implements Expressionable
         }
 
         $model = $this->getOwner();
-        $query = $this->statement();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+        $query = $this->statement()
+            ->update()
+            ->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+
         $this->save_buffer = [];
 
         $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
 
-        $query->where($this->foreign_field, $id)->update();
+        $query
+            ->where($this->foreign_field, $id)
+            ->execute();
     }
 
     /**
@@ -254,6 +263,6 @@ class Join extends Model\Join implements Expressionable
 
         $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
 
-        $this->statement()->where($this->foreign_field, $id)->delete();
+        $this->statement()->delete()->where($this->foreign_field, $id)->execute();
     }
 }

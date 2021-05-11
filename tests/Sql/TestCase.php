@@ -163,19 +163,20 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                 $hasId = (bool) key($data);
 
                 foreach ($data as $id => $row) {
-                    $query = $this->db->statement();
                     if ($id === '_') {
                         continue;
                     }
 
-                    $query->table($tableName);
-                    $query->set($row);
+                    $query = $this->db->statement()
+                        ->insert()
+                        ->table($tableName)
+                        ->set($row);
 
                     if (!isset($row['id']) && $hasId) {
                         $query->set('id', $id);
                     }
 
-                    $query->insert();
+                    $this->db->execute($query);
                 }
             }
         }
@@ -195,7 +196,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
         foreach ($tableNames as $table) {
             $data2 = [];
 
-            $data = $this->db->statement()->table($table)->execute()->fetchAllAssociative();
+            $data = $this->db->execute($this->db->statement()->table($table))->fetchAllAssociative();
 
             foreach ($data as &$row) {
                 foreach ($row as &$val) {

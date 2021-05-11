@@ -23,6 +23,15 @@ class Query extends Persistence\Query implements Expressionable
     public const MODE_REPLACE = 'replace';
     public const MODE_TRUNCATE = 'truncate';
 
+    protected static $templates = [
+        self::MODE_SELECT => '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]',
+        self::MODE_INSERT => 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])',
+        self::MODE_REPLACE => 'replace[option] into [table_noalias] ([set_fields]) values ([set_values])',
+        self::MODE_DELETE => '[with]delete [from] [table_noalias][where][having]',
+        self::MODE_UPDATE => '[with]update [table_noalias] set [set] [where]',
+        self::MODE_TRUNCATE => 'truncate table [table_noalias]',
+    ];
+
     /** @var Statement */
     protected $statement;
 
@@ -140,7 +149,7 @@ class Query extends Persistence\Query implements Expressionable
 
     protected function initExists(): void
     {
-        $this->statement = $this->getPersistence()->statement()->mode('select')->option('exists')->field($this->statement);
+        $this->statement = $this->getPersistence()->statement()->select()->option('exists')->field($this->statement);
     }
 
     protected function initCount($alias = null): void
@@ -224,9 +233,9 @@ class Query extends Persistence\Query implements Expressionable
         return $this->execute()->fetchOne();
     }
 
-    public function toExpression(Persistence\Sql $persistence): Expression
+    public function toExpression(): Expression
     {
-        return $this->statement->toExpression($persistence);
+        return $this->statement->toExpression();
     }
 
     public function getStatement(): Statement
@@ -261,6 +270,11 @@ class Query extends Persistence\Query implements Expressionable
                 $statement->where($expression);
             }
         }
+    }
+
+    public function render(): string
+    {
+        return $this->withMode()->getStatement()->render();
     }
 
     public function getDebug(): array

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
-use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Phlex\Data\Model;
 
 class ConditionSqlTest extends Sql\TestCase
@@ -35,12 +34,7 @@ class ConditionSqlTest extends Sql\TestCase
         $mm->tryLoad(2);
         $this->assertNull($mm->get('name'));
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $this->assertSame(
-                'select "id","name","gender" from "user" where "gender" = :a',
-                $mm->toQuery()->select()->render()
-            );
-        }
+        $this->assertSameSql('select "id","name","gender" from "user" where "gender" = :a', $mm->toQuery()->render());
 
         $mm = clone $m;
         $mm->withId(2); // = addCondition(id, 2)

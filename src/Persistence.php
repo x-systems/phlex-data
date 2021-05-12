@@ -78,7 +78,7 @@ abstract class Persistence
      * you can define additional methods or store additional data. This method
      * is executed before Model::doInitialize().
      */
-    protected function initPersistence(Model $m)
+    protected function initPersistence(Model $model)
     {
     }
 

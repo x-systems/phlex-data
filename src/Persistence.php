@@ -52,25 +52,25 @@ abstract class Persistence
     /**
      * Associate model with the data driver.
      */
-    public function add(Model $m, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): Model
     {
-        $m = Factory::factory($m, $defaults);
+        $model = Factory::factory($model, $defaults);
 
-        if ($m->persistence) {
-            if ($m->persistence === $this) {
-                return $m;
+        if ($model->persistence) {
+            if ($model->persistence === $this) {
+                return $model;
             }
 
             throw new Exception('Model is already related to another persistence');
         }
 
-        $m->persistence = $this;
-        $this->initPersistence($m);
-        $m = $this->_add($m);
+        $model->persistence = $this;
+        $this->initPersistence($model);
+        $model = $this->_add($model);
 
-        $this->hook(self::HOOK_AFTER_ADD, [$m]);
+        $this->hook(self::HOOK_AFTER_ADD, [$model]);
 
-        return $m;
+        return $model;
     }
 
     /**

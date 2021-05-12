@@ -38,7 +38,7 @@ class Migration extends Persistence\Sql\Migration
                         'table' => $this->table->getName(),
                         'table_ai_trigger_before' => $this->table->getName() . '__aitb',
                     ]
-                ),
+                )->render(),
             ]
         )->execute();
 
@@ -66,7 +66,7 @@ class Migration extends Persistence\Sql\Migration
                     [
                         'table_ai_trigger_before' => $this->table->getName() . '__aitb',
                     ]
-                ),
+                )->render(),
             ]
         )->execute();
 

@@ -271,9 +271,6 @@ abstract class Sql extends Persistence
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function add(Model $model, array $defaults = []): Model
     {
         // Use our own classes for fields, references and expressions unless
@@ -310,9 +307,6 @@ abstract class Sql extends Persistence
         return $model;
     }
 
-    /**
-     * Initialize persistence.
-     */
     protected function initPersistence(Model $model): void
     {
         $model->unsetOption(self::OPTION_USE_TABLE_PREFIX);
@@ -335,12 +329,6 @@ abstract class Sql extends Persistence
             );
 
             return $m->persistence->expr($expr, $args); // @phpstan-ignore-line
-        });
-        $model->addMethod('statement', static function (Model $m, ...$args) {
-            return $m->persistence->statement(); // @phpstan-ignore-line
-        });
-        $model->addMethod('exprNow', static function (Model $m, ...$args) {
-            return $m->persistence->exprNow($m, ...$args); // @phpstan-ignore-line
         });
     }
 

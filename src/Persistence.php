@@ -24,24 +24,45 @@ abstract class Persistence
     /** @const string */
     public const ID_LOAD_ANY = self::class . '@idLoadAny';
 
+    /**
+     * Stores object custom codec resolution array.
+     *
+     * @var array
+     */
     protected $codecs = [];
 
+    /**
+     * Stores class default codec resolution array.
+     *
+     * @var array
+     */
     protected static $defaultCodecs = [
         [Persistence\Codec::class],
     ];
 
-    public static function getDefaultCodecs()
+    /**
+     * Retrieve the default codecs for the persistence class.
+     */
+    public static function getDefaultCodecs(): array
     {
         $parentClass = get_parent_class(static::class);
 
         return static::$defaultCodecs + ($parentClass ? $parentClass::getDefaultCodecs() : []);
     }
 
-    public function getCodecs()
+    /**
+     * Retrieve the active codecs for the persistence object.
+     */
+    public function getCodecs(): array
     {
         return (array) $this->codecs + $this->getDefaultCodecs();
     }
 
+    /**
+     * Add custom codecs to Persistence.
+     *
+     * @return static
+     */
     public function setCodecs(array $codecs)
     {
         $this->codecs = $codecs;

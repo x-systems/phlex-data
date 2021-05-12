@@ -196,7 +196,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
         foreach ($tableNames as $table) {
             $data2 = [];
 
-            $data = $this->db->execute($this->db->statement()->table($table))->fetchAllAssociative();
+            $data = $this->db->statement()->table($table)->execute()->fetchAllAssociative();
 
             foreach ($data as &$row) {
                 foreach ($row as &$v) {
@@ -204,6 +204,11 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                         $v = (string) $v;
                     } elseif (is_bool($v)) {
                         $v = $v ? '1' : '0';
+                    }
+
+                    if (is_resource($v) && get_resource_type($v) === 'stream'
+                        && $this->db->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\OraclePlatform) {
+                        $v = stream_get_contents($v);
                     }
                 }
 

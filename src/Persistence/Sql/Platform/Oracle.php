@@ -15,6 +15,11 @@ class Oracle extends Persistence\Sql
 
     public $_default_seed_migration = [Oracle\Migration::class];
 
+    protected static $defaultCodecs = [
+        Model\Field\Type\Object_::class => [Oracle\Codec\Object_::class],
+        Model\Field\Type\Array_::class => [Oracle\Codec\Array_::class],
+    ];
+
     public function groupConcat($field, string $delimiter = ','): Persistence\Sql\Expression
     {
         return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $delimiter]);

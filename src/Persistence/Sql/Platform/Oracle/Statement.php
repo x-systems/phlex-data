@@ -9,7 +9,7 @@ class Statement extends AbstractStatement
     // {{{ for Oracle 11 and lower to support LIMIT with OFFSET
 
     protected $template_select = '[with]select[option] [field] [from] [table][join][where][group][having][order]';
-    protected $template_select_limit = 'select * from (select "__t".*, rownum "__dsql_rownum" [from] ([with]select[option] [field] [from] [table][join][where][group][having][order]) "__t") where "__dsql_rownum" > [limit_start][and_limit_end]';
+    protected $template_select_limit = 'select * from (select "__t".*, rownum "__dsql_rownum" from ([with]select[option] [field] [from] [table][join][where][group][having][order]) "__t") where "__dsql_rownum" > [limit_start][and_limit_end]';
 
     public function limit($cnt, $shift = null)
     {

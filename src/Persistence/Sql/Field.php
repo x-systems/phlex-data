@@ -42,7 +42,7 @@ class Field extends Model\Field implements Expressionable
                 ->addMoreInfo('persistence', $model->persistence ?? null);
         }
 
-        if (isset($model->persistenceOptions[Persistence\Sql::OPTION_USE_TABLE_PREFIX])) {
+        if ($model->getOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX)) {
             $template = '{{}}.{}';
             $args = [
                 $this->getTablePrefix(),

@@ -38,6 +38,7 @@ class Model implements \IteratorAggregate
     }
     use Model\AggregatesTrait;
     use Model\JoinsTrait;
+    use Model\OptionsTrait;
     use Model\ReferencesTrait;
     use Model\UserActionsTrait;
     use ReadableCaptionTrait;
@@ -149,14 +150,6 @@ class Model implements \IteratorAggregate
      * @var Persistence|Persistence\Sql|null
      */
     public $persistence;
-
-    /**
-     * Persistence store some custom information in here that may be useful
-     * for them. The key is the name of persistence driver.
-     *
-     * @var array
-     */
-    public $persistenceOptions = [];
 
     /** @var Model\Scope\RootScope */
     protected $scope;

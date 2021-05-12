@@ -315,6 +315,8 @@ abstract class Sql extends Persistence
      */
     protected function initPersistence(Model $model): void
     {
+        $model->unsetOption(self::OPTION_USE_TABLE_PREFIX);
+
         $model->addMethod('migrate', static function (Model $m, ...$args) {
             return $m->persistence->migrate($m, ...$args); // @phpstan-ignore-line
         });

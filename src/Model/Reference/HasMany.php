@@ -55,9 +55,7 @@ class HasMany extends Model\Reference
      */
     protected function referenceOurValue(): Model\Field
     {
-        $ourModel = $this->getOurModel();
-
-        $ourModel->persistenceOptions[Persistence\Sql::OPTION_USE_TABLE_PREFIX] = true;
+        $this->getOurModel()->setOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX);
 
         return $this->getOurField();
     }

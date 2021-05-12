@@ -10,9 +10,9 @@ class Folder extends Model
 {
     public $table = 'folder';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->addField('name');
 
         $this->hasMany('SubFolder', ['model' => [self::class], 'theirFieldName' => 'parent_id'])

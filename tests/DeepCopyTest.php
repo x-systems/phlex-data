@@ -13,9 +13,9 @@ class DcClient extends Model
 {
     public $table = 'client';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
 
@@ -29,9 +29,9 @@ class DcInvoice extends Model
 {
     public $table = 'invoice';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
@@ -59,9 +59,9 @@ class DcQuote extends Model
 {
     public $table = 'quote';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
         $this->hasMany('Lines', ['model' => [DcQuoteLine::class], 'theirFieldName' => 'parent_id'])
@@ -77,9 +77,9 @@ class DcInvoiceLine extends Model
 {
     public $table = 'line';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->hasOne('parent_id', ['model' => [DcInvoice::class]]);
 
         $this->addField('name');
@@ -100,9 +100,9 @@ class DcQuoteLine extends Model
 {
     public $table = 'line';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->hasOne('parent_id', ['model' => [DcQuote::class]]);
 
@@ -123,9 +123,9 @@ class DcPayment extends Model
 {
     public $table = 'payment';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->hasOne('client_id', ['model' => [DcClient::class]]);
 
         $this->hasOne('invoice_id', ['model' => [DcInvoice::class]]);

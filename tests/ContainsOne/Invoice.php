@@ -16,9 +16,9 @@ class Invoice extends Model
 {
     public $table = 'invoice';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent:: init();
+        parent:: doInitialize();
 
         $this->title_field = $this->fieldName()->ref_no;
 

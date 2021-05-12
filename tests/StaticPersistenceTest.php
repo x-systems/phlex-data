@@ -139,9 +139,9 @@ class StaticPersistenceModel extends Model
 {
     public $title_field = 'foo';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('foo', ['caption' => 'custom field']);
     }

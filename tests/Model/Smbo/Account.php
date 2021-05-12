@@ -10,9 +10,9 @@ class Account extends Model
 {
     public $table = 'account';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
 

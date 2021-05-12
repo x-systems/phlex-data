@@ -18,9 +18,9 @@ class Join extends Model\Join
     /**
      * This method is to figure out stuff.
      */
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         // If kind is not specified, figure out join type
         if (!isset($this->kind)) {

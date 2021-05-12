@@ -10,9 +10,9 @@ class Person extends Model
 {
     public $table = 'person';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->addField('name');
         $this->addField('surname');
         $this->addField('gender', ['enum' => ['M', 'F']]);

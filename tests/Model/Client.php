@@ -6,9 +6,9 @@ namespace Phlex\Data\Tests\Model;
 
 class Client extends User
 {
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('order', ['default' => '10']);
     }

@@ -164,9 +164,9 @@ class TestUser extends \Phlex\Data\Model
 {
     public $table = 'user';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
         $this->addField('password', ['type' => 'password']);
@@ -181,9 +181,9 @@ class TestRole extends \Phlex\Data\Model
 {
     public $table = 'role';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
         $this->hasMany('Users', [TestUser::class, 'ourFieldName' => 'id', 'theirFieldName' => 'main_role_id']);

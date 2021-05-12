@@ -49,9 +49,9 @@ class Join extends Model\Join implements Expressionable
     /**
      * This method is to figure out stuff.
      */
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->getOwner()->setOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX);
 

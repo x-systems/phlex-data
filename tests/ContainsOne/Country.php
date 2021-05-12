@@ -15,9 +15,9 @@ class Country extends Model
 {
     public $table = 'country';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField($this->fieldName()->name);
     }

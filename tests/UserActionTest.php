@@ -34,9 +34,9 @@ class UaClient extends Model
 
     public $caption = 'UaClient';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
         $this->addField('reminder_sent', ['type' => 'boolean']);

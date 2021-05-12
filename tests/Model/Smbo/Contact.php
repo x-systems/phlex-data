@@ -10,9 +10,9 @@ class Contact extends Model
 {
     public $table = 'contact';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('type', ['enum' => ['client', 'supplier']]);
 

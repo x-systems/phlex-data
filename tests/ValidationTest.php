@@ -14,9 +14,9 @@ class ValidationTest
 
 class MyValidationModel extends Model
 {
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
         $this->addField('domain');
@@ -38,9 +38,9 @@ class MyValidationModel extends Model
 
 class BadValidationModel extends Model
 {
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
     }

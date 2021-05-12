@@ -19,9 +19,9 @@ use Phlex\Data\Model;
  */
 class Line extends Model
 {
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->hasOne($this->fieldName()->vat_rate_id, ['model' => [VatRate::class]]);
 

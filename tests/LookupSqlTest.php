@@ -23,9 +23,9 @@ class LCountry extends Model
 {
     public $table = 'country';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
         $this->addField('code');
@@ -59,9 +59,9 @@ class LUser extends Model
 {
     public $table = 'user';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
@@ -93,9 +93,9 @@ class LFriend extends Model
     public $table = 'friend';
     public $title_field = 'friend_name';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->hasOne('user_id', ['model' => [LUser::class]])
             ->addField('my_name', 'name');

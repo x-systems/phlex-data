@@ -22,9 +22,7 @@ use Phlex\Data\Model;
 class UserAction
 {
     use DiContainerTrait;
-    use InitializerTrait {
-        init as init_;
-    }
+    use InitializerTrait;
     use TrackableTrait;
 
     /** Defining records scope of the action */
@@ -77,11 +75,6 @@ class UserAction
 
     /** @var bool Atomic action will automatically begin transaction before and commit it after completing. */
     public $atomic = true;
-
-    protected function init(): void
-    {
-        $this->init_();
-    }
 
     /**
      * Attempt to execute callback of the action.

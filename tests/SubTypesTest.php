@@ -10,9 +10,9 @@ class StAccount extends Model
 {
     public $table = 'account';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
 
@@ -64,9 +64,9 @@ class StGenericTransaction extends Model
     public $table = 'transaction';
     public $type;
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->hasOne('account_id', ['model' => [StAccount::class]]);
         $this->addField('type', ['enum' => ['Ob', 'Deposit', 'Withdrawal', 'TransferOut', 'TransferIn']]);
@@ -112,9 +112,9 @@ class StTransaction_TransferOut extends StGenericTransaction
 {
     public $type = 'TransferOut';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->hasOne('link_id', ['model' => [StTransaction_TransferIn::class]]);
 
         //$this->join('transaction','linked_transaction');
@@ -125,9 +125,9 @@ class StTransaction_TransferIn extends StGenericTransaction
 {
     public $type = 'TransferIn';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->hasOne('link_id', ['model' => [StTransaction_TransferOut::class]]);
     }
 }

@@ -17,9 +17,9 @@ class SCountry extends Model
 
     public $caption = 'Country';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
         $this->addField('code');
@@ -37,9 +37,9 @@ class SUser extends Model
 
     public $caption = 'User';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
         $this->addField('surname');
@@ -59,9 +59,9 @@ class STicket extends Model
 
     public $caption = 'Ticket';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('number');
         $this->addField('venue');

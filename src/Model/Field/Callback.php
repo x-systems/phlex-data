@@ -12,9 +12,7 @@ use Phlex\Data\Model;
  */
 class Callback extends Model\Field
 {
-    use InitializerTrait {
-        init as _init;
-    }
+    use InitializerTrait;
 
     /**
      * Method to execute for evaluation.
@@ -27,10 +25,8 @@ class Callback extends Model\Field
 
     public $persist = self::PERSIST_NONE;
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        $this->_init();
-
         $this->ui['table']['sortable'] = false;
 
         $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, function () {

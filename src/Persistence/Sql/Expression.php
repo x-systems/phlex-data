@@ -45,7 +45,7 @@ class Expression implements Expressionable
     /** @var array Populated with actual values by escapeParam() */
     public $params = [];
 
-    /** @var Persistence\Sql */
+    /** @var Persistence\Sql|null */
     public $persistence;
 
     /** @var bool Wrap the expression in parentheses when consumed by another expression or not. */
@@ -174,8 +174,8 @@ class Expression implements Expressionable
     /**
      * Returns Expression object.
      *
-     * @param array $properties
-     * @param array $arguments
+     * @param string|array $properties
+     * @param array        $arguments
      */
     public function expr($properties = [], $arguments = null): self
     {

@@ -14,8 +14,8 @@ class Migration
 {
     use DiContainerTrait;
 
-    /** @var DBAL\Connection */
-    public $connection;
+    /** @var Persistence\Sql */
+    public $persistence;
 
     /** @var DBAL\Schema\Table */
     public $table;
@@ -34,12 +34,10 @@ class Migration
 
     protected function setSource($source)
     {
-        if ($source instanceof DBAL\Connection) {
-            $this->connection = $source;
-        } elseif ($source instanceof Persistence\Sql) {
-            $this->connection = $source->connection;
+        if ($source instanceof Persistence\Sql) {
+            $this->persistence = $source;
         } elseif ($source instanceof Model && $source->persistence instanceof Persistence\Sql) {
-            $this->connection = $source->persistence->connection;
+            $this->persistence = $source->persistence;
         } else {
             throw (new Exception('Source is specified incorrectly. Must be Connection, Persistence or initialized Model'))
                 ->addMoreInfo('source', $source);
@@ -52,12 +50,12 @@ class Migration
 
     public function getDatabasePlatform(): DBAL\Platforms\AbstractPlatform
     {
-        return $this->connection->getDatabasePlatform();
+        return $this->persistence->connection->getDatabasePlatform();
     }
 
     public function getSchemaManager(): DBAL\Schema\AbstractSchemaManager
     {
-        return $this->connection->createSchemaManager();
+        return $this->persistence->connection->createSchemaManager();
     }
 
     public function table($tableName): self
@@ -130,7 +128,7 @@ class Migration
             $modelSeed = is_array($reference->model)
                 ? $reference->model
                 : [get_class($reference->model)];
-            $referenceModel = Model::fromSeed($modelSeed, [Persistence\Sql::createFromConnection($this->connection)]);
+            $referenceModel = Model::fromSeed($modelSeed, [Persistence\Sql::createFromConnection($this->persistence->connection)]);
 
             return $referenceModel->getField($referenceField);
         }

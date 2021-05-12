@@ -295,7 +295,7 @@ class Statement extends Expression
     /**
      * Specify WITH query to be used.
      *
-     * @param Query  $cursor    Specifies cursor query or array [alias=>query] for adding multiple
+     * @param self   $cursor    Specifies cursor query or array [alias=>query] for adding multiple
      * @param string $alias     Specify alias for this cursor
      * @param array  $fields    Optional array of field names used in cursor
      * @param bool   $recursive Is it recursive?
@@ -317,7 +317,7 @@ class Statement extends Expression
     /**
      * Recursive WITH query.
      *
-     * @param Query  $cursor Specifies cursor query or array [alias=>query] for adding multiple
+     * @param self   $cursor Specifies cursor query or array [alias=>query] for adding multiple
      * @param string $alias  Specify alias for this cursor
      * @param array  $fields Optional array of field names used in cursor
      *
@@ -554,7 +554,7 @@ class Statement extends Expression
      * @param mixed  $cond     Condition such as '=', '>' or 'is not'
      * @param mixed  $value    Value. Will be quoted unless you pass expression
      * @param string $kind     Do not use directly. Use having()
-     * @param string $num_args when $kind is passed, we can't determine number of
+     * @param int    $num_args when $kind is passed, we can't determine number of
      *                         actual arguments, so this argument must be specified
      *
      * @return $this
@@ -622,7 +622,7 @@ class Statement extends Expression
 
                 break;
             case 2:
-                if (is_object($cond) && !$cond instanceof Expressionable && !$cond instanceof Expression) {
+                if (is_object($cond) && !$cond instanceof Expressionable) {
                     throw (new Exception('Value cannot be converted to SQL-compatible expression'))
                         ->addMoreInfo('field', $field)
                         ->addMoreInfo('value', $cond);
@@ -632,7 +632,7 @@ class Statement extends Expression
 
                 break;
             case 3:
-                if (is_object($value) && !$value instanceof Expressionable && !$value instanceof Expression) {
+                if (is_object($value) && !$value instanceof Expressionable) {
                     throw (new Exception('Value cannot be converted to SQL-compatible expression'))
                         ->addMoreInfo('field', $field)
                         ->addMoreInfo('cond', $cond)
@@ -658,9 +658,7 @@ class Statement extends Expression
      */
     public function having($field, $cond = null, $value = null)
     {
-        $num_args = func_num_args();
-
-        return $this->where($field, $cond, $value, 'having', $num_args);
+        return $this->where($field, $cond, $value, 'having', func_num_args());
     }
 
     /**
@@ -1079,8 +1077,8 @@ class Statement extends Expression
      * $q->order('name desc, id asc')
      * $q->order('name',true);
      *
-     * @param string|array $order Order by
-     * @param string|bool  $desc  true to sort descending
+     * @param string|array|Expressionable $order Order by
+     * @param string|bool                 $desc  true to sort descending
      *
      * @return $this
      */
@@ -1206,7 +1204,7 @@ class Statement extends Expression
     /**
      * Returns new Query object of [or] expression.
      *
-     * @return Query
+     * @return static
      */
     public function orExpr()
     {
@@ -1216,7 +1214,7 @@ class Statement extends Expression
     /**
      * Returns new Query object of [and] expression.
      *
-     * @return Query
+     * @return static
      */
     public function andExpr()
     {
@@ -1228,7 +1226,7 @@ class Statement extends Expression
      *
      * @param mixed $operand optional operand for case expression
      *
-     * @return Query
+     * @return static
      */
     public function caseExpr($operand = null)
     {

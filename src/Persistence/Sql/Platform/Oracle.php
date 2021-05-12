@@ -74,9 +74,10 @@ class Oracle extends Persistence\Sql
             return ''; // TODO code should never call lastInsertId() if id field is not defined
         }
 
-        $query = $this->connection->dsql()->table($model->table);
-        $query->field($query->expr('max({id_col})', ['id_col' => $model->primaryKey]), 'max_id');
-
-        return $query->getOne();
+        return $this->statement()
+            ->table($model->table)
+            ->field($this->expr('max({id_col})', ['id_col' => $model->primaryKey]), 'max_id')
+            ->execute()
+            ->fetchOne();
     }
 }

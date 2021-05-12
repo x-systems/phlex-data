@@ -159,7 +159,7 @@ class Query extends Persistence\Query implements Expressionable
             $alias = $functionName . '_' . $field->short_name;
         }
 
-        $this->statement->reset('field')->field($this->statement->expr($expr, [$field]), $alias);
+        $this->statement->reset('field')->field(new Expression($expr, [$field]), $alias);
     }
 
     protected function initField($fieldName, string $alias = null): void

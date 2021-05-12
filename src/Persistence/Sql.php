@@ -335,7 +335,7 @@ abstract class Sql extends Persistence
     /**
      * Execute Expression by using this persistence.
      *
-     * @param Sql\Expression|string $expressionable
+     * @param Sql\Expressionable|string $expressionable
      */
     public function execute($expressionable): DBAL\Result
     {

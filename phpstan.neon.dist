@@ -19,7 +19,6 @@ parameters:
 
         # TODO these rules are generated, this ignores should be fixed in the code
         - '~^Call to an undefined method Phlex\\Data\\(.*)Model(.*)::migrate\(\)\.$~'
-        - '~^Call to an undefined method Phlex\\Data\\(.*)Model(.*)::dsql\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\(.*)Model(.*)::expr\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\Model\\Reference(.*)::addTitle\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\Model\\Reference(.*)::withTitle\(\)\.$~'
@@ -27,9 +26,7 @@ parameters:
         - '~^Call to an undefined method Phlex\\Data\\Model\\Reference(.*)::addFields\(\)\.$~'
         # - '~^Call to an undefined method Phlex\\Data\\Model\\Reference(.*)::refLink\(\)\.$~'        
         # - '~^Access to an undefined property Phlex\\Data\\Persistence::\$\_default\_seed\_addField\.$~'
-        - '~^Call to an undefined method Atk4\\Dsql\\Query::sequence\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\Persistence::expr\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\Persistence\\Query::render\(\)\.$~'
-        - '~^Call to an undefined method Phlex\\Data\\Persistence\\Query::dsql\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\Persistence\\Query::reset\(\)\.$~'
         - '~^Parameter \#2 \$expression of method Phlex\\Data\\Model::addExpression\(\) expects array|Atk4\\Dsql\\Expression\|Closure\|string, Phlex\\Data\\Persistence\\Query given\.$~'

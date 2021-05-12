@@ -183,7 +183,10 @@ abstract class Query implements \IteratorAggregate
 
     abstract protected function initField($fieldName, string $alias = null): void;
 
-    protected function withMode(): self
+    /**
+     * @return static
+     */
+    protected function withMode()
     {
         if (!$this->mode) {
             $this->select();

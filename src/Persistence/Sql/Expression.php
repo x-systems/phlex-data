@@ -38,7 +38,7 @@ class Expression implements Expressionable
      *
      * @var string
      */
-    protected $placeholder = 'a';
+    protected $nextPlaceholder = 'a';
 
     public $identifierQuoteCharacter = '"';
 
@@ -198,8 +198,8 @@ class Expression implements Expressionable
      */
     protected function escapeParam($value): string
     {
-        $name = ':' . $this->placeholder;
-        ++$this->placeholder;
+        $name = ':' . $this->nextPlaceholder++;
+
         $this->params[$name] = $value;
 
         return $name;

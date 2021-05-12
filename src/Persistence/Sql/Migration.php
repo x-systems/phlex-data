@@ -55,7 +55,7 @@ class Migration
 
     public function getSchemaManager(): DBAL\Schema\AbstractSchemaManager
     {
-        return $this->persistence->connection->createSchemaManager();
+        return $this->persistence->connection->getSchemaManager();
     }
 
     public function table($tableName): self

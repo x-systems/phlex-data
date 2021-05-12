@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Tests\Sql;
+namespace Phlex\Data\Tests\Sql\Migration;
 
 class TestCaseTest extends \Phlex\Data\Tests\Sql\TestCase
 {

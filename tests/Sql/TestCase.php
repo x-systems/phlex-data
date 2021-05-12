@@ -199,9 +199,11 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
             $data = $this->db->execute($this->db->statement()->table($table))->fetchAllAssociative();
 
             foreach ($data as &$row) {
-                foreach ($row as &$val) {
-                    if (is_int($val)) {
-                        $val = (int) $val;
+                foreach ($row as &$v) {
+                    if (is_int($v) || is_float($v)) {
+                        $v = (string) $v;
+                    } elseif (is_bool($v)) {
+                        $v = $v ? '1' : '0';
                     }
                 }
 

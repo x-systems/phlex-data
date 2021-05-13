@@ -14,7 +14,6 @@ use Phlex\Data\Persistence;
  *
  * @method Persistence\Sql getPersistence()
  * @method Statement       getDebugQuery()
- * @method Statement       render()
  * @method Statement       mode()
  * @method Statement       reset()
  * @method Statement       join()
@@ -141,7 +140,7 @@ class Query extends Persistence\Query implements Expressionable
 
     protected function initExists(): void
     {
-        $this->statement = $this->getPersistence()->statement()->select()->option('exists')->field($this->statement);
+        $this->statement = $this->statement->exists();
     }
 
     protected function initCount($alias = null): void

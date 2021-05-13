@@ -120,7 +120,7 @@ abstract class Sql extends Persistence
             case 'pgsql':
             case 'sqlsrv':
             case 'sqlite':
-                return Factory::factory(self::resolve($dsn['driverSchema']), [$dsn['dsn'], $dsn['user'], $dsn['pass'], $options]);
+                return Factory::factory(self::resolvePersistenceSeed($dsn['driverSchema']), [$dsn['dsn'], $dsn['user'], $dsn['pass'], $options]);
             default:
                 throw (new Exception('Unable to determine persistence driver type from DSN'))
                     ->addMoreInfo('dsn', $dsn['dsn']);
@@ -182,7 +182,25 @@ abstract class Sql extends Persistence
         return Factory::factory($driverSchema, [$connection]);
     }
 
-    public static function resolve($driverSchema)
+    /**
+     * Adds persistence seed to the registry for resolving in Persistence\Sql::resolvePersistenceSeed method.
+     *
+     * Can be used as:
+     *
+     * Persistence\Sql::registerPersistenceSeed('mysql', [Custom\Persistence::class]), or
+     * Custom\Persistence::registerPersistenceSeed('mysql')
+     *
+     * Custom\Persistence must be descendant of Persistence\Sql class.
+     */
+    public static function registerPersistenceSeed(string $driverSchema, array $persistenceSeed = null)
+    {
+        self::$registry[$driverSchema] = $persistenceSeed ?? [static::class];
+    }
+
+    /**
+     * Resolves the persistence seed to use based on the driver type.
+     */
+    public static function resolvePersistenceSeed(string $driverSchema)
     {
         return self::$registry[$driverSchema] ?? self::$registry[0];
     }
@@ -352,7 +370,7 @@ abstract class Sql extends Persistence
 
         $query = $this->statement();
 
-        $sql = $query->render($expression);
+        $sql = $query->consume($expression);
 
         try {
             $statement = $this->connection->prepare($sql);

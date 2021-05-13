@@ -16,7 +16,7 @@ class Query extends Persistence\Sql\Query
     public function doGetRows(): array
     {
         return array_map(function ($row) {
-            unset($row['__dsql_rownum']);
+            unset($row['__phlex_rownum']);
 
             return $row;
         }, parent::doGetRows());
@@ -27,7 +27,7 @@ class Query extends Persistence\Sql\Query
         $row = parent::doGetRow();
 
         if ($row !== null) {
-            unset($row['__dsql_rownum']);
+            unset($row['__phlex_rownum']);
         }
 
         return $row;
@@ -37,17 +37,10 @@ class Query extends Persistence\Sql\Query
     {
         foreach ($this->execute()->iterateAssociative() as $row) {
             if ($row !== null) {
-                unset($row['__dsql_rownum']);
+                unset($row['__phlex_rownum']);
             }
 
             yield $row;
         }
-    }
-
-    protected function initExists(): void
-    {
-        $this->statement = $this->persistence->statement()->select()->field(
-            $this->persistence->expr('case when exists[] then 1 else 0 end', [$this->statement])
-        );
     }
 }

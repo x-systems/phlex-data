@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Persistence\Sql\Platform\Mssql;
 
 use Phlex\Data\Persistence\Sql;
+use Phlex\Data\Persistence\Sql\Expression;
 
 class Statement extends Sql\Statement
 {
@@ -44,9 +45,9 @@ class Statement extends Sql\Statement
     }
 
     /**
-     * MSSQL does not support named parameters, so convert them to numerical inside execute.
+     * MSSQL does not support named parameters, so convert them to numerical.
      */
-    public function render($expressionable = null, ?string $escapeMode = self::ESCAPE_PARAM): string
+    public function render(): string
     {
         $numParams = [];
         $i = 0;
@@ -59,11 +60,18 @@ class Statement extends Sql\Statement
 
                 return '?';
             },
-            parent::render($expressionable, $escapeMode)
+            parent::render()
         );
 
         $this->params = $numParams;
 
         return $result;
+    }
+
+    public function exists()
+    {
+        return (new static())->mode('select')->field(
+            new Expression('case when exists[] then 1 else 0 end', [$this])
+        );
     }
 }

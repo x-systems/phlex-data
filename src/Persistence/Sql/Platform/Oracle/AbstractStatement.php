@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Persistence\Sql\Platform\Oracle;
 
 use Phlex\Data\Persistence\Sql;
+use Phlex\Data\Persistence\Sql\Expression;
 
 abstract class AbstractStatement extends Sql\Statement
 {
@@ -13,13 +14,13 @@ abstract class AbstractStatement extends Sql\Statement
     /** @var string */
     protected $template_seq_nextval = '[sequence].NEXTVAL';
 
-    public function mode($mode)
+    public function render(): string
     {
-        if ($mode === 'select' && $this->main_table === null) {
-            $this->table('DUAL');
+        if ($this->mode === 'select' && $this->main_table === null) {
+            $this->table('dual');
         }
 
-        return parent::mode($mode);
+        return parent::render();
     }
 
     /**
@@ -39,5 +40,12 @@ abstract class AbstractStatement extends Sql\Statement
     public function _render_sequence()
     {
         return $this->args['sequence'];
+    }
+
+    public function exists()
+    {
+        return (new static())->mode('select')->field(
+            new Expression('case when exists[] then 1 else 0 end', [$this])
+        );
     }
 }

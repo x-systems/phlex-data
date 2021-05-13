@@ -203,7 +203,7 @@ class SelectTest extends PHPUnit\TestCase
         $this->q('employee')
             ->set(['id' => 2, 'name' => 'Jane', 'surname' => 'Doe', 'retired' => 0])
             ->insert()->execute();
-        $this->assertSame(
+        $this->assertEquals(
             [['id' => '1', 'name' => 'John'], ['id' => '2', 'name' => 'Jane']],
             $this->q('employee')->field('id,name')->order('id')->execute()->fetchAllAssociative()
         );
@@ -213,7 +213,7 @@ class SelectTest extends PHPUnit\TestCase
             ->where('name', 'John')
             ->set('name', 'Johnny')
             ->update()->execute();
-        $this->assertSame(
+        $this->assertEquals(
             [['id' => '1', 'name' => 'Johnny'], ['id' => '2', 'name' => 'Jane']],
             $this->q('employee')->field('id,name')->order('id')->execute()->fetchAllAssociative()
         );

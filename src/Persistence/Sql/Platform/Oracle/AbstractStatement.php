@@ -17,7 +17,7 @@ abstract class AbstractStatement extends Sql\Statement
     public function render(): string
     {
         if ($this->mode === 'select' && $this->main_table === null) {
-            $this->table('dual');
+            $this->table('DUAL');
         }
 
         return parent::render();

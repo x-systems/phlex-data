@@ -1591,13 +1591,13 @@ class StatementTest extends PHPUnit\TestCase
 
         $q = new Sql\Platform\Oracle\Statement();
         $this->assertSame(
-            'select case when exists(select * from "contacts" where "first_name" = :a) then 1 else 0 end from "dual"',
+            'select case when exists(select * from "contacts" where "first_name" = :a) then 1 else 0 end from "DUAL"',
             $q->table('contacts')->where('first_name', 'John')->exists()->render()
         );
 
         $q = new Sql\Platform\Oracle\Statement();
         $this->assertSame(
-            'select "1" from "dual"',
+            'select "1" from "DUAL"',
             $q->field('1')->render()
         );
 

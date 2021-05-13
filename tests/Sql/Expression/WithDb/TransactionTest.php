@@ -141,7 +141,7 @@ class TransactionTest extends PHPUnit\TestCase
         $this->q('employee')->truncate()->execute();
         $this->assertSame(
             '0',
-            $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
+            (string) $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
         );
 
         // without transaction, ignoring exceptions
@@ -158,7 +158,7 @@ class TransactionTest extends PHPUnit\TestCase
 
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
+            (string) $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
         );
 
         // 1-level transaction: begin, insert, 2, rollback, 1
@@ -168,13 +168,13 @@ class TransactionTest extends PHPUnit\TestCase
             ->insert()->execute();
         $this->assertSame(
             '2',
-            $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
+            (string) $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
         );
 
         $this->persistence->rollBack();
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
+            (string) $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
         );
 
         // atomic method, rolls back everything inside atomic() callback in case of exception
@@ -193,7 +193,7 @@ class TransactionTest extends PHPUnit\TestCase
 
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
+            (string) $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
         );
 
         // atomic method, nested atomic transaction, rolls back everything
@@ -223,7 +223,7 @@ class TransactionTest extends PHPUnit\TestCase
 
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
+            (string) $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
         );
 
         // atomic method, nested atomic transaction, rolls back everything
@@ -250,7 +250,7 @@ class TransactionTest extends PHPUnit\TestCase
 
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
+            (string) $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
         );
 
         // atomic method, nested atomic transaction, rolls back everything
@@ -277,7 +277,7 @@ class TransactionTest extends PHPUnit\TestCase
 
         $this->assertSame(
             '1',
-            $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
+            (string) $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
         );
 
         // atomic method, success - commit
@@ -293,7 +293,7 @@ class TransactionTest extends PHPUnit\TestCase
 
         $this->assertSame(
             '2',
-            $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
+            (string) $this->q('employee')->field(new Persistence\Sql\Expression('count(*)'))->execute()->fetchOne()
         );
     }
 

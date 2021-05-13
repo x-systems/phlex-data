@@ -241,7 +241,7 @@ class SelectTest extends PHPUnit\TestCase
         usort($data, function ($a, $b) {
             return $a['id'] - $b['id'];
         });
-        $this->assertSame(
+        $this->assertEquals(
             [['id' => '1', 'name' => 'Peter'], ['id' => '2', 'name' => 'Jane']],
             $data
         );
@@ -250,7 +250,7 @@ class SelectTest extends PHPUnit\TestCase
         $this->q('employee')
             ->where('retired', 1)
             ->delete()->execute();
-        $this->assertSame(
+        $this->assertEquals(
             [['id' => '2', 'name' => 'Jane']],
             $this->q('employee')->field('id,name')->execute()->fetchAllAssociative()
         );

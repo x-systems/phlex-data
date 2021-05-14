@@ -249,7 +249,7 @@ class Statement extends Expression
         foreach ($this->args['table'] as $alias => $table) {
             // throw exception if we don't want to add alias and table is defined as Expression
             if ($add_alias === false && $table instanceof self) {
-                throw new Exception('Table cannot be Query in UPDATE, INSERT etc. query modes');
+                throw new Exception('Table cannot be Statement in UPDATE, INSERT etc. query modes');
             }
 
             // Do not add alias, if:

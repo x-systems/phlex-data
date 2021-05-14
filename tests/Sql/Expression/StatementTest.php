@@ -523,7 +523,7 @@ class StatementTest extends PHPUnit\TestCase
     {
         // should throw exception "Table cannot be Query in UPDATE, INSERT etc. query modes"
         $this->assertMatchesRegularExpression(
-            '/.*Table cannot be Query.*/',
+            '/.*Table cannot be Statement.*/',
             ($this->q()
                 ->mode('update')
                 ->table($this->q()->table('test'), 'foo'))->__debugInfo()['R']

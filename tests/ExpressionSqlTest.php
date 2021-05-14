@@ -118,7 +118,7 @@ class ExpressionSqlTest extends Sql\TestCase
 
         $this->assertEquals(
             ['total_orders' => 2, 'total_net' => 30],
-            $this->db->execute($q)->fetchAssociative()
+            $q->execute()->fetchAssociative()
         );
     }
 

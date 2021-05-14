@@ -387,7 +387,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         )/* ) */;
 
         // Wrap in parentheses if expression requires so
-        if ($expression->consumeInParentheses === true) {
+        if ($expression->consumeInParentheses === true && trim($result)) {
             $result = '(' . trim($result) . ')';
         }
 
@@ -395,11 +395,24 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Create expression where items in the list are escaped as necessary.
+     * Create expression where items in the list are escaped as parameters.
      */
-    public function asList(array $list, string $separator = ',', bool $wrapInParentheses = false): self
+    public function asParameterList(array $list, string $separator = ',', bool $wrapInParentheses = false): self
     {
         $template = implode($separator, array_fill(0, count($list), '[]'));
+        if ($wrapInParentheses) {
+            $template = '(' . $template . ')';
+        }
+
+        return new self($template, $list);
+    }
+
+    /**
+     * Create expression where items in the list are escaped as identifiers.
+     */
+    public function asIdentifierList(array $list, string $separator = ',', bool $wrapInParentheses = false): self
+    {
+        $template = implode($separator, array_fill(0, count($list), '{}'));
         if ($wrapInParentheses) {
             $template = '(' . $template . ')';
         }

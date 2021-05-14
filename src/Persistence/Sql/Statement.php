@@ -157,7 +157,7 @@ class Statement extends Expression
             $ret[] = self::identifier($field, $alias);
         }
 
-        return self::asList($ret);
+        return self::asParameterList($ret);
     }
 
     protected function _render_field_noalias()
@@ -256,7 +256,7 @@ class Statement extends Expression
             $ret[] = self::identifier($table, $alias);
         }
 
-        return self::asList($ret);
+        return self::asParameterList($ret);
     }
 
     protected function _render_table_noalias()
@@ -312,7 +312,7 @@ class Statement extends Expression
     protected function _render_with()
     {
         // will be joined for output
-        $ret = [];
+        $list = [];
 
         if (empty($this->args['with'])) {
             return '';
@@ -321,24 +321,19 @@ class Statement extends Expression
         // process each defined cursor
         $isRecursive = false;
         foreach ($this->args['with'] as $alias => ['cursor' => $cursor, 'fields' => $fields, 'recursive' => $recursive]) {
-            // cursor alias cannot be expression, so simply escape it
-            $s = $this->escapeIdentifier($alias) . ' ';
-
-            // set cursor fields
-            if ($fields !== null) {
-                $s .= '(' . implode(',', array_map([$this, 'escapeIdentifier'], $fields)) . ') ';
-            }
-
-            // will parameterize the value and escape if necessary
-            $s .= 'as ' . $this->consume($cursor, self::ESCAPE_IDENTIFIER_SOFT);
-
             // is at least one recursive ?
             $isRecursive = $isRecursive || $recursive;
 
-            $ret[] = $s;
+            $list[] = new Expression($fields ? '{alias} [fields] as {{cursor}}' : '{alias} as {{cursor}}', [
+                'alias' => $alias,
+                'fields' => self::asIdentifierList($fields ?: [])->consumeInParentheses(),
+                'cursor' => $cursor,
+            ]);
         }
 
-        return 'with ' . ($isRecursive ? 'recursive ' : '') . implode(',', $ret) . ' ';
+        return new Expression('with ' . ($isRecursive ? 'recursive ' : '') . '[subqueries] ', [
+            'subqueries' => self::asParameterList($list),
+        ]);
     }
 
     /// }}}
@@ -704,9 +699,9 @@ class Statement extends Expression
         // special conditions (IS | IS NOT) if value is null
         if ($value === null) { // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
             if (in_array($cond, ['=', 'is'], true)) {
-                return new Expression('{} is null', [$field]);
+                return new Expression('{field} is null', ['field' => $field]);
             } elseif (in_array($cond, ['!=', '<>', 'not', 'is not'], true)) {
-                return new Expression('{} is not null', [$field]);
+                return new Expression('{field} is not null', ['field' => $field]);
             }
         }
 
@@ -726,10 +721,10 @@ class Statement extends Expression
                     new Expression('1 = 1'); // always true
             }
 
-            $value = self::asList($value)->consumeInParentheses();
+            $value = self::asParameterList($value)->consumeInParentheses();
         }
 
-        return new Expression('{{}} ' . $cond . ' []', [$field, $value]);
+        return new Expression('{{field}} ' . $cond . ' [value]', ['field' => $field, 'value' => $value]);
     }
 
     protected function _render_where()
@@ -738,7 +733,7 @@ class Statement extends Expression
             return;
         }
 
-        return new Expression(' where []', [self::asList($this->_sub_render_where('where'), ' and ')]);
+        return new Expression(' where [conditions]', ['conditions' => self::asParameterList($this->_sub_render_where('where'), ' and ')]);
     }
 
     protected function _render_orwhere()
@@ -749,7 +744,7 @@ class Statement extends Expression
 
         foreach (['where', 'having'] as $kind) {
             if (isset($this->args[$kind])) {
-                return self::asList($this->_sub_render_where($kind), ' or ');
+                return self::asParameterList($this->_sub_render_where($kind), ' or ');
             }
         }
     }
@@ -762,7 +757,7 @@ class Statement extends Expression
 
         foreach (['where', 'having'] as $kind) {
             if (isset($this->args[$kind])) {
-                return self::asList($this->_sub_render_where($kind), ' and ');
+                return self::asParameterList($this->_sub_render_where($kind), ' and ');
             }
         }
     }
@@ -773,7 +768,9 @@ class Statement extends Expression
             return;
         }
 
-        return new Expression(' having []', [self::asList($this->_sub_render_where('having'), ' and ')]);
+        return new Expression(' having [conditions]', [
+            'conditions' => self::asParameterList($this->_sub_render_where('having'), ' and '),
+        ]);
     }
 
     // }}}
@@ -1263,8 +1260,8 @@ class Statement extends Expression
 
         // operand
         if ($shortForm = isset($this->args['case_operand'])) {
-            $template .= ' {{}}';
-            $args[] = $this->args['case_operand'];
+            $template .= ' {{operand}}';
+            $args['operand'] = $this->args['case_operand'];
         }
 
         // when, then

@@ -79,7 +79,7 @@ class Expression extends Sql\Field
     /**
      * When field is used as expression, this method will be called.
      */
-    public function toExpression(): Sql\Expression
+    public function toSqlExpression(): Sql\Expression
     {
         $expr = $this->expr;
         if ($expr instanceof \Closure) {
@@ -96,6 +96,6 @@ class Expression extends Sql\Field
             return new Sql\Expression('([])', [$expr]);
         }
 
-        return $expr->toExpression();
+        return $expr->toSqlExpression();
     }
 }

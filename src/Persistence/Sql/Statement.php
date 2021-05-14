@@ -708,7 +708,7 @@ class Statement extends Expression
             $value = $cond; // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
 
             if ($value instanceof Expressionable) {
-                $value = $value->toExpression();
+                $value = $value->toSqlExpression();
             }
 
             if (is_array($value)) {

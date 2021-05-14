@@ -484,7 +484,7 @@ class JsonExpression extends Sql\Expression
 }
 class MyField implements Sql\Expressionable
 {
-    public function toExpression(): Sql\Expression
+    public function toSqlExpression(): Sql\Expression
     {
         return new Sql\Expression('"myfield"');
     }

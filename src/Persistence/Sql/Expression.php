@@ -307,7 +307,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
                 ->addMoreInfo('escapeMode', $escapeMode);
         }
 
-        $expression = $expressionable->toExpression();
+        $expression = $expressionable->toSqlExpression();
         $expression->identifierQuoteCharacter = $this->getIdentifierQuoteCharacter();
 
         if ($expression->template === null) {
@@ -464,7 +464,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         return $arr;
     }
 
-    public function toExpression(): self
+    public function toSqlExpression(): self
     {
         return $this;
     }

@@ -6,5 +6,5 @@ namespace Phlex\Data\Persistence\Sql;
 
 interface Expressionable
 {
-    public function toExpression(): Expression;
+    public function toSqlExpression(): Expression;
 }

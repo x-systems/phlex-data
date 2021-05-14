@@ -365,7 +365,7 @@ abstract class Sql extends Persistence
             $expressionable = new Sql\Expression($expressionable);
         }
 
-        $expression = $expressionable->toExpression();
+        $expression = $expressionable->toSqlExpression();
         $expression->wrapInParentheses = false;
 
         $query = $this->statement();

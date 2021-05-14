@@ -30,7 +30,7 @@ class Join extends Model\Join implements Expressionable
         return '_' . ($this->foreign_alias ?: $this->foreign_table[0]);
     }
 
-    public function toExpression(): Expression
+    public function toSqlExpression(): Expression
     {
         /*
         // If our Model has expr() method (inherited from Persistence\Sql) then use it

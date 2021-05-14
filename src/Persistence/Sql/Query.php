@@ -224,9 +224,9 @@ class Query extends Persistence\Query implements Expressionable
         return $this->execute()->fetchOne();
     }
 
-    public function toExpression(): Expression
+    public function toSqlExpression(): Expression
     {
-        return $this->statement->toExpression();
+        return $this->statement->toSqlExpression();
     }
 
     public function getStatement(): Statement

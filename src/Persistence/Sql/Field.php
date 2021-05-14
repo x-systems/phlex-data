@@ -33,7 +33,7 @@ class Field extends Model\Field implements Expressionable
      * When field is used as expression, this method will be called.
      * Universal way to convert ourselves to expression. Off-load implementation into persistence.
      */
-    public function toExpression(): Expression
+    public function toSqlExpression(): Expression
     {
         $model = $this->getOwner();
 

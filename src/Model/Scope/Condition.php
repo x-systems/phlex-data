@@ -337,7 +337,7 @@ class Condition extends AbstractScope
             }
 
             if ($value instanceof Sql\Expressionable) {
-                return "expression '{$value->toExpression()->getDebugQuery()}'";
+                return "expression '{$value->toSqlExpression()->getDebugQuery()}'";
             }
 
             return 'object ' . print_r($value, true);

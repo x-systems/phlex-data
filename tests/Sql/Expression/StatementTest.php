@@ -573,8 +573,8 @@ class StatementTest extends PHPUnit\TestCase
         // SQLite do not support (($q1) union ($q2)) syntax. Correct syntax is ($q1 union $q2) without additional braces
         // Other SQL engines are more relaxed, but still these additional braces are not needed for union
         // Let's test how to do that properly
-        $q1->wrapInParentheses = false;
-        $q2->wrapInParentheses = false;
+        $q1->consumeInParentheses(false);
+        $q2->consumeInParentheses(false);
         $u = new Sql\Expression('([] union [])', [$q1, $q2]);
         $this->assertSame(
             '(select "date","amount" "debit",0 "credit" from "sales" union select "date",0 "debit","amount" "credit" from "purchases")',

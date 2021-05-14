@@ -49,7 +49,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     public $persistence;
 
     /** @var bool Wrap the expression in parentheses when consumed by another expression or not. */
-    public $wrapInParentheses = false;
+    protected $consumeInParentheses = false;
 
     /**
      * Specifying options to constructors will override default
@@ -279,15 +279,13 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     {
         $expression = clone $this;
 
-        $expression->wrapInParentheses = false;
-
         $backupNextPlaceholder = $this->nextPlaceholder;
 
-        $result = $this->consume($expression);
+        $result = $this->consume($expression->consumeInParentheses(false));
 
         $this->nextPlaceholder = $backupNextPlaceholder;
 
-        return $result;
+        return trim($result);
     }
 
     /**
@@ -328,7 +326,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         // - [xxx] = param
         // - {xxx} = escape
         // - {{xxx}} = escapeSoft
-        $result = trim(preg_replace_callback(
+        $result = /* trim( */ preg_replace_callback(
             <<<'EOF'
                 ~
                  '(?:[^'\\]+|\\.|'')*'\K
@@ -386,11 +384,11 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
                 return sprintf($format, implode(',', $list));
             },
             $template
-        ));
+        )/* ) */;
 
         // Wrap in parentheses if expression requires so
-        if ($expression->wrapInParentheses === true) {
-            $result = '(' . $result . ')';
+        if ($expression->consumeInParentheses === true) {
+            $result = '(' . trim($result) . ')';
         }
 
         return $result;
@@ -398,13 +396,11 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
 
     /**
      * Create expression where items in the list are escaped as necessary.
-     *
-     * @param string|Expressionable $expressionable
      */
-    public function asList(array $list, string $separator = ',', $wrapInParantheses = false): self
+    public function asList(array $list, string $separator = ',', bool $wrapInParentheses = false): self
     {
         $template = implode($separator, array_fill(0, count($list), '[]'));
-        if ($wrapInParantheses) {
+        if ($wrapInParentheses) {
             $template = '(' . $template . ')';
         }
 
@@ -416,7 +412,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
      *
      * @param string|Expressionable $expressionable
      */
-    public function withAlias($expressionable, string $alias = null): self
+    public function identifier($expressionable, string $alias = null): self
     {
         return $alias ?
             new self('{{}} {}', [$expressionable, $alias]) :
@@ -458,6 +454,13 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         }
 
         return [$identifier, $escaping];
+    }
+
+    public function consumeInParentheses(bool $flag = true)
+    {
+        $this->consumeInParentheses = $flag;
+
+        return $this;
     }
 
     /**

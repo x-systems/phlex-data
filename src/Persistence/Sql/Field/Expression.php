@@ -91,11 +91,8 @@ class Expression extends Sql\Field
             if ($this->getOwner()->hasMethod('expr')) {
                 $expr = $this->getOwner()->expr($expr);
             }
-
-            // Otherwise call it from expression itself
-            return new Sql\Expression('([])', [$expr]);
         }
 
-        return $expr->toSqlExpression();
+        return $expr->toSqlExpression()->consumeInParentheses();
     }
 }

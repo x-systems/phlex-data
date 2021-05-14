@@ -8,6 +8,7 @@ use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence\Sql\Expression;
 
 class ExpressionSqlTest extends Sql\TestCase
 {
@@ -134,30 +135,24 @@ class ExpressionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'surname', 'cached_name']);
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $m->addExpression('full_name', '[name] || " " || [surname]');
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $m->addExpression('full_name', '[name] || \' \' || [surname]');
-        } else {
-            $m->addExpression('full_name', 'CONCAT([name], \' \', [surname])');
-        }
+        $m->addExpression('full_name', new Expression('{} || [] || {}', ['name', ' ', 'surname']));
 
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
-                'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where (("name" || " " || "surname") != "cached_name")',
-                $m->toQuery()->select()->render()
+                'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
+                $m->toQuery()->select()->getDebugQuery() // @phpstan-ignore-line
             );
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
-                $m->toQuery()->select()->render()
+                $m->toQuery()->select()->getDebugQuery() // @phpstan-ignore-line
             );
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(
                 'select `id`,`name`,`surname`,`cached_name`,(CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
-                $m->toQuery()->select()->render()
+                $m->toQuery()->select()->getDebugQuery() // @phpstan-ignore-line
             );
         }
 

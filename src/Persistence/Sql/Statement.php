@@ -27,7 +27,7 @@ class Statement extends Expression
      */
     public $defaultField = '*';
 
-    public $wrapInParentheses = true;
+    protected $consumeInParentheses = true;
 
     /** @var string */
     protected $template_select = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
@@ -123,11 +123,11 @@ class Statement extends Expression
     }
 
     /**
-     * Returns template component for [field].
+     * Returns Expression for [field].
      *
      * @param bool $withAlias Should we add aliases, see _render_field_noalias()
      *
-     * @return string Parsed template chunk
+     * @return Expression
      */
     protected function _render_field($withAlias = true)
     {
@@ -154,7 +154,7 @@ class Statement extends Expression
             }
 
             // Will parameterize the value and escape if necessary
-            $ret[] = self::withAlias($field, $alias);
+            $ret[] = self::identifier($field, $alias);
         }
 
         return self::asList($ret);
@@ -253,7 +253,7 @@ class Statement extends Expression
                 $alias = null;
             }
 
-            $ret[] = self::withAlias($table, $alias);
+            $ret[] = self::identifier($table, $alias);
         }
 
         return self::asList($ret);
@@ -593,13 +593,9 @@ class Statement extends Expression
             case 1:
                 if (is_string($field)) {
                     $field = $this->expr($field);
-                    $field->wrapInParentheses = true;
-                } elseif (!$field->wrapInParentheses) {
-                    $field = $this->expr('[]', [$field]);
-                    $field->wrapInParentheses = true;
                 }
 
-                $this->args[$kind][] = [$field];
+                $this->args[$kind][] = [$field->consumeInParentheses()];
 
                 break;
             case 2:
@@ -675,7 +671,7 @@ class Statement extends Expression
             throw new \InvalidArgumentException();
         }
 
-        $field = $this->consume($field, self::ESCAPE_IDENTIFIER_SOFT);
+        $field = self::identifier($field);
 
         if (count($row) === 1) {
             // Only a single parameter was passed, so we simply include all
@@ -708,9 +704,9 @@ class Statement extends Expression
         // special conditions (IS | IS NOT) if value is null
         if ($value === null) { // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
             if (in_array($cond, ['=', 'is'], true)) {
-                return $field . ' is null';
+                return new Expression('{} is null', [$field]);
             } elseif (in_array($cond, ['!=', '<>', 'not', 'is not'], true)) {
-                return $field . ' is not null';
+                return new Expression('{} is not null', [$field]);
             }
         }
 
@@ -725,23 +721,15 @@ class Statement extends Expression
 
             // special treatment of empty array condition
             if (empty($value)) {
-                if ($cond === 'in') {
-                    return '1 = 0'; // never true
-                }
-
-                return '1 = 1'; // always true
+                return $cond === 'in' ?
+                    new Expression('1 = 0') : // never true
+                    new Expression('1 = 1'); // always true
             }
 
-            $value = '(' . implode(',', array_map(function ($v) { return $this->escapeParam($v); }, $value)) . ')';
-
-            return $field . ' ' . $cond . ' ' . $value;
+            $value = self::asList($value)->consumeInParentheses();
         }
 
-        // if value is object, then it should be Expression or Query itself
-        // otherwise just escape value
-        $value = $this->consume($value, self::ESCAPE_PARAM);
-
-        return $field . ' ' . $cond . ' ' . $value;
+        return new Expression('{{}} ' . $cond . ' []', [$field, $value]);
     }
 
     protected function _render_where()
@@ -750,7 +738,7 @@ class Statement extends Expression
             return;
         }
 
-        return ' where ' . implode(' and ', $this->_sub_render_where('where'));
+        return new Expression(' where []', [self::asList($this->_sub_render_where('where'), ' and ')]);
     }
 
     protected function _render_orwhere()
@@ -761,7 +749,7 @@ class Statement extends Expression
 
         foreach (['where', 'having'] as $kind) {
             if (isset($this->args[$kind])) {
-                return implode(' or ', $this->_sub_render_where($kind));
+                return self::asList($this->_sub_render_where($kind), ' or ');
             }
         }
     }
@@ -774,7 +762,7 @@ class Statement extends Expression
 
         foreach (['where', 'having'] as $kind) {
             if (isset($this->args[$kind])) {
-                return implode(' and ', $this->_sub_render_where($kind));
+                return self::asList($this->_sub_render_where($kind), ' and ');
             }
         }
     }
@@ -785,7 +773,7 @@ class Statement extends Expression
             return;
         }
 
-        return ' having ' . implode(' and ', $this->_sub_render_where('having'));
+        return new Expression(' having []', [self::asList($this->_sub_render_where('having'), ' and ')]);
     }
 
     // }}}
@@ -1270,42 +1258,41 @@ class Statement extends Expression
             return;
         }
 
-        $ret = '';
+        $template = ' case';
+        $args = [];
 
         // operand
-        if ($short_form = isset($this->args['case_operand'])) {
-            $ret .= ' ' . $this->consume($this->args['case_operand'], self::ESCAPE_IDENTIFIER_SOFT);
+        if ($shortForm = isset($this->args['case_operand'])) {
+            $template .= ' {{}}';
+            $args[] = $this->args['case_operand'];
         }
 
         // when, then
-        foreach ($this->args['case_when'] as $row) {
-            if (!array_key_exists(0, $row) || !array_key_exists(1, $row)) {
-                throw (new Exception('Incorrect use of "when" method parameters'))
-                    ->addMoreInfo('row', $row);
-            }
-
-            $ret .= ' when ';
-            if ($short_form) {
+        foreach ($this->args['case_when'] as [$when, $then]) {
+            if ($shortForm) {
                 // short-form
-                if (is_array($row[0])) {
+                if (is_array($when)) {
                     throw (new Exception('When using short form CASE statement, then you should not set array as when() method 1st parameter'))
-                        ->addMoreInfo('when', $row[0]);
+                        ->addMoreInfo('when', $when);
                 }
-                $ret .= $this->consume($row[0], self::ESCAPE_PARAM);
             } else {
-                $ret .= $this->_sub_render_condition($row[0]);
+                $when = $this->_sub_render_condition($when);
             }
 
-            // then
-            $ret .= ' then ' . $this->consume($row[1], self::ESCAPE_PARAM);
+            $template .= ' when [] then []';
+            $args[] = $when;
+            $args[] = $then;
         }
 
         // else
         if (array_key_exists('case_else', $this->args)) {
-            $ret .= ' else ' . $this->consume($this->args['case_else'], self::ESCAPE_PARAM);
+            $template .= ' else []';
+            $args[] = $this->args['case_else'];
         }
 
-        return ' case' . $ret . ' end';
+        $template .= ' end';
+
+        return new Expression($template, $args);
     }
 
     public function sequence($sequence)

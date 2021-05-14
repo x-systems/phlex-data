@@ -27,7 +27,7 @@ class Statement extends Expression
      */
     public $defaultField = '*';
 
-    protected $consumeInParentheses = true;
+    protected $consumedInParentheses = true;
 
     /** @var string */
     protected $template_select = '[with]select[option] [field] [from] [table][join][where][group][having][order][limit]';
@@ -154,7 +154,7 @@ class Statement extends Expression
             }
 
             // Will parameterize the value and escape if necessary
-            $ret[] = self::identifier($field, $alias);
+            $ret[] = self::asIdentifier($field, $alias);
         }
 
         return self::asParameterList($ret);
@@ -253,7 +253,7 @@ class Statement extends Expression
                 $alias = null;
             }
 
-            $ret[] = self::identifier($table, $alias);
+            $ret[] = self::asIdentifier($table, $alias);
         }
 
         return self::asParameterList($ret);
@@ -326,7 +326,7 @@ class Statement extends Expression
 
             $list[] = new Expression($fields ? '{alias} [fields] as {{cursor}}' : '{alias} as {{cursor}}', [
                 'alias' => $alias,
-                'fields' => self::asIdentifierList($fields ?: [])->consumeInParentheses(),
+                'fields' => self::asIdentifierList($fields ?: [])->consumedInParentheses(),
                 'cursor' => $cursor,
             ]);
         }
@@ -590,7 +590,7 @@ class Statement extends Expression
                     $field = $this->expr($field);
                 }
 
-                $this->args[$kind][] = [$field->consumeInParentheses()];
+                $this->args[$kind][] = [$field->consumedInParentheses()];
 
                 break;
             case 2:
@@ -666,7 +666,7 @@ class Statement extends Expression
             throw new \InvalidArgumentException();
         }
 
-        $field = self::identifier($field);
+        $field = self::asIdentifier($field);
 
         if (count($row) === 1) {
             // Only a single parameter was passed, so we simply include all
@@ -699,9 +699,9 @@ class Statement extends Expression
         // special conditions (IS | IS NOT) if value is null
         if ($value === null) { // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
             if (in_array($cond, ['=', 'is'], true)) {
-                return new Expression('{field} is null', ['field' => $field]);
+                return new Expression('{field} is null', compact('field'));
             } elseif (in_array($cond, ['!=', '<>', 'not', 'is not'], true)) {
-                return new Expression('{field} is not null', ['field' => $field]);
+                return new Expression('{field} is not null', compact('field'));
             }
         }
 
@@ -721,10 +721,10 @@ class Statement extends Expression
                     new Expression('1 = 1'); // always true
             }
 
-            $value = self::asParameterList($value)->consumeInParentheses();
+            $value = self::asParameterList($value)->consumedInParentheses();
         }
 
-        return new Expression('{{field}} ' . $cond . ' [value]', ['field' => $field, 'value' => $value]);
+        return new Expression('{{field}} ' . $cond . ' [value]', compact('field', 'value'));
     }
 
     protected function _render_where()
@@ -733,7 +733,9 @@ class Statement extends Expression
             return;
         }
 
-        return new Expression(' where [conditions]', ['conditions' => self::asParameterList($this->_sub_render_where('where'), ' and ')]);
+        return new Expression(' where [conditions]', [
+            'conditions' => self::asParameterList($this->_sub_render_where('where'), ' and '),
+        ]);
     }
 
     protected function _render_orwhere()
@@ -811,11 +813,9 @@ class Statement extends Expression
             return '';
         }
 
-        $g = array_map(function ($a) {
-            return $this->consume($a, self::ESCAPE_IDENTIFIER_SOFT);
-        }, $this->args['group']);
-
-        return ' group by ' . implode(', ', $g);
+        return new Expression(' group by [fields]', [
+            'fields' => self::asIdentifierSoftList($this->args['group'], ', '),
+        ]);
     }
 
     // }}}
@@ -864,19 +864,14 @@ class Statement extends Expression
 
     protected function _render_set()
     {
-        // will be joined for output
-        $ret = [];
-
+        $list = [];
         if (isset($this->args['set']) && $this->args['set']) {
             foreach ($this->args['set'] as [$field, $value]) {
-                $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
-                $value = $this->consume($value, self::ESCAPE_PARAM);
-
-                $ret[] = $field . '=' . $value;
+                $list[] = new Expression('{field}=[value]', compact('field', 'value'));
             }
         }
 
-        return implode(', ', $ret);
+        return self::asParameterList($list, ', ');
     }
 
     protected function _render_set_fields()

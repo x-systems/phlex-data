@@ -49,7 +49,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     public $persistence;
 
     /** @var bool Wrap the expression in parentheses when consumed by another expression or not. */
-    protected $consumeInParentheses = false;
+    protected $consumedInParentheses = false;
 
     /**
      * Specifying options to constructors will override default
@@ -281,7 +281,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
 
         $backupNextPlaceholder = $this->nextPlaceholder;
 
-        $result = $this->consume($expression->consumeInParentheses(false));
+        $result = $this->consume($expression->consumedInParentheses(false));
 
         $this->nextPlaceholder = $backupNextPlaceholder;
 
@@ -387,7 +387,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         )/* ) */;
 
         // Wrap in parentheses if expression requires so
-        if ($expression->consumeInParentheses === true && trim($result)) {
+        if ($expression->consumedInParentheses === true && trim($result)) {
             $result = '(' . trim($result) . ')';
         }
 
@@ -397,22 +397,33 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     /**
      * Create expression where items in the list are escaped as parameters.
      */
-    public function asParameterList(array $list, string $separator = ',', bool $wrapInParentheses = false): self
+    public static function asParameterList(array $list, string $separator = ',', bool $wrapInParentheses = false): self
     {
-        $template = implode($separator, array_fill(0, count($list), '[]'));
-        if ($wrapInParentheses) {
-            $template = '(' . $template . ')';
-        }
-
-        return new self($template, $list);
+        return self::asEscapedList('[]', $list, $separator, $wrapInParentheses);
     }
 
     /**
      * Create expression where items in the list are escaped as identifiers.
      */
-    public function asIdentifierList(array $list, string $separator = ',', bool $wrapInParentheses = false): self
+    public static function asIdentifierList(array $list, string $separator = ',', bool $wrapInParentheses = false): self
     {
-        $template = implode($separator, array_fill(0, count($list), '{}'));
+        return self::asEscapedList('{}', $list, $separator, $wrapInParentheses);
+    }
+
+    /**
+     * Create expression where items in the list are escaped as soft identifiers.
+     */
+    public static function asIdentifierSoftList(array $list, string $separator = ',', bool $wrapInParentheses = false): self
+    {
+        return self::asEscapedList('{{}}', $list, $separator, $wrapInParentheses);
+    }
+
+    /**
+     * Create expression where items in the list are escaped depending on $tag.
+     */
+    public static function asEscapedList(string $tag, array $list, string $separator = ',', bool $wrapInParentheses = false): self
+    {
+        $template = implode($separator, array_fill(0, count($list), $tag));
         if ($wrapInParentheses) {
             $template = '(' . $template . ')';
         }
@@ -421,11 +432,11 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Create expression representing $expressionable with $alias.
+     * Create expression representing identifier $expressionable with $alias.
      *
      * @param string|Expressionable $expressionable
      */
-    public function identifier($expressionable, string $alias = null): self
+    public static function asIdentifier($expressionable, string $alias = null): self
     {
         return $alias ?
             new self('{{}} {}', [$expressionable, $alias]) :
@@ -469,9 +480,9 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         return [$identifier, $escaping];
     }
 
-    public function consumeInParentheses(bool $flag = true)
+    public function consumedInParentheses(bool $flag = true)
     {
-        $this->consumeInParentheses = $flag;
+        $this->consumedInParentheses = $flag;
 
         return $this;
     }

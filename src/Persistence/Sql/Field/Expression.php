@@ -93,6 +93,6 @@ class Expression extends Sql\Field
             }
         }
 
-        return $expr->toSqlExpression()->consumeInParentheses();
+        return $expr->toSqlExpression()->consumedInParentheses();
     }
 }

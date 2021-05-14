@@ -8,9 +8,9 @@ use Phlex\Data\Model;
 
 class User extends Model
 {
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField('name');
         $this->addField('surname');

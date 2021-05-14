@@ -16,9 +16,9 @@ class VatRate extends Model
 {
     public $table = 'vat_rate';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField($this->fieldName()->name);
         $this->addField($this->fieldName()->rate, ['type' => 'integer']);

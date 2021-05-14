@@ -11,9 +11,9 @@ class Payment extends Document
     /** @var Model\Join */
     public $j_payment;
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addCondition('doc_type', 'payment');
 

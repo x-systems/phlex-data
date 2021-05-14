@@ -14,21 +14,17 @@ use Phlex\Data\Model;
  */
 abstract class AbstractScope
 {
-    use InitializerTrait {
-        init as _init;
-    }
+    use InitializerTrait;
     use TrackableTrait;
 
     /**
      * Method is executed when the scope is added to parent scope using Scope::add().
      */
-    protected function init(): void
+    protected function doInitialize(): void
     {
         if (!$this->getOwner() instanceof self) {
             throw new Exception('Scope can only be added as element to scope');
         }
-
-        $this->_init();
 
         $this->onChangeModel();
     }

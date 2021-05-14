@@ -10,9 +10,9 @@ class Company extends Model
 {
     public $table = 'system';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         // Company data is stored in 3 tables actually.
         $j_contractor = $this->join('contractor');

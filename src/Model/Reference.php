@@ -21,9 +21,7 @@ use Phlex\Data\Persistence;
 class Reference
 {
     use \Phlex\Core\DiContainerTrait;
-    use \Phlex\Core\InitializerTrait {
-        init as _init;
-    }
+    use \Phlex\Core\InitializerTrait;
     use \Phlex\Core\TrackableTrait;
 
     /**
@@ -125,10 +123,8 @@ class Reference
     /**
      * Initialization.
      */
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        $this->_init();
-
         $this->initTableAlias();
     }
 

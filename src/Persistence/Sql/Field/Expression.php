@@ -11,9 +11,7 @@ use Phlex\Data\Model;
 
 class Expression extends \Phlex\Data\Persistence\Sql\Field
 {
-    use InitializerTrait {
-        init as _init;
-    }
+    use InitializerTrait;
 
     /**
      * Used expression.
@@ -51,10 +49,8 @@ class Expression extends \Phlex\Data\Persistence\Sql\Field
     /**
      * Initialization.
      */
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        $this->_init();
-
         if ($this->getOwner()->reload_after_save === null) {
             $this->getOwner()->reload_after_save = true;
         }

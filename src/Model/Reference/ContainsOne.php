@@ -47,9 +47,9 @@ class ContainsOne extends Model\Reference
      * Reference\ContainsOne will also add a field corresponding
      * to 'ourFieldName' unless it exists of course.
      */
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         if (!$this->ourFieldName) {
             $this->ourFieldName = $this->link;

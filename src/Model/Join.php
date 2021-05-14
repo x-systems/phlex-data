@@ -19,9 +19,7 @@ use Phlex\Data\Persistence;
 class Join
 {
     use DiContainerTrait;
-    use InitializerTrait {
-        init as _init;
-    }
+    use InitializerTrait;
     use JoinLinkTrait;
     use TrackableTrait;
 
@@ -164,10 +162,8 @@ class Join
     /**
      * Initialization.
      */
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        $this->_init();
-
         // owner model should have primaryKey set
         $primaryKey = $this->getOwner()->primaryKey;
         if (!$primaryKey) {

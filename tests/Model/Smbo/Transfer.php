@@ -10,9 +10,9 @@ class Transfer extends Payment
 
     public $other_leg_creation;
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->j_payment->hasOne('transfer_document_id', ['model' => [self::class]]);
 

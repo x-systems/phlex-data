@@ -10,9 +10,9 @@ class Document extends Model
 {
     public $table = 'document';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         // Documest is sent from one Contact to Another
         $this->hasOne('contact_from_id', ['model' => [Contact::class]]);

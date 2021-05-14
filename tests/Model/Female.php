@@ -6,9 +6,9 @@ namespace Phlex\Data\Tests\Model;
 
 class Female extends Person
 {
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->addCondition('gender', 'F');
     }
 }

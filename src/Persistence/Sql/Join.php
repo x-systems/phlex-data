@@ -50,9 +50,9 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
     /**
      * This method is to figure out stuff.
      */
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->getOwner()->persistence_data['use_table_prefixes'] = true;
 

@@ -12,7 +12,7 @@ use Phlex\Data\Model;
  * Adds hintable fields support to Model thru magic properties.
  *
  * How to define a hintable field:
- *   1. Define model field no later than in Model::init() like:
+ *   1. Define model field no later than in Model::doInitialize() like:
  *      <code>$m->addField('firstName');</code>
  *   2. Annotate model property in class phpdoc like:
  *      <code>@property string $firstName @Atk\Field()</code>
@@ -39,7 +39,7 @@ trait HintableModelTrait
     private $_hintableProps;
 
     /**
-     * @var bool Enable validation if all fields are hintable after self::init() is called.
+     * @var bool Enable validation if all fields are hintable after self::doInitialize() is called.
      *           Validation is always skipped if this class is not extended or if extended as anonymous class.
      */
     protected $requireAllFieldsHintable = true;
@@ -90,7 +90,7 @@ trait HintableModelTrait
         }
 
         // check if all already declared fields has a hintable property
-        // full check is done after self::init() when all fields are required to be present
+        // full check is done after self::doInitialize() when all fields are required to be present
         $this->checkRequireAllFieldsHintable(false);
 
         return $this->_hintableProps;
@@ -201,10 +201,8 @@ trait HintableModelTrait
 
     // TODO we can check once initialized (init was called for the 1st time), but not sooner,
     // otherwise init can not be overridden
-//    protected function init(): void
+    //    protected function doInitialize(): void
 //    {
-//        parent::init();
-//
 //        $this->checkRequireAllFieldsHintable(true);
 //    }
 

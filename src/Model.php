@@ -32,9 +32,7 @@ class Model implements \IteratorAggregate
     use DynamicMethodTrait;
     use Hintable\HintableModelTrait;
     use HookTrait;
-    use InitializerTrait {
-        init as _init;
-    }
+    use InitializerTrait;
     use Model\AggregatesTrait;
     use Model\JoinsTrait;
     use Model\ReferencesTrait;
@@ -360,10 +358,8 @@ class Model implements \IteratorAggregate
     /**
      * Extend this method to define fields of your choice.
      */
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        $this->_init();
-
         if ($this->primaryKey) {
             if (!$this->hasPrimaryKeyField()) {
                 $this->addField($this->primaryKey, ['type' => 'integer'])->asPrimaryKey();

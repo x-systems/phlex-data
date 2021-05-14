@@ -17,9 +17,9 @@ use Phlex\Data\Model;
  */
 class Address extends Model
 {
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->hasOne($this->fieldName()->country_id, ['model' => [Country::class], 'type' => 'integer']);
 

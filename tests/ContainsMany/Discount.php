@@ -14,9 +14,9 @@ use Phlex\Data\Model;
  */
 class Discount extends Model
 {
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addField($this->fieldName()->percent, ['type' => 'integer', 'required' => true]);
         $this->addField($this->fieldName()->valid_till, ['type' => 'datetime']);

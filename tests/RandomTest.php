@@ -12,9 +12,9 @@ class Model_Rate extends Model
 {
     public $table = 'rate';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->addField('dat');
         $this->addField('bid', ['type' => 'float']);
         $this->addField('ask', ['type' => 'float']);
@@ -24,9 +24,9 @@ class Model_Item extends Model
 {
     public $table = 'item';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->addField('name');
         $this->hasOne('parent_item_id', ['model' => [self::class]])
             ->addTitle();
@@ -36,9 +36,9 @@ class Model_Item2 extends Model
 {
     public $table = 'item';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
         $this->addField('name');
         $i2 = $this->join('item2.item_id');
         $i2->hasOne('parent_item_id', ['model' => [self::class]])
@@ -49,9 +49,9 @@ class Model_Item3 extends Model
 {
     public $table = 'item';
 
-    protected function init(): void
+    protected function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $m = new self();
 

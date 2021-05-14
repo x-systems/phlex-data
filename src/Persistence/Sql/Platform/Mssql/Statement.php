@@ -9,6 +9,8 @@ use Phlex\Data\Persistence\Sql\Expression;
 
 class Statement extends Sql\Statement
 {
+    public $identifierQuoteCharacter = ']';
+
     protected $template_insert = 'begin try'
         . "\n" . 'insert[option] into [table_noalias] ([set_fields]) values ([set_values])'
         . "\n" . 'end try begin catch if ERROR_NUMBER() = 544 begin'
@@ -27,6 +29,11 @@ class Statement extends Sql\Statement
                 . ' offset ' . $shift . ' rows'
                 . ' fetch next ' . $cnt . ' rows only';
         }
+    }
+
+    public function getIdentifierQuoteCharacter()
+    {
+        return $this->identifierQuoteCharacter;
     }
 
     protected function escapeIdentifier(string $value): string

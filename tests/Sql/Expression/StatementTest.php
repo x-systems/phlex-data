@@ -1609,7 +1609,7 @@ class StatementTest extends PHPUnit\TestCase
 
         $q = new Sql\Platform\Mssql\Statement();
         $this->assertSame(
-            'select case when exists(select * from "contacts" where "first_name" = ?) then 1 else 0 end',
+            'select case when exists(select * from [contacts] where [first_name] = ?) then 1 else 0 end',
             $q->table('contacts')->where('first_name', 'John')->exists()->render()
         );
     }

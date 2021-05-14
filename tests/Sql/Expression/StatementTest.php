@@ -1601,6 +1601,12 @@ class StatementTest extends PHPUnit\TestCase
             $q->field('1')->render()
         );
 
+        $q = new Sql\Platform\Oracle\Statement();
+        $this->assertSame(
+            'select * from (select "__t".*, rownum "__phlex_rownum" from (select "1" from "DUAL") "__t") where "__phlex_rownum" > 0 and "__phlex_rownum" <= 1',
+            $q->field('1')->limit(1)->render()
+        );
+
         $q = new Sql\Platform\Mssql\Statement();
         $this->assertSame(
             'select case when exists(select * from "contacts" where "first_name" = ?) then 1 else 0 end',

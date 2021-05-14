@@ -136,11 +136,7 @@ class Statement extends Expression
 
         // If no fields were defined, use defaultField
         if (empty($this->args['field'])) {
-            if ($this->defaultField instanceof Expression) {
-                return $this->consume($this->defaultField);
-            }
-
-            return (string) $this->defaultField;
+            return $this->defaultField;
         }
 
         // process each defined field
@@ -158,17 +154,10 @@ class Statement extends Expression
             }
 
             // Will parameterize the value and escape if necessary
-            $field = $this->consume($field, self::ESCAPE_IDENTIFIER_SOFT);
-
-            if ($alias) {
-                // field alias cannot be expression, so simply escape it
-                $field .= ' ' . $this->escapeIdentifier($alias);
-            }
-
-            $ret[] = $field;
+            $ret[] = $alias ? new Expression('{{}} {}', [$field, $alias]) : new Expression('{{}}', [$field]);
         }
 
-        return implode(',', $ret);
+        return self::asList($ret);
     }
 
     protected function _render_field_noalias()

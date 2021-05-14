@@ -270,6 +270,11 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
             || strpos($value, $this->getIdentifierQuoteCharacter()) !== false;
     }
 
+    /**
+     * Render self and return a string using placeholders.
+     *
+     * The params resolved are stored under Expression::$params property
+     */
     public function render(): string
     {
         $expression = clone $this;
@@ -286,7 +291,9 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     }
 
     /**
-     * Render expression and return it as string.
+     * Render $expressionable and return it as string.
+     *
+     * In case $expressionable is a string then $escapeMode is used to escape the result
      */
     public function consume($expressionable, ?string $escapeMode = self::ESCAPE_PARAM): string
     {
@@ -364,7 +371,19 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
                         ->addMoreInfo('tag', $identifier);
                 }
 
-                return is_array($value) ? '(' . implode(',', $value) . ')' : $value;
+                if (is_array($value)) {
+                    $format = '(%s)';
+                } else {
+                    $value = [$value];
+                    $format = '%s';
+                }
+
+                $list = [];
+                foreach ($value as $expressionableValue) {
+                    $list[] = $this->consume($expressionableValue, self::ESCAPE_NONE);
+                }
+
+                return sprintf($format, implode(',', $list));
             },
             $template
         ));
@@ -375,6 +394,16 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         }
 
         return $result;
+    }
+
+    public function asList(array $list, string $separator = ',', $wrapInParantheses = false): self
+    {
+        $template = implode($separator, array_fill(0, count($list), '[]'));
+        if ($wrapInParantheses) {
+            $template = '(' . $template . ')';
+        }
+
+        return new self($template, $list);
     }
 
     public function execute(Persistence\Sql $persistence = null)

@@ -40,19 +40,19 @@ class StatementTest extends PHPUnit\TestCase
     {
         $this->assertSame(
             '"first_name"',
-            $this->callProtected($this->q()->field('first_name'), '_render_field')
+            $this->callProtected($this->q()->field('first_name'), '_render_field')->render()
         );
         $this->assertSame(
             '"first_name","last_name"',
-            $this->callProtected($this->q()->field('first_name,last_name'), '_render_field')
+            $this->callProtected($this->q()->field('first_name,last_name'), '_render_field')->render()
         );
         $this->assertSame(
             '"first_name","last_name"',
-            $this->callProtected($this->q()->field('first_name')->field('last_name'), '_render_field')
+            $this->callProtected($this->q()->field('first_name')->field('last_name'), '_render_field')->render()
         );
         $this->assertSame(
             '"last_name"',
-            $this->callProtected($this->q()->field('first_name')->reset('field')->field('last_name'), '_render_field')
+            $this->callProtected($this->q()->field('first_name')->reset('field')->field('last_name'), '_render_field')->render()
         );
         $this->assertSame(
             '*',
@@ -64,31 +64,31 @@ class StatementTest extends PHPUnit\TestCase
         );
         $this->assertSame(
             '"employee"."first_name"',
-            $this->callProtected($this->q()->field('employee.first_name'), '_render_field')
+            $this->callProtected($this->q()->field('employee.first_name'), '_render_field')->render()
         );
         $this->assertSame(
             '"first_name" "name"',
-            $this->callProtected($this->q()->field('first_name', 'name'), '_render_field')
+            $this->callProtected($this->q()->field('first_name', 'name'), '_render_field')->render()
         );
         $this->assertSame(
             '"first_name" "name"',
-            $this->callProtected($this->q()->field(['name' => 'first_name']), '_render_field')
+            $this->callProtected($this->q()->field(['name' => 'first_name']), '_render_field')->render()
         );
         $this->assertSame(
             '"name"',
-            $this->callProtected($this->q()->field(['name' => 'name']), '_render_field')
+            $this->callProtected($this->q()->field(['name' => 'name']), '_render_field')->render()
         );
         $this->assertSame(
             '"employee"."first_name" "name"',
-            $this->callProtected($this->q()->field(['name' => 'employee.first_name']), '_render_field')
+            $this->callProtected($this->q()->field(['name' => 'employee.first_name']), '_render_field')->render()
         );
         $this->assertSame(
             '*',
-            $this->callProtected($this->q()->field('*'), '_render_field')
+            $this->callProtected($this->q()->field('*'), '_render_field')->render()
         );
         $this->assertSame(
             '"employee"."first_name"',
-            $this->callProtected($this->q()->field('employee.first_name'), '_render_field')
+            $this->callProtected($this->q()->field('employee.first_name'), '_render_field')->render()
         );
     }
 
@@ -115,7 +115,7 @@ class StatementTest extends PHPUnit\TestCase
         // defaultField as Sql\Expression object - not escaped
         $this->assertSame(
             'values()',
-            $this->callProtected($this->q(['defaultField' => new Sql\Expression('values()')]), '_render_field')
+            $this->callProtected($this->q(['defaultField' => new Sql\Expression('values()')]), '_render_field')->render()
         );
     }
 

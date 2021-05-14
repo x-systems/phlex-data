@@ -145,7 +145,7 @@ class Query extends Persistence\Query implements Expressionable
 
     protected function initCount($alias = null): void
     {
-        $this->statement->reset('field')->field('count(*)', $alias);
+        $this->statement->reset('field')->field(new Expression('count(*)'), $alias);
     }
 
     protected function initAggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): void

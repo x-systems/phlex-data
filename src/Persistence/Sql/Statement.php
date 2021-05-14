@@ -154,7 +154,7 @@ class Statement extends Expression
             }
 
             // Will parameterize the value and escape if necessary
-            $ret[] = $alias ? new Expression('{{}} {}', [$field, $alias]) : new Expression('{{}}', [$field]);
+            $ret[] = self::withAlias($field, $alias);
         }
 
         return self::asList($ret);
@@ -203,7 +203,7 @@ class Statement extends Expression
 
         // if table is set as sub-Query, then alias is mandatory
         if ($table instanceof self && $alias === null) {
-            throw new Exception('If table is set as Query, then table alias is mandatory');
+            throw new Exception('If table is set as Statement, then table alias is mandatory');
         }
 
         if (is_string($table) && $alias === null) {
@@ -253,18 +253,10 @@ class Statement extends Expression
                 $alias = null;
             }
 
-            // render or escape table
-            $table = $this->consume($table, self::ESCAPE_IDENTIFIER_SOFT);
-
-            // add alias if needed
-            if ($alias) {
-                $table .= ' ' . $this->escapeIdentifier($alias);
-            }
-
-            $ret[] = $table;
+            $ret[] = self::withAlias($table, $alias);
         }
 
-        return implode(',', $ret);
+        return self::asList($ret);
     }
 
     protected function _render_table_noalias()

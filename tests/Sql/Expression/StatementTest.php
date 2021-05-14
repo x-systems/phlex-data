@@ -1507,12 +1507,12 @@ class StatementTest extends PHPUnit\TestCase
         // render table
         $this->assertSame(
             '"foo"."bar"',
-            $this->callProtected($this->q()->table('foo.bar'), '_render_table')
+            $this->callProtected($this->q()->table('foo.bar'), '_render_table')->render()
         );
 
         $this->assertSame(
             '"foo"."bar" "a"',
-            $this->callProtected($this->q()->table('foo.bar', 'a'), '_render_table')
+            $this->callProtected($this->q()->table('foo.bar', 'a'), '_render_table')->render()
         );
 
         // where clause

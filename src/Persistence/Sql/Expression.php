@@ -396,6 +396,11 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         return $result;
     }
 
+    /**
+     * Create expression where items in the list are escaped as necessary.
+     *
+     * @param string|Expressionable $expressionable
+     */
     public function asList(array $list, string $separator = ',', $wrapInParantheses = false): self
     {
         $template = implode($separator, array_fill(0, count($list), '[]'));
@@ -404,6 +409,18 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         }
 
         return new self($template, $list);
+    }
+
+    /**
+     * Create expression representing $expressionable with $alias.
+     *
+     * @param string|Expressionable $expressionable
+     */
+    public function withAlias($expressionable, string $alias = null): self
+    {
+        return $alias ?
+            new self('{{}} {}', [$expressionable, $alias]) :
+            new self('{{}}', [$expressionable]);
     }
 
     public function execute(Persistence\Sql $persistence = null)

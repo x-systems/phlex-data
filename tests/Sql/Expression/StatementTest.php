@@ -1058,23 +1058,23 @@ class StatementTest extends PHPUnit\TestCase
         );
         $this->assertSame(
             'left join "address" "a" on "a"."id" = "address_id"',
-            $this->q('[join]')->join('address a')->render()
+            $this->q('[join]')->join('address', null, null, 'a')->render()
         );
         $this->assertSame(
             'left join "address" "a" on "a"."id" = "user"."address_id"',
-            $this->q('[join]')->table('user')->join('address a')->render()
+            $this->q('[join]')->table('user')->join('address', null, null, 'a')->render()
         );
         $this->assertSame(
             'left join "address" "a" on "a"."id" = "user"."my_address_id"',
-            $this->q('[join]')->table('user')->join('address a', 'my_address_id')->render()
+            $this->q('[join]')->table('user')->join('address', 'my_address_id', null, 'a')->render()
         );
         $this->assertSame(
             'left join "address" "a" on "a"."id" = "u"."address_id"',
-            $this->q('[join]')->table('user', 'u')->join('address a')->render()
+            $this->q('[join]')->table('user', 'u')->join('address', null, null, 'a')->render()
         );
         $this->assertSame(
             'left join "address" "a" on "a"."user_id" = "u"."id"',
-            $this->q('[join]')->table('user', 'u')->join('address.user_id a')->render()
+            $this->q('[join]')->table('user', 'u')->join('address.user_id', null, null, 'a')->render()
         );
         $this->assertSame(
             'left join "address" "a" on "a"."user_id" = "u"."id" ' .
@@ -1100,7 +1100,7 @@ class StatementTest extends PHPUnit\TestCase
         $this->assertSame(
             'left join "address" "a" on a.name like u.pattern',
             $this->q('[join]')->table('user', 'u')
-                ->join('address a', new Sql\Expression('a.name like u.pattern'))->render()
+                ->join('address', new Sql\Expression('a.name like u.pattern'), null, 'a')->render()
         );
     }
 

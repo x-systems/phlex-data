@@ -53,11 +53,11 @@ class Statement extends Expression
      * Name or alias of base table to use when using default join().
      *
      * This is set by table(). If you are using multiple tables,
-     * then $main_table is set to false as it is irrelevant.
+     * then $masterTable is set to false as it is irrelevant.
      *
      * @var false|string|null
      */
-    protected $main_table;
+    protected $masterTable;
 
     // {{{ Field specification and rendering
 
@@ -201,7 +201,7 @@ class Statement extends Expression
             return $this;
         }
 
-        // if table is set as sub-Query, then alias is mandatory
+        // if table is set as sub-Statement, then alias is mandatory
         if ($table instanceof self && $alias === null) {
             throw new Exception('If table is set as Statement, then table alias is mandatory');
         }
@@ -210,11 +210,10 @@ class Statement extends Expression
             $alias = $table;
         }
 
-        // main_table will be set only if table() is called once.
+        // masterTable will be set only if table() is called once.
         // it's used as "default table" when joining with other tables, see join().
-        // on multiple calls, main_table will be false and we won't
-        // be able to join easily anymore.
-        $this->main_table = ($this->main_table === null && $alias !== null ? $alias : false);
+        // on multiple calls, masterTable will be false and we won't be able to join easily anymore.
+        $this->masterTable = ($this->masterTable === null && $alias !== null ? $alias : false);
 
         // save table in args
         $this->_set_args('table', $alias, $table);
@@ -223,9 +222,9 @@ class Statement extends Expression
     }
 
     /**
-     * @param bool $add_alias Should we add aliases, see _render_table_noalias()
+     * @param bool $withAlias Should we add aliases, see _render_table_noalias()
      */
-    protected function _render_table($add_alias = true)
+    protected function _render_table($withAlias = true)
     {
         // will be joined for output
         $ret = [];
@@ -237,7 +236,7 @@ class Statement extends Expression
         // process tables one by one
         foreach ($this->args['table'] as $alias => $table) {
             // throw exception if we don't want to add alias and table is defined as Expression
-            if ($add_alias === false && $table instanceof self) {
+            if ($withAlias === false && $table instanceof self) {
                 throw new Exception('Table cannot be Statement in UPDATE, INSERT etc. query modes');
             }
 
@@ -246,7 +245,7 @@ class Statement extends Expression
             //  - alias is the same as table name OR
             //  - alias is numeric
             if (
-                $add_alias === false
+                $withAlias === false
                 || (is_string($table) && $alias === $table)
                 || is_numeric($alias)
                 ) {
@@ -369,78 +368,62 @@ class Statement extends Expression
      *          ->where('user.technical_id=address.id')
      *  )
      *
-     * @param string|array $foreign_table  Table to join with
-     * @param mixed        $master_field   Field in master table
-     * @param string       $join_kind      'left' or 'inner', etc
-     * @param string       $_foreign_alias Internal, don't use
+     * @param string|array $foreignTables     Table to join with
+     * @param mixed        $masterField       Field in master table
+     * @param string       $joinKind          'left' or 'inner', etc
+     * @param string       $foreignTableAlias Internal, don't use
      *
      * @return $this
      */
     public function join(
-        $foreign_table,
-        $master_field = null,
-        $join_kind = null,
-        $_foreign_alias = null
+        $foreignTables,
+        $masterField = null,
+        $joinKind = null,
+        $foreignTableAlias = null
         ) {
         // If array - add recursively
-        if (is_array($foreign_table)) {
-            foreach ($foreign_table as $alias => $foreign) {
+        if (is_array($foreignTables)) {
+            foreach ($foreignTables as $alias => $foreignTable) {
                 if (is_numeric($alias)) {
                     $alias = null;
                 }
 
-                $this->join($foreign, $master_field, $join_kind, $alias);
+                $this->join($foreignTable, $masterField, $joinKind, $alias);
             }
 
             return $this;
         }
         $j = [];
 
-        // try to find alias in foreign table definition. this behaviour should be deprecated
-        if ($_foreign_alias === null) {
-            [$foreign_table, $_foreign_alias] = array_pad(explode(' ', $foreign_table, 2), 2, null);
-        }
-
         // Split and deduce fields
         // NOTE that this will not allow table names with dots in there !!!
-        [$f1, $f2] = array_pad(explode('.', $foreign_table, 2), 2, null);
+        [$foreignTable, $foreignField] = array_pad(explode('.', $foreignTables, 2), 2, null);
 
-        if (is_object($master_field)) {
-            $j['expr'] = $master_field;
+        if (is_object($masterField)) {
+            $j['expr'] = $masterField;
         } else {
             // Split and deduce primary table
-            if ($master_field === null) {
-                [$m1, $m2] = [null, null];
-            } else {
-                [$m1, $m2] = array_pad(explode('.', $master_field, 2), 2, null);
-            }
-            if ($m2 === null) {
-                $m2 = $m1;
-                $m1 = null;
-            }
-            if ($m1 === null) {
-                $m1 = $this->main_table;
+            [$masterTable, $masterField] = isset($masterField) ? array_pad(explode('.', $masterField, 2), 2, null) : [null, null];
+
+            if ($masterField === null) {
+                $masterField = $masterTable;
+                $masterTable = null;
             }
 
             // Identify fields we use for joins
-            if ($f2 === null && $m2 === null) {
-                $m2 = $f1 . '_id';
+            if ($foreignField === null && $masterField === null) {
+                $masterField = $foreignTable . '_id';
             }
-            if ($m2 === null) {
-                $m2 = 'id';
-            }
-            $j['m1'] = $m1;
-            $j['m2'] = $m2;
+
+            $j['masterTable'] = $masterTable ?? $this->masterTable;
+            $j['masterField'] = $masterField ?? 'id';
         }
 
-        $j['f1'] = $f1;
-        if ($f2 === null) {
-            $f2 = 'id';
-        }
-        $j['f2'] = $f2;
+        $j['foreignTable'] = $foreignTable;
+        $j['foreignField'] = $foreignField ?? 'id';
 
-        $j['t'] = $join_kind ?: 'left';
-        $j['fa'] = $_foreign_alias;
+        $j['type'] = $joinKind ?: 'left';
+        $j['foreignTableAlias'] = $foreignTableAlias;
 
         $this->args['join'][] = $j;
 
@@ -452,33 +435,38 @@ class Statement extends Expression
         if (!isset($this->args['join'])) {
             return '';
         }
+
+        $pad = true;
         $joins = [];
-        foreach ($this->args['join'] as $j) {
-            $jj = '';
+        foreach ($this->args['join'] as $join) {
+            $template = $pad ? ' ' : '';
+            $args = [];
 
-            $jj .= $j['t'] . ' join ';
+            $pad = false;
 
-            $jj .= $this->escapeIdentifierSoft($j['f1']);
+            $template .= $join['type'] . ' join {{}}';
+            $args[] = $join['foreignTable'];
 
-            if ($j['fa'] !== null) {
-                $jj .= ' ' . $this->escapeIdentifier($j['fa']);
+            if ($join['foreignTableAlias'] !== null) {
+                $template .= ' {}';
+                $args[] = $join['foreignTableAlias'];
             }
 
-            $jj .= ' on ';
+            $template .= ' on';
 
-            if (isset($j['expr'])) {
-                $jj .= $this->consume($j['expr']);
+            if (isset($join['expr'])) {
+                $template .= ' []';
+                $args[] = $join['expr'];
             } else {
-                $jj .=
-                $this->escapeIdentifier($j['fa'] ?: $j['f1']) . '.' .
-                $this->escapeIdentifier($j['f2']) . ' = ' .
-                ($j['m1'] === null ? '' : $this->escapeIdentifier($j['m1']) . '.') .
-                $this->escapeIdentifier($j['m2']);
+                $template .= ' {{}} = {{}}';
+                $args[] = ($join['foreignTableAlias'] ?: $join['foreignTable']) . '.' . $join['foreignField'];
+                $args[] = ($join['masterTable'] === null ? '' : $join['masterTable'] . '.') . $join['masterField'];
             }
-            $joins[] = $jj;
+
+            $joins[] = new Expression($template, $args);
         }
 
-        return ' ' . implode(' ', $joins);
+        return self::asIdentifierList($joins, ' ');
     }
 
     // }}}
@@ -527,7 +515,7 @@ class Statement extends Expression
      *  $q->where($q->orExpr()->where('a',1)->where('b',1));
      *
      * @param mixed  $field    Field, array for OR or Expression
-     * @param mixed  $cond     Condition such as '=', '>' or 'is not'
+     * @param mixed  $operator     Condition such as '=', '>' or 'is not'
      * @param mixed  $value    Value. Will be quoted unless you pass expression
      * @param string $kind     Do not use directly. Use having()
      * @param int    $num_args when $kind is passed, we can't determine number of
@@ -535,7 +523,7 @@ class Statement extends Expression
      *
      * @return $this
      */
-    public function where($field, $cond = null, $value = null, $kind = 'where', $num_args = null)
+    public function where($field, $operator = null, $value = null, $kind = 'where', $num_args = null)
     {
         // Number of passed arguments will be used to determine if arguments were specified or not
         if ($num_args === null) {
@@ -566,17 +554,17 @@ class Statement extends Expression
                 $matches
                 );
 
-            // matches[2] will contain the condition, but $cond will contain the value
-            $value = $cond;
-            $cond = $matches[2];
+            // matches[2] will contain the condition, but $operator will contain the value
+            $value = $operator;
+            $operator = $matches[2];
 
             // if we couldn't clearly identify the condition, we might be dealing with
             // a more complex expression. If expression is followed by another argument
             // we need to add equation sign  where('now()',123).
-            if (!$cond) {
+            if (!$operator) {
                 $matches[1] = $this->expr($field);
 
-                $cond = '=';
+                $operator = '=';
             } else {
                 ++$num_args;
             }
@@ -594,24 +582,24 @@ class Statement extends Expression
 
                 break;
             case 2:
-                if (is_object($cond) && !$cond instanceof Expressionable) {
+                if (is_object($operator) && !$operator instanceof Expressionable) {
                     throw (new Exception('Value cannot be converted to SQL-compatible expression'))
                         ->addMoreInfo('field', $field)
-                        ->addMoreInfo('value', $cond);
+                        ->addMoreInfo('value', $operator);
                 }
 
-                $this->args[$kind][] = [$field, $cond];
+                $this->args[$kind][] = [$field, $operator];
 
                 break;
             case 3:
                 if (is_object($value) && !$value instanceof Expressionable) {
                     throw (new Exception('Value cannot be converted to SQL-compatible expression'))
                         ->addMoreInfo('field', $field)
-                        ->addMoreInfo('cond', $cond)
+                        ->addMoreInfo('cond', $operator)
                         ->addMoreInfo('value', $value);
                 }
 
-                $this->args[$kind][] = [$field, $cond, $value];
+                $this->args[$kind][] = [$field, $operator, $value];
 
                 break;
         }
@@ -622,15 +610,15 @@ class Statement extends Expression
     /**
      * Same syntax as where().
      *
-     * @param mixed  $field Field, array for OR or Expression
-     * @param string $cond  Condition such as '=', '>' or 'is not'
-     * @param string $value Value. Will be quoted unless you pass expression
+     * @param mixed             $field Field, array for OR or Expression
+     * @param mixed             $operator  Condition such as '=', '>' or 'is not'
+     * @param string|Expression $value Value. Will be quoted unless you pass expression
      *
      * @return $this
      */
-    public function having($field, $cond = null, $value = null)
+    public function having($field, $operator = null, $value = null)
     {
-        return $this->where($field, $cond, $value, 'having', func_num_args());
+        return $this->where($field, $operator, $value, 'having', func_num_args());
     }
 
     /**
@@ -638,9 +626,9 @@ class Statement extends Expression
      *
      * @param string $kind 'where' or 'having'
      *
-     * @return string[]
+     * @return Expression[]
      */
-    protected function _sub_render_where($kind): array
+    protected function _sub_render_where(string $kind): array
     {
         // will be joined for output
         $ret = [];
@@ -657,9 +645,9 @@ class Statement extends Expression
     protected function _sub_render_condition($row)
     {
         if (count($row) === 3) {
-            [$field, $cond, $value] = $row;
+            [$field, $operator, $value] = $row;
         } elseif (count($row) === 2) {
-            [$field, $cond] = $row;
+            [$field, $operator] = $row;
         } elseif (count($row) === 1) {
             [$field] = $row;
         } else {
@@ -677,46 +665,48 @@ class Statement extends Expression
 
         // if no condition defined - set default condition
         if (count($row) === 2) {
-            $value = $cond; // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
+            $value = $operator; // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
 
             if ($value instanceof Expressionable) {
                 $value = $value->toSqlExpression();
             }
 
             if (is_array($value)) {
-                $cond = 'in';
+                $operator = 'in';
             } elseif ($value instanceof self && $value->mode === 'select') {
-                $cond = 'in';
+                $operator = 'in';
             } else {
-                $cond = '=';
+                $operator = '=';
             }
         } else {
-            $cond = trim(strtolower($cond)); // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
+            $operator = trim(strtolower($operator)); // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
         }
 
         // below we can be sure that all 3 arguments has been passed
 
         // special conditions (IS | IS NOT) if value is null
         if ($value === null) { // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
-            if (in_array($cond, ['=', 'is'], true)) {
-                return new Expression('{field} is null', compact('field'));
-            } elseif (in_array($cond, ['!=', '<>', 'not', 'is not'], true)) {
-                return new Expression('{field} is not null', compact('field'));
+            if (in_array($operator, ['=', 'is'], true)) {
+                $operator = 'is';
+            } elseif (in_array($operator, ['!=', '<>', 'not', 'is not'], true)) {
+                $operator = 'is not';
             }
+
+            return new Expression("{field} {$operator} null", compact('field'));
         }
 
         // value should be array for such conditions
-        if (in_array($cond, ['in', 'not in', 'not'], true) && is_string($value)) {
+        if (in_array($operator, ['in', 'not in', 'not'], true) && is_string($value)) {
             $value = array_map('trim', explode(',', $value));
         }
 
         // special conditions (IN | NOT IN) if value is array
         if (is_array($value)) {
-            $cond = in_array($cond, ['!=', '<>', 'not', 'not in'], true) ? 'not in' : 'in';
+            $operator = in_array($operator, ['!=', '<>', 'not', 'not in'], true) ? 'not in' : 'in';
 
             // special treatment of empty array condition
             if (empty($value)) {
-                return $cond === 'in' ?
+                return $operator === 'in' ?
                     new Expression('1 = 0') : // never true
                     new Expression('1 = 1'); // always true
             }
@@ -724,7 +714,7 @@ class Statement extends Expression
             $value = self::asParameterList($value)->consumedInParentheses();
         }
 
-        return new Expression('{{field}} ' . $cond . ' [value]', compact('field', 'value'));
+        return new Expression("{{field}} {$operator} [value]", compact('field', 'value'));
     }
 
     protected function _render_where()
@@ -853,7 +843,7 @@ class Statement extends Expression
         }
 
         if (is_string($field) || $field instanceof Expressionable) {
-            $this->args['set'][] = [$field, $value];
+            $this->args['set'][] = compact('field', 'value');
         } else {
             throw (new Exception('Field name should be string or Expressionable'))
                 ->addMoreInfo('field', $field);
@@ -865,45 +855,25 @@ class Statement extends Expression
     protected function _render_set()
     {
         $list = [];
-        if (isset($this->args['set']) && $this->args['set']) {
-            foreach ($this->args['set'] as [$field, $value]) {
-                $list[] = new Expression('{field}=[value]', compact('field', 'value'));
-            }
+        foreach ($this->args['set'] ?? [] as $pair) {
+            $list[] = new Expression('{field}=[value]', $pair);
         }
 
-        return self::asParameterList($list, ', ');
+        return $list ? self::asParameterList($list, ', ') : '';
     }
 
     protected function _render_set_fields()
     {
-        // will be joined for output
-        $ret = [];
-
         if ($this->args['set']) {
-            foreach ($this->args['set'] as [$field/*, $value*/]) {
-                $field = $this->consume($field, self::ESCAPE_IDENTIFIER);
-
-                $ret[] = $field;
-            }
+            return self::asIdentifierList(array_column($this->args['set'], 'field'));
         }
-
-        return implode(',', $ret);
     }
 
     protected function _render_set_values()
     {
-        // will be joined for output
-        $ret = [];
-
         if ($this->args['set']) {
-            foreach ($this->args['set'] as [/*$field*/ , $value]) {
-                $value = $this->consume($value, self::ESCAPE_PARAM);
-
-                $ret[] = $value;
-            }
+            return self::asParameterList(array_column($this->args['set'], 'value'));
         }
-
-        return implode(',', $ret);
     }
 
     // }}}

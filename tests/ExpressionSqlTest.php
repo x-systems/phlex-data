@@ -151,7 +151,7 @@ class ExpressionSqlTest extends Sql\TestCase
             );
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(
-                'select `id`,`name`,`surname`,`cached_name`,(CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
+                'select `id`,`name`,`surname`,`cached_name`,(`name` || \' \' || `surname`) `full_name` from `user` where ((`name` || \' \' || `surname`) != `cached_name`)',
                 $m->toQuery()->select()->getDebugQuery()
             );
         }

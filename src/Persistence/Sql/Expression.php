@@ -512,11 +512,16 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
             $result = preg_replace('~' . $key . '([^_]|$)~', $replacement, $result);
         }
 
-        if (class_exists('SqlFormatter')) { // requires optional "jdorn/sql-formatter" package
-            $result = \SqlFormatter::format($result, false);
-        }
-
         return $result;
+    }
+
+    public function getDebugQueryFormatted(): string
+    {
+        $result = self::getDebugQuery();
+
+        return class_exists(\SqlFormatter::class) ? // requires optional "jdorn/sql-formatter" package
+            \SqlFormatter::format($result, false) :
+            $result;
     }
 
     public function __debugInfo()

@@ -515,7 +515,7 @@ class Statement extends Expression
      *  $q->where($q->orExpr()->where('a',1)->where('b',1));
      *
      * @param mixed  $field    Field, array for OR or Expression
-     * @param mixed  $operator     Condition such as '=', '>' or 'is not'
+     * @param mixed  $operator Condition such as '=', '>' or 'is not'
      * @param mixed  $value    Value. Will be quoted unless you pass expression
      * @param string $kind     Do not use directly. Use having()
      * @param int    $num_args when $kind is passed, we can't determine number of
@@ -610,9 +610,9 @@ class Statement extends Expression
     /**
      * Same syntax as where().
      *
-     * @param mixed             $field Field, array for OR or Expression
-     * @param mixed             $operator  Condition such as '=', '>' or 'is not'
-     * @param string|Expression $value Value. Will be quoted unless you pass expression
+     * @param mixed             $field    Field, array for OR or Expression
+     * @param mixed             $operator Condition such as '=', '>' or 'is not'
+     * @param string|Expression $value    Value. Will be quoted unless you pass expression
      *
      * @return $this
      */

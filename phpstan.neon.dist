@@ -29,5 +29,5 @@ parameters:
         - '~^Call to an undefined method Phlex\\Data\\Persistence::expr\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\Persistence\\Query::render\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\Persistence\\Query::reset\(\)\.$~'
-        - '~^Call to an undefined method Phlex\\Data\\Persistence\\Query::getDebugQuery(\(\)\.$~'
-        - '~^Parameter \#2 \$expression of method Phlex\\Data\\Model::addExpression\(\) expects array|Atk4\\Dsql\\Expression\|Closure\|string, Phlex\\Data\\Persistence\\Query given\.$~'
+        - '~^Call to an undefined method Phlex\\Data\\Persistence\\Query::getDebugQuery\(\)\.$~'
+        - '~^Parameter \#2 \$expression of method Phlex\\Data\\Model::addExpression\(\) expects array\|Closure\|Phlex\\Data\\Persistence\\Sql\\Expressionable\|string, Phlex\\Data\\Persistence\\Query given\.$~'

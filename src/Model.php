@@ -1797,7 +1797,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|Sql\Expression|\Closure $expression
+     * @param string|array|Sql\Expressionable|\Closure $expression
      *
      * @return Model\Field\Callback
      */

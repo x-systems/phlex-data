@@ -142,17 +142,17 @@ class ExpressionSqlTest extends Sql\TestCase
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
-                $m->toQuery()->select()->getDebugQuery() // @phpstan-ignore-line
+                $m->toQuery()->select()->getDebugQuery()
             );
         } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
-                $m->toQuery()->select()->getDebugQuery() // @phpstan-ignore-line
+                $m->toQuery()->select()->getDebugQuery()
             );
         } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(
                 'select `id`,`name`,`surname`,`cached_name`,(CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
-                $m->toQuery()->select()->getDebugQuery() // @phpstan-ignore-line
+                $m->toQuery()->select()->getDebugQuery()
             );
         }
 

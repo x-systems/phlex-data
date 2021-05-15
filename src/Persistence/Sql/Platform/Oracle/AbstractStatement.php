@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Persistence\Sql\Platform\Oracle;
 
 use Phlex\Data\Persistence\Sql;
-use Phlex\Data\Persistence\Sql\Expression;
 
 abstract class AbstractStatement extends Sql\Statement
 {
@@ -42,10 +41,15 @@ abstract class AbstractStatement extends Sql\Statement
         return $this->args['sequence'];
     }
 
+    protected function _render_group_concat()
+    {
+        return new Sql\Expression('listagg({field}, [delimiter]) within group (order by {field})', $this->args['custom']);
+    }
+
     public function exists()
     {
         return (new static())->mode('select')->field(
-            new Expression('case when exists[] then 1 else 0 end', [$this])
+            new Sql\Expression('case when exists[] then 1 else 0 end', [$this])
         );
     }
 }

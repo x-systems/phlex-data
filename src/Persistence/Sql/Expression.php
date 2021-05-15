@@ -319,7 +319,11 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
             throw new Exception('Template is not defined for Expression');
         }
 
-        $template = $this->{'template_' . $expression->template} ?? $expression->{'template_' . $expression->template} ?? $expression->template;
+        $template = $expression->template;
+        if (substr($template, 0, 1) === '@') {
+            $name = substr($template, 1);
+            $template = $this->{'template_' . $name} ?? $expression->{'template_' . $name} ?? $template;
+        }
 
         $namelessCount = 0;
 
@@ -480,11 +484,44 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         return [$identifier, $escaping];
     }
 
+    /**
+     * Sets the flag if the expression should be wrapped in parantheses when consumed by other expression.
+     */
     public function consumedInParentheses(bool $flag = true)
     {
         $this->consumedInParentheses = $flag;
 
         return $this;
+    }
+
+    /**
+     * Returns an expression for concatenating.
+     *
+     * Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde'))
+     */
+    public static function concat(...$args)
+    {
+        return new self('[concat]', $args);
+    }
+
+    /**
+     * Returns an expression for a function, which can be used as part of the GROUP
+     * query which would concatenate all matching fields.
+     *
+     * MySQL, SQLite - group_concat
+     * PostgreSQL - string_agg
+     * Oracle - listagg
+     *
+     * @param mixed $field
+     */
+    public static function groupConcat($field, string $delimiter = ',')
+    {
+        return new self('[group_concat]', compact('field', 'delimiter'));
+    }
+
+    protected function _render_concat()
+    {
+        return 'concat ' . implode('', $this->args['custom']);
     }
 
     /**
@@ -522,6 +559,11 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         return class_exists(\SqlFormatter::class) ? // requires optional "jdorn/sql-formatter" package
             \SqlFormatter::format($result, false) :
             $result;
+    }
+
+    public function __toString()
+    {
+        return $this->render();
     }
 
     public function __debugInfo()

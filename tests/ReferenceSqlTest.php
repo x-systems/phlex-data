@@ -7,6 +7,7 @@ namespace Phlex\Data\Tests;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence\Sql\Expression;
 
 /**
  * Tests that condition is applied when traversing hasMany
@@ -324,7 +325,7 @@ class ReferenceSqlTest extends Sql\TestCase
                 ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
                 ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
                 ['items_c:',  'concat' => '::', 'field' => 'name'],
-                ['items_c-',  'aggregate' => $i->persistence->groupConcat($i->expr('[name]'), '-')], // @phpstan-ignore-line
+                ['items_c-',  'aggregate' => Expression::groupConcat($i->expr('[name]'), '-')], // @phpstan-ignore-line
                 ['len',       'aggregate' => $i->expr('sum(length([name]))')],
                 ['len2',      'expr' => 'sum(length([name]))'],
                 ['chicken5',  'expr' => 'sum([])', 'args' => ['5']],

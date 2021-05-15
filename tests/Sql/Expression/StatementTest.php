@@ -1028,15 +1028,67 @@ class StatementTest extends PHPUnit\TestCase
         );
     }
 
-    public function testGroupConcat()
+    public function testConcat()
     {
-        $this->assertSame('group_concat("foo" separator :a)', $this->mockPersistence(Sql\Platform\Mysql::class)->groupConcat('foo', '-')->render());
+        $q = new Sql\Platform\Sqlite\Statement();
+        $this->assertSame(
+            'select "abc" || \' \' || "cde"',
+            $q->field(Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
+        );
 
-        $this->assertSame('listagg("foo", :a) within group (order by "foo")', $this->mockPersistence(Sql\Platform\Oracle::class)->groupConcat('foo', '-')->render());
+        $q = new Sql\Platform\Sqlite\Statement();
+        $this->assertSame(
+            'select group_concat("abc", \'|\')',
+            $q->field(Sql\Expression::groupConcat('abc', '|'))->getDebugQuery()
+        );
 
-        $this->assertSame('string_agg("foo", :a)', $this->mockPersistence(Sql\Platform\Postgresql::class)->groupConcat('foo', '-')->render());
+        $q = new Sql\Platform\Mysql\Statement();
+        $this->assertSame(
+            'select concat("abc",\' \',"cde")',
+            $q->field(Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
+        );
 
-        $this->assertSame('group_concat("foo", :a)', $this->mockPersistence(Sql\Platform\Sqlite::class)->groupConcat('foo', '-')->render());
+        $q = new Sql\Platform\Mysql\Statement();
+        $this->assertSame(
+            'select group_concat("abc" separator \'|\')',
+            $q->field(Sql\Expression::groupConcat('abc', '|'))->getDebugQuery()
+        );
+
+        $q = new Sql\Platform\Postgresql\Statement();
+        $this->assertSame(
+            'select "abc" || \' \' || "cde"',
+            $q->field(Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
+        );
+
+        $q = new Sql\Platform\Postgresql\Statement();
+        $this->assertSame(
+            'select string_agg("abc", \'|\')',
+            $q->field(Sql\Expression::groupConcat('abc', '|'))->getDebugQuery()
+        );
+
+        $q = new Sql\Platform\Oracle\Statement();
+        $this->assertSame(
+            'select "abc" || \' \' || "cde" from "DUAL"',
+            $q->field(Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
+        );
+
+        $q = new Sql\Platform\Oracle\Statement();
+        $this->assertSame(
+            'select listagg("abc", \'|\') within group (order by "abc") from "DUAL"',
+            $q->field(Sql\Expression::groupConcat('abc', '|'))->getDebugQuery()
+        );
+
+        $q = new Sql\Platform\Mssql\Statement();
+        $this->assertSame(
+            'select [abc] || ? || [cde]',
+            $q->field(Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
+        );
+
+        $q = new Sql\Platform\Mssql\Statement();
+        $this->assertSame(
+            'select string_agg([abc], ?)',
+            $q->field(Sql\Expression::groupConcat('abc', '|'))->getDebugQuery()
+        );
     }
 
     public function mockPersistence($class)

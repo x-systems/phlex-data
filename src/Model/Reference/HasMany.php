@@ -102,7 +102,7 @@ class HasMany extends Model\Reference
         $field = $alias ?? $fieldName;
 
         if (isset($defaults['concat'])) {
-            $defaults['aggregate'] = $this->getOurModel()->persistence->groupConcat($field, $defaults['concat']); // @phpstan-ignore-line
+            $defaults['aggregate'] = Persistence\Sql\Expression::groupConcat($field, $defaults['concat']);
             $defaults['read_only'] = false;
             $defaults['never_save'] = true;
         }

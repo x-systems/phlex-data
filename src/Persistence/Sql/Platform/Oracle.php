@@ -20,11 +20,6 @@ class Oracle extends Persistence\Sql
         Model\Field\Type\Array_::class => [Oracle\Codec\Array_::class],
     ];
 
-    public function groupConcat($field, string $delimiter = ','): Persistence\Sql\Expression
-    {
-        return $this->expr('listagg({field}, []) within group (order by {field})', ['field' => $field, $delimiter]);
-    }
-
     protected function createConnection(array $dsn): DBAL\Connection
     {
         $connection = parent::createConnection($dsn);

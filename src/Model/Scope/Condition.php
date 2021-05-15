@@ -305,7 +305,7 @@ class Condition extends AbstractScope
         if ($field instanceof Model\Field) {
             $words[] = $field->getCaption();
         } elseif ($field instanceof Sql\Expressionable) {
-            $words[] = "expression '{$field->getDebugQuery()}'";
+            $words[] = "expression '{$field->toSqlExpression()->getDebugQuery()}'";
         }
 
         return implode(' ', array_filter($words));

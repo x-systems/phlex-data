@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence\Sql\Expression;
@@ -135,23 +134,18 @@ class ExpressionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'surname', 'cached_name']);
 
-        $m->addExpression('full_name', new Expression('{} || [] || {}', ['name', ' ', 'surname']));
+        $m->addExpression('full_name', Expression::concat(Expression::asIdentifier('name'), ' ', Expression::asIdentifier('surname')));
 
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(
-                'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
+                'select `id`,`name`,`surname`,`cached_name`,(concat(`name`,\' \',`surname`)) `full_name` from `user` where ((concat(`name`,\' \',`surname`)) != `cached_name`)',
                 $m->toQuery()->select()->getDebugQuery()
             );
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+        } elseif ($this->getDatabasePlatform() instanceof SQlitePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
-                $m->toQuery()->select()->getDebugQuery()
-            );
-        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->assertSame(
-                'select `id`,`name`,`surname`,`cached_name`,(`name` || \' \' || `surname`) `full_name` from `user` where ((`name` || \' \' || `surname`) != `cached_name`)',
                 $m->toQuery()->select()->getDebugQuery()
             );
         }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data\Persistence\Sql\Platform\Mssql;
 
 use Phlex\Data\Persistence\Sql;
-use Phlex\Data\Persistence\Sql\Expression;
 
 class Statement extends Sql\Statement
 {
@@ -29,6 +28,11 @@ class Statement extends Sql\Statement
                 . ' offset ' . $shift . ' rows'
                 . ' fetch next ' . $cnt . ' rows only';
         }
+    }
+
+    protected function _render_group_concat()
+    {
+        return new Sql\Expression('string_agg({field}, [delimiter])', $this->args['custom']);
     }
 
     public function getIdentifierQuoteCharacter()
@@ -78,7 +82,7 @@ class Statement extends Sql\Statement
     public function exists()
     {
         return (new static())->mode('select')->field(
-            new Expression('case when exists[] then 1 else 0 end', [$this])
+            new Sql\Expression('case when exists[] then 1 else 0 end', [$this])
         );
     }
 }

@@ -47,7 +47,7 @@ class Statement extends Expression
     /** @var string */
     protected $template_truncate = 'truncate table [table_noalias]';
 
-    protected $template = 'select';
+    protected $template = '@select';
 
     /**
      * Name or alias of base table to use when using default join().
@@ -154,7 +154,7 @@ class Statement extends Expression
             }
 
             // Will parameterize the value and escape if necessary
-            $ret[] = self::asIdentifier($field, $alias);
+            $ret[] = Expression::asIdentifier($field, $alias);
         }
 
         return self::asParameterList($ret);
@@ -252,7 +252,7 @@ class Statement extends Expression
                 $alias = null;
             }
 
-            $ret[] = self::asIdentifier($table, $alias);
+            $ret[] = Expression::asIdentifier($table, $alias);
         }
 
         return self::asParameterList($ret);
@@ -325,7 +325,7 @@ class Statement extends Expression
 
             $list[] = new Expression($fields ? '{alias} [fields] as {{cursor}}' : '{alias} as {{cursor}}', [
                 'alias' => $alias,
-                'fields' => self::asIdentifierList($fields ?: [])->consumedInParentheses(),
+                'fields' => Expression::asIdentifierList($fields ?: [])->consumedInParentheses(),
                 'cursor' => $cursor,
             ]);
         }
@@ -466,7 +466,7 @@ class Statement extends Expression
             $joins[] = new Expression($template, $args);
         }
 
-        return self::asIdentifierList($joins, ' ');
+        return Expression::asIdentifierList($joins, ' ');
     }
 
     // }}}
@@ -654,7 +654,7 @@ class Statement extends Expression
             throw new \InvalidArgumentException();
         }
 
-        $field = self::asIdentifier($field);
+        $field = Expression::asIdentifier($field);
 
         if (count($row) === 1) {
             // Only a single parameter was passed, so we simply include all
@@ -804,7 +804,7 @@ class Statement extends Expression
         }
 
         return new Expression(' group by [fields]', [
-            'fields' => self::asIdentifierSoftList($this->args['group'], ', '),
+            'fields' => Expression::asIdentifierSoftList($this->args['group'], ', '),
         ]);
     }
 
@@ -865,7 +865,7 @@ class Statement extends Expression
     protected function _render_set_fields()
     {
         if ($this->args['set']) {
-            return self::asIdentifierList(array_column($this->args['set'], 'field'));
+            return Expression::asIdentifierList(array_column($this->args['set'], 'field'));
         }
     }
 
@@ -1126,7 +1126,7 @@ class Statement extends Expression
     {
         if (isset($this->{'template_' . $mode})) {
             $this->mode = $mode;
-            $this->template = $mode;
+            $this->template = '@' . $mode;
         } else {
             throw (new Exception('Query does not have this mode'))
                 ->addMoreInfo('mode', $mode);
@@ -1260,6 +1260,16 @@ class Statement extends Expression
     public function sequence($sequence)
     {
         return $this;
+    }
+
+    protected function _render_concat()
+    {
+        return Expression::asParameterList($this->args['custom'], ' || ');
+    }
+
+    protected function _render_group_concat()
+    {
+        return new Expression('group_concat({field}, [delimiter])', $this->args['custom']);
     }
 
     /**

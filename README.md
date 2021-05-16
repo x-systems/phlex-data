@@ -13,7 +13,7 @@ Agile Data is a framework for defining your "business layer" which is separate f
 - Agile Data is extensible - field types, persistence types, relations and action types can be extended.
 
 [![Unit Testing](https://github.com/x-systems/phlex-data/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/x-systems/phlex-data/actions/workflows/unit-tests.yml)
-[![CodeCov](https://codecov.io/gh/x-systems/phlex-data/branch/develop/graph/badge.svg)](https://codecov.io/gh/x-systems/phlex-data)
+[![CodeCov](https://codecov.io/gh/x-systems/phlex-data/branch/3.0.x/graph/badge.svg?token=BCdn2Iw1aM)](https://codecov.io/gh/x-systems/phlex-data)
 [![GitHub release](https://img.shields.io/github/release/x-systems/phlex-data.svg)](https://github.com/x-systems/phlex-data/releases)
 [![PHPStan enabled](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://phpstan.org)
 

@@ -271,7 +271,7 @@ class Query extends Persistence\Query implements Expressionable
     public function getDebug(): array
     {
         return array_merge([
-            'sql' => $this->statement->getDebugQuery(),
+            'sql' => $this->statement->getDebugQueryFormatted(),
         ], parent::getDebug());
     }
 

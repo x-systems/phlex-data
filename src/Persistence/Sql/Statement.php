@@ -494,7 +494,7 @@ class Statement extends Expression
      *
      * If you specify Query as an argument, it will be automatically
      * surrounded by brackets:
-     *  $q->where('user_id',(new Statement())->table('users')->field('id'));
+     *  $q->where('user_id',($q->subquery()->table('users')->field('id'));
      *
      * You can specify OR conditions by passing single argument - array:
      *  $q->where([
@@ -952,6 +952,11 @@ class Statement extends Expression
             'current_timestamp(' . ($precision !== null ? '[]' : '') . ')',
             $precision !== null ? [$precision] : []
         );
+    }
+
+    public static function subquery(): self
+    {
+        return new self();
     }
 
     public function sequence($sequence)

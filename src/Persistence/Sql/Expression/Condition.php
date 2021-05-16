@@ -9,57 +9,27 @@ use Phlex\Data\Persistence\Sql;
 
 class Condition extends Sql\Expression
 {
-    protected $template = '[andwhere]';
+    public const OPERATOR_AND = ' and ';
+    public const OPERATOR_OR = ' or ';
 
+    protected $template = '[conditions]';
+
+    /** @var string */
+    protected $operator = self::OPERATOR_AND;
+
+    /** @var array<array> */
     protected $conditions = [];
 
-    /**
-     * Adds condition to your query.
-     *
-     * Examples:
-     *  $q->where('id',1);
-     *
-     * By default condition implies equality. You can specify a different comparison
-     * operator by either including it along with the field or using 3-argument
-     * format:
-     *  $q->where('id>','1');
-     *  $q->where('id','>',1);
-     *
-     * You may use Expression as any part of the query.
-     *  $q->where($q->expr('a=b'));
-     *  $q->where('date>',$q->expr('now()'));
-     *  $q->where($q->expr('length(password)'),'>',5);
-     *
-     * If you specify Query as an argument, it will be automatically
-     * surrounded by brackets:
-     *  $q->where('user_id',$q->dsql()->table('users')->field('id'));
-     *
-     * You can specify OR conditions by passing single argument - array:
-     *  $q->where([
-     *      ['a','is',null],
-     *      ['b','is',null]
-     *  ]);
-     *
-     * If entry of the OR condition is not an array, then it's assumed to
-     * be an expression;
-     *
-     *  $q->where([
-     *      ['age',20],
-     *      'age is null'
-     *  ]);
-     *
-     * The above use of OR conditions rely on orExpr() functionality. See
-     * that method for more information.
-     *
-     * To specify OR conditions
-     *  $q->where($q->orExpr()->where('a',1)->where('b',1));
-     *
-     * @param mixed $field    Field, array for OR or Expression
-     * @param mixed $operator Condition such as '=', '>' or 'is not'
-     * @param mixed $value    Value. Will be quoted unless you pass expression
-     *
-     * @return $this
-     */
+    public function __construct(string $operator = self::OPERATOR_AND)
+    {
+        if (!in_array($operator, [self::OPERATOR_AND, self::OPERATOR_OR], true)) {
+            throw (new Exception('Unsupported condition operator'))
+                ->addMoreInfo('operator', $operator);
+        }
+
+        $this->operator = $operator;
+    }
+
     public function where($field, $operator = null, $value = null)
     {
         $numArgs = func_num_args();
@@ -156,26 +126,6 @@ class Condition extends Sql\Expression
     }
 
     /**
-     * Returns new Expression\Condition object of [or] expression.
-     *
-     * @return static
-     */
-    public static function or()
-    {
-        return new static('[orwhere]');
-    }
-
-    /**
-     * Returns new Expression\Condition object of [and] expression.
-     *
-     * @return static
-     */
-    public static function and()
-    {
-        return new static('[andwhere]');
-    }
-
-    /**
      * Subroutine which renders conditions.
      *
      * @return Sql\Expression[]
@@ -267,17 +217,10 @@ class Condition extends Sql\Expression
         return new Sql\Expression("{{field}} {$operator} [value]", compact('field', 'value'));
     }
 
-    protected function _render_orwhere()
+    protected function _render_conditions()
     {
         if ($this->conditions) {
-            return Sql\Expression::asParameterList($this->getConditionExpressionsList(), ' or ');
-        }
-    }
-
-    protected function _render_andwhere()
-    {
-        if ($this->conditions) {
-            return Sql\Expression::asParameterList($this->getConditionExpressionsList(), ' and ');
+            return Sql\Expression::asParameterList($this->getConditionExpressionsList(), $this->operator);
         }
     }
 }

@@ -502,14 +502,24 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         return $this->selectsMultipleRows;
     }
 
-    public static function and()
+    public static function and(): Expression\Condition
     {
-        return Expression\Condition::and();
+        return new Expression\Condition(Expression\Condition::OPERATOR_AND);
     }
 
-    public static function or()
+    public static function or(): Expression\Condition
     {
-        return Expression\Condition::or();
+        return new Expression\Condition(Expression\Condition::OPERATOR_OR);
+    }
+
+    /**
+     * Returns Expression\Case_ object.
+     *
+     * @param mixed $operand optional operand for case expression
+     */
+    public function case($operand = null): Expression\Case_
+    {
+        return new Expression\Case_($operand);
     }
 
     /**

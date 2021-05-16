@@ -1455,15 +1455,15 @@ class StatementTest extends PHPUnit\TestCase
     }
 
     /**
-     * Test caseExpr (normal).
+     * Test case (normal).
      */
     public function testCaseExprNormal()
     {
         // Test normal form
-        $s = $this->q()->caseExpr()
+        $s = $this->q()->case()
             ->when(['status', 'New'], 't2.expose_new')
             ->when(['status', 'like', '%Used%'], 't2.expose_used')
-            ->otherwise(null)
+            ->else(null)
             ->render();
         $this->assertSame('case when "status" = :a then :b when "status" like :c then :d else :e end', $s);
 
@@ -1471,9 +1471,9 @@ class StatementTest extends PHPUnit\TestCase
         $age = new Sql\Expression('year(now()) - year(birth_date)');
         $q = $this->q()->table('user')->field($age, 'calc_age');
 
-        $s = $this->q()->caseExpr()
+        $s = $this->q()->case()
             ->when(['age', '>', $q], 'Older')
-            ->otherwise('Younger')
+            ->else('Younger')
             ->render();
         $this->assertSame('case when "age" > (select year(now()) - year(birth_date) "calc_age" from "user") then :a else :b end', $s);
     }
@@ -1483,10 +1483,10 @@ class StatementTest extends PHPUnit\TestCase
      */
     public function testCaseExprShortForm()
     {
-        $s = $this->q()->caseExpr('status')
+        $s = $this->q()->case('status')
             ->when('New', 't2.expose_new')
             ->when('Used', 't2.expose_used')
-            ->otherwise(null)
+            ->else(null)
             ->render();
         $this->assertSame('case "status" when :a then :b when :c then :d else :e end', $s);
 
@@ -1494,9 +1494,9 @@ class StatementTest extends PHPUnit\TestCase
         $age = new Sql\Expression('year(now()) - year(birth_date)');
         $q = $this->q()->table('user')->field($age, 'calc_age');
 
-        $s = $this->q()->caseExpr($q)
+        $s = $this->q()->case($q)
             ->when(100, 'Very old')
-            ->otherwise('Younger')
+            ->else('Younger')
             ->render();
         $this->assertSame('case (select year(now()) - year(birth_date) "calc_age" from "user") when :a then :b else :c end', $s);
     }
@@ -1509,7 +1509,7 @@ class StatementTest extends PHPUnit\TestCase
     public function testCaseExprException1()
     {
         //$this->expectException(Exception::class);
-        $this->q()->caseExpr()
+        $this->q()->case()
             ->when(['status'], 't2.expose_new')
             ->render();
     }
@@ -1520,7 +1520,7 @@ class StatementTest extends PHPUnit\TestCase
     public function testCaseExprException2()
     {
         $this->expectException(Exception::class);
-        $this->q()->caseExpr('status')
+        $this->q()->case('status')
             ->when(['status', 'New'], 't2.expose_new')
             ->render();
     }

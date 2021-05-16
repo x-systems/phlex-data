@@ -79,14 +79,14 @@ class Statement extends Expression
      * You can pass first argument as Expression or Query
      *  $q->field( $q->expr('2+2'), 'alias');   // must always use alias
      *
-     * You can use $q->dsql() for subqueries. Subqueries will be wrapped in
+     * You can create new Statement for subqueries. Subqueries will be wrapped in
      * brackets.
-     *  $q->field( $q->dsql()->table('x')... , 'alias');
+     *  $q->field( (new Statement())->table('x')... , 'alias');
      *
      * Associative array will assume that "key" holds the field alias.
-     * Value may be field name, Expression or Query.
+     * Value may be field name, Expression or Statement.
      *  $q->field(['alias' => 'name', 'alias2' => 'mother.surname']);
-     *  $q->field(['alias' => $q->expr(..), 'alias2' => $q->dsql()->.. ]);
+     *  $q->field(['alias' => $q->expr(..), 'alias2' => (new Statement())->.. ]);
      *
      * If you need to use funky name for the field (e.g, one containing
      * a dot or a space), you should wrap it into expression:
@@ -475,6 +475,53 @@ class Statement extends Expression
 
     // {{{ where() and having() specification and rendering
 
+    /**
+     * Adds condition to your statement.
+     *
+     * Examples:
+     *  $q->where('id',1);
+     *
+     * By default condition implies equality. You can specify a different comparison
+     * operator by either including it along with the field or using 3-argument
+     * format:
+     *  $q->where('id>','1');
+     *  $q->where('id','>',1);
+     *
+     * You may use Expression as any part of the query.
+     *  $q->where($q->expr('a=b'));
+     *  $q->where('date>',$q->expr('now()'));
+     *  $q->where($q->expr('length(password)'),'>',5);
+     *
+     * If you specify Query as an argument, it will be automatically
+     * surrounded by brackets:
+     *  $q->where('user_id',(new Statement())->table('users')->field('id'));
+     *
+     * You can specify OR conditions by passing single argument - array:
+     *  $q->where([
+     *      ['a','is',null],
+     *      ['b','is',null]
+     *  ]);
+     *
+     * If entry of the OR condition is not an array, then it's assumed to
+     * be an expression;
+     *
+     *  $q->where([
+     *      ['age',20],
+     *      'age is null'
+     *  ]);
+     *
+     * The above use of OR conditions rely on Expression::or() functionality. See
+     * that method for more information.
+     *
+     * To specify OR conditions
+     *  $q->where($q->or()->where('a',1)->where('b',1));
+     *
+     * @param mixed $field    Field, array for OR or Expression
+     * @param mixed $operator Condition such as '=', '>' or 'is not'
+     * @param mixed $value    Value. Will be quoted unless you pass expression
+     *
+     * @return $this
+     */
     public function where($field, $operator = null, $value = null)
     {
         $this->getConditionExpression('where')->where(...func_get_args());
@@ -905,97 +952,6 @@ class Statement extends Expression
             'current_timestamp(' . ($precision !== null ? '[]' : '') . ')',
             $precision !== null ? [$precision] : []
         );
-    }
-
-    /**
-     * Returns Query object of [case] expression.
-     *
-     * @param mixed $operand optional operand for case expression
-     *
-     * @return static
-     */
-    public function caseExpr($operand = null)
-    {
-        $q = new static('[case]');
-
-        if ($operand !== null) {
-            $q->args['case_operand'] = $operand;
-        }
-
-        return $q;
-    }
-
-    /**
-     * Add when/then condition for [case] expression.
-     *
-     * @param mixed $when Condition as array for normal form [case] statement or just value in case of short form [case] statement
-     * @param mixed $then Then expression or value
-     *
-     * @return $this
-     */
-    public function when($when, $then)
-    {
-        $this->args['case_when'][] = [$when, $then];
-
-        return $this;
-    }
-
-    /**
-     * Add else condition for [case] expression.
-     *
-     * @param mixed $else Else expression or value
-     *
-     * @return $this
-     */
-    //public function else($else) // PHP 5.6 restricts to use such method name. PHP 7 is fine with it
-    public function otherwise($else)
-    {
-        $this->args['case_else'] = $else;
-
-        return $this;
-    }
-
-    protected function _render_case()
-    {
-        if (!isset($this->args['case_when'])) {
-            return;
-        }
-
-        $template = ' case';
-        $args = [];
-
-        // operand
-        if ($shortForm = isset($this->args['case_operand'])) {
-            $template .= ' {{operand}}';
-            $args['operand'] = $this->args['case_operand'];
-        }
-
-        // when, then
-        foreach ($this->args['case_when'] as [$when, $then]) {
-            if ($shortForm) {
-                // short-form
-                if (is_array($when)) {
-                    throw (new Exception('When using short form CASE statement, then you should not set array as when() method 1st parameter'))
-                        ->addMoreInfo('when', $when);
-                }
-            } else {
-                $when = Expression\Condition::and()->where(...$when);
-            }
-
-            $template .= ' when [] then []';
-            $args[] = $when;
-            $args[] = $then;
-        }
-
-        // else
-        if (array_key_exists('case_else', $this->args)) {
-            $template .= ' else []';
-            $args[] = $this->args['case_else'];
-        }
-
-        $template .= ' end';
-
-        return new Expression($template, $args);
     }
 
     public function sequence($sequence)

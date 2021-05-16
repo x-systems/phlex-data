@@ -51,6 +51,9 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     /** @var bool Wrap the expression in parentheses when consumed by another expression or not. */
     protected $consumedInParentheses = false;
 
+    /** @var bool Flag to indicate if result from expression can be a subset of rows. */
+    protected $selectsMultipleRows = false;
+
     /**
      * Specifying options to constructors will override default
      * attribute values of this class.
@@ -492,6 +495,21 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         $this->consumedInParentheses = $flag;
 
         return $this;
+    }
+
+    public function selectsMultipleRows()
+    {
+        return $this->selectsMultipleRows;
+    }
+
+    public static function and()
+    {
+        return Expression\Condition::and();
+    }
+
+    public static function or()
+    {
+        return Expression\Condition::or();
     }
 
     /**

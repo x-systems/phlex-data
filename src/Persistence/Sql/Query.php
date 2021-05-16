@@ -239,7 +239,7 @@ class Query extends Persistence\Query implements Expressionable
         $this->fillWhere($this->statement, $this->scope);
     }
 
-    protected static function fillWhere(Statement $statement, Model\Scope\AbstractScope $condition)
+    protected static function fillWhere(Expression $statement, Model\Scope\AbstractScope $condition)
     {
         if (!$condition->isEmpty()) {
             // peel off the single nested scopes to convert (((field = value))) to field = value
@@ -247,18 +247,18 @@ class Query extends Persistence\Query implements Expressionable
 
             // simple condition
             if ($condition instanceof Model\Scope\Condition) {
-                $statement->where(...$condition->toQueryArguments());
+                $statement->where(...$condition->toQueryArguments()); // @phpstan-ignore-line
             }
 
             // nested conditions
             if ($condition instanceof Model\Scope) {
-                $expression = $condition->isOr() ? $statement->orExpr() : $statement->andExpr();
+                $expression = $condition->isOr() ? $statement->or() : $statement->and();
 
                 foreach ($condition->getNestedConditions() as $nestedCondition) {
                     self::fillWhere($expression, $nestedCondition);
                 }
 
-                $statement->where($expression);
+                $statement->where($expression); // @phpstan-ignore-line
             }
         }
     }

@@ -59,6 +59,8 @@ class Statement extends Expression
      */
     protected $masterTable;
 
+    protected $selectsMultipleRows = true;
+
     // {{{ Field specification and rendering
 
     /**
@@ -473,248 +475,31 @@ class Statement extends Expression
 
     // {{{ where() and having() specification and rendering
 
-    /**
-     * Adds condition to your query.
-     *
-     * Examples:
-     *  $q->where('id',1);
-     *
-     * By default condition implies equality. You can specify a different comparison
-     * operator by either including it along with the field or using 3-argument
-     * format:
-     *  $q->where('id>','1');
-     *  $q->where('id','>',1);
-     *
-     * You may use Expression as any part of the query.
-     *  $q->where($q->expr('a=b'));
-     *  $q->where('date>',$q->expr('now()'));
-     *  $q->where($q->expr('length(password)'),'>',5);
-     *
-     * If you specify Query as an argument, it will be automatically
-     * surrounded by brackets:
-     *  $q->where('user_id',$q->dsql()->table('users')->field('id'));
-     *
-     * You can specify OR conditions by passing single argument - array:
-     *  $q->where([
-     *      ['a','is',null],
-     *      ['b','is',null]
-     *  ]);
-     *
-     * If entry of the OR condition is not an array, then it's assumed to
-     * be an expression;
-     *
-     *  $q->where([
-     *      ['age',20],
-     *      'age is null'
-     *  ]);
-     *
-     * The above use of OR conditions rely on orExpr() functionality. See
-     * that method for more information.
-     *
-     * To specify OR conditions
-     *  $q->where($q->orExpr()->where('a',1)->where('b',1));
-     *
-     * @param mixed  $field    Field, array for OR or Expression
-     * @param mixed  $operator Condition such as '=', '>' or 'is not'
-     * @param mixed  $value    Value. Will be quoted unless you pass expression
-     * @param string $kind     Do not use directly. Use having()
-     * @param int    $num_args when $kind is passed, we can't determine number of
-     *                         actual arguments, so this argument must be specified
-     *
-     * @return $this
-     */
-    public function where($field, $operator = null, $value = null, $kind = 'where', $num_args = null)
+    public function where($field, $operator = null, $value = null)
     {
-        // Number of passed arguments will be used to determine if arguments were specified or not
-        if ($num_args === null) {
-            $num_args = func_num_args();
-        }
-
-        // Array as first argument means we have to replace it with orExpr()
-        if ($num_args === 1 && is_array($field)) {
-            // or conditions
-            $or = $this->orExpr();
-            foreach ($field as $row) {
-                if (is_array($row)) {
-                    $or->where(...$row);
-                } else {
-                    $or->where($row);
-                }
-            }
-            $field = $or;
-        }
-
-        // first argument is string containing more than just a field name and no more than 2
-        // arguments means that we either have a string expression or embedded condition.
-        if ($num_args === 2 && is_string($field) && !preg_match('/^[.a-zA-Z0-9_]*$/', $field)) {
-            // field contains non-alphanumeric values. Look for condition
-            preg_match(
-                '/^([^ <>!=]*)([><!=]*|( *(not|is|in|like))*) *$/',
-                $field,
-                $matches
-                );
-
-            // matches[2] will contain the condition, but $operator will contain the value
-            $value = $operator;
-            $operator = $matches[2];
-
-            // if we couldn't clearly identify the condition, we might be dealing with
-            // a more complex expression. If expression is followed by another argument
-            // we need to add equation sign  where('now()',123).
-            if (!$operator) {
-                $matches[1] = $this->expr($field);
-
-                $operator = '=';
-            } else {
-                ++$num_args;
-            }
-
-            $field = $matches[1];
-        }
-
-        switch ($num_args) {
-            case 1:
-                if (is_string($field)) {
-                    $field = $this->expr($field);
-                }
-
-                $this->args[$kind][] = [$field->consumedInParentheses()];
-
-                break;
-            case 2:
-                if (is_object($operator) && !$operator instanceof Expressionable) {
-                    throw (new Exception('Value cannot be converted to SQL-compatible expression'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('value', $operator);
-                }
-
-                $this->args[$kind][] = [$field, $operator];
-
-                break;
-            case 3:
-                if (is_object($value) && !$value instanceof Expressionable) {
-                    throw (new Exception('Value cannot be converted to SQL-compatible expression'))
-                        ->addMoreInfo('field', $field)
-                        ->addMoreInfo('cond', $operator)
-                        ->addMoreInfo('value', $value);
-                }
-
-                $this->args[$kind][] = [$field, $operator, $value];
-
-                break;
-        }
+        $this->getConditionExpression('where')->where(...func_get_args());
 
         return $this;
     }
 
-    /**
-     * Same syntax as where().
-     *
-     * @param mixed             $field    Field, array for OR or Expression
-     * @param mixed             $operator Condition such as '=', '>' or 'is not'
-     * @param string|Expression $value    Value. Will be quoted unless you pass expression
-     *
-     * @return $this
-     */
     public function having($field, $operator = null, $value = null)
     {
-        return $this->where($field, $operator, $value, 'having', func_num_args());
+        $this->getConditionExpression('having')->having(...func_get_args());
+
+        return $this;
     }
 
-    /**
-     * Subroutine which renders either [where] or [having].
-     *
-     * @param string $kind 'where' or 'having'
-     *
-     * @return Expression[]
-     */
-    protected function _sub_render_where(string $kind): array
+    protected function getConditionExpression(string $kind)
     {
-        // will be joined for output
-        $ret = [];
-
-        // where() might have been called multiple times. Collect all conditions,
-        // then join them with AND keyword
-        foreach ($this->args[$kind] as $row) {
-            $ret[] = $this->_sub_render_condition($row);
-        }
-
-        return $ret;
-    }
-
-    protected function _sub_render_condition($row)
-    {
-        if (count($row) === 3) {
-            [$field, $operator, $value] = $row;
-        } elseif (count($row) === 2) {
-            [$field, $operator] = $row;
-        } elseif (count($row) === 1) {
-            [$field] = $row;
-        } else {
-            throw new \InvalidArgumentException();
-        }
-
-        $field = Expression::asIdentifier($field);
-
-        if (count($row) === 1) {
-            // Only a single parameter was passed, so we simply include all
-            return $field;
-        }
-
-        // below are only cases when 2 or 3 arguments are passed
-
-        // if no condition defined - set default condition
-        if (count($row) === 2) {
-            $value = $operator; // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
-
-            if ($value instanceof Expressionable) {
-                $value = $value->toSqlExpression();
+        if (!isset($this->args[$kind])) {
+            if (isset($this->args['where']) || isset($this->args['having'])) {
+                throw new Exception('Mixing of WHERE and HAVING conditions not allowed in query expression');
             }
 
-            if (is_array($value)) {
-                $operator = 'in';
-            } elseif ($value instanceof self && $value->mode === 'select') {
-                $operator = 'in';
-            } else {
-                $operator = '=';
-            }
-        } else {
-            $operator = trim(strtolower($operator)); // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
+            $this->args[$kind] = $this->and();
         }
 
-        // below we can be sure that all 3 arguments has been passed
-
-        // special conditions (IS | IS NOT) if value is null
-        if ($value === null) { // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
-            if (in_array($operator, ['=', 'is'], true)) {
-                $operator = 'is';
-            } elseif (in_array($operator, ['!=', '<>', 'not', 'is not'], true)) {
-                $operator = 'is not';
-            }
-
-            return new Expression("{field} {$operator} null", compact('field'));
-        }
-
-        // value should be array for such conditions
-        if (in_array($operator, ['in', 'not in', 'not'], true) && is_string($value)) {
-            $value = array_map('trim', explode(',', $value));
-        }
-
-        // special conditions (IN | NOT IN) if value is array
-        if (is_array($value)) {
-            $operator = in_array($operator, ['!=', '<>', 'not', 'not in'], true) ? 'not in' : 'in';
-
-            // special treatment of empty array condition
-            if (empty($value)) {
-                return $operator === 'in' ?
-                    new Expression('1 = 0') : // never true
-                    new Expression('1 = 1'); // always true
-            }
-
-            $value = self::asParameterList($value)->consumedInParentheses();
-        }
-
-        return new Expression("{{field}} {$operator} [value]", compact('field', 'value'));
+        return $this->args[$kind];
     }
 
     protected function _render_where()
@@ -724,34 +509,8 @@ class Statement extends Expression
         }
 
         return new Expression(' where [conditions]', [
-            'conditions' => self::asParameterList($this->_sub_render_where('where'), ' and '),
+            'conditions' => $this->args['where'],
         ]);
-    }
-
-    protected function _render_orwhere()
-    {
-        if (isset($this->args['where']) && isset($this->args['having'])) {
-            throw new Exception('Mixing of WHERE and HAVING conditions not allowed in query expression');
-        }
-
-        foreach (['where', 'having'] as $kind) {
-            if (isset($this->args[$kind])) {
-                return self::asParameterList($this->_sub_render_where($kind), ' or ');
-            }
-        }
-    }
-
-    protected function _render_andwhere()
-    {
-        if (isset($this->args['where']) && isset($this->args['having'])) {
-            throw new Exception('Mixing of WHERE and HAVING conditions not allowed in query expression');
-        }
-
-        foreach (['where', 'having'] as $kind) {
-            if (isset($this->args[$kind])) {
-                return self::asParameterList($this->_sub_render_where($kind), ' and ');
-            }
-        }
     }
 
     protected function _render_having()
@@ -761,7 +520,7 @@ class Statement extends Expression
         }
 
         return new Expression(' having [conditions]', [
-            'conditions' => self::asParameterList($this->_sub_render_where('having'), ' and '),
+            'conditions' => $this->args['having'],
         ]);
     }
 
@@ -1132,6 +891,8 @@ class Statement extends Expression
                 ->addMoreInfo('mode', $mode);
         }
 
+        $this->selectsMultipleRows = ($mode === 'select');
+
         return $this;
     }
 
@@ -1144,26 +905,6 @@ class Statement extends Expression
             'current_timestamp(' . ($precision !== null ? '[]' : '') . ')',
             $precision !== null ? [$precision] : []
         );
-    }
-
-    /**
-     * Returns new Query object of [or] expression.
-     *
-     * @return static
-     */
-    public function orExpr()
-    {
-        return new static('[orwhere]');
-    }
-
-    /**
-     * Returns new Query object of [and] expression.
-     *
-     * @return static
-     */
-    public function andExpr()
-    {
-        return new static('[andwhere]');
     }
 
     /**
@@ -1238,7 +979,7 @@ class Statement extends Expression
                         ->addMoreInfo('when', $when);
                 }
             } else {
-                $when = $this->_sub_render_condition($when);
+                $when = Expression\Condition::and()->where(...$when);
             }
 
             $template .= ' when [] then []';

@@ -872,10 +872,9 @@ class StatementTest extends PHPUnit\TestCase
             'having "id" > :a',
             $this->q('[having]')->having('id', '>', 1)->render()
         );
-        $this->assertSame(
-            'where "id" = :a having "id" > :b',
-            $this->q('[where][having]')->where('id', 1)->having('id>', 1)->render()
-        );
+
+        $this->expectExceptionMessage('Mixing of WHERE and HAVING conditions not allowed in query expression');
+        $this->q('[where][having]')->where('id', 1)->having('id>', 1);
     }
 
     public function testLimit()
@@ -1232,12 +1231,12 @@ class StatementTest extends PHPUnit\TestCase
     {
         $this->assertSame(
             '',
-            $this->q()->orExpr()->render()
+            $this->q()->or()->render()
         );
 
         $this->assertSame(
             '',
-            $this->q()->andExpr()->render()
+            $this->q()->and()->render()
         );
     }
 
@@ -1341,7 +1340,7 @@ class StatementTest extends PHPUnit\TestCase
         $q->table('employee')->field('name');
         $q->where(
             $q
-                ->orExpr()
+                ->or()
                 ->where('a', 1)
                 ->where('b', 1)
         );
@@ -1355,11 +1354,11 @@ class StatementTest extends PHPUnit\TestCase
         $q->table('employee')->field('name');
         $q->where(
             $q
-                ->orExpr()
+                ->or()
                 ->where('a', 1)
                 ->where('b', 1)
                 ->where(
-                    $q->andExpr()
+                    $q->and()
                         ->where('true')
                         ->where('false')
                 )
@@ -1376,7 +1375,7 @@ class StatementTest extends PHPUnit\TestCase
         $q->table('employee')->field(new Sql\Expression('sum([])', ['amount']), 'salary')->group('type');
         $q->having(
             $q
-                ->orExpr()
+                ->or()
                 ->having('a', 1)
                 ->having('b', 1)
         );
@@ -1392,13 +1391,10 @@ class StatementTest extends PHPUnit\TestCase
         $q->table('employee')->field(new Sql\Expression('sum([])', ['amount']), 'salary')->group('type');
         $q->having(
             $q
-                ->orExpr()
+                ->or()
                 ->where('a', 1)
-                ->having('b', 1) // mixing triggers Exception on render
-        );
-
-        $this->expectException(Exception::class);
-        $q->render();
+                ->having('b', 1) // mixing does not matter as here having is an alias of where
+        )->render();
     }
 
     public function testReset()

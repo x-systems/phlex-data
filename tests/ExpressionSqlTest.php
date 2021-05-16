@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Doctrine\DBAL\Platforms\MySQLPlatform;
-use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence\Sql\Expression;
 
 class ExpressionSqlTest extends Sql\TestCase
 {
@@ -69,7 +69,7 @@ class ExpressionSqlTest extends Sql\TestCase
         ]);
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', function ($i, $q) {
+        $i->addExpression('total_gross', function ($i) {
             return '[total_net]+[total_vat]';
         });
 
@@ -112,12 +112,13 @@ class ExpressionSqlTest extends Sql\TestCase
         $this->assertEquals(10, $i->get('total_net'));
         $this->assertEquals(30, $i->get('sum_net'));
 
-        $q = $this->db->dsql();
-        $q->field($i->toQuery()->count(), 'total_orders');
-        $q->field($i->toQuery()->aggregate('sum', 'total_net'), 'total_net');
+        $q = $this->db->statement()
+            ->field($i->toQuery()->count(), 'total_orders')
+            ->field($i->toQuery()->aggregate('sum', 'total_net'), 'total_net');
+
         $this->assertEquals(
             ['total_orders' => 2, 'total_net' => 30],
-            $q->getRow()
+            $q->execute()->fetchAssociative()
         );
     }
 
@@ -133,30 +134,19 @@ class ExpressionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'surname', 'cached_name']);
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $m->addExpression('full_name', '[name] || " " || [surname]');
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
-            $m->addExpression('full_name', '[name] || \' \' || [surname]');
-        } else {
-            $m->addExpression('full_name', 'CONCAT([name], \' \', [surname])');
-        }
+        $m->addExpression('full_name', Expression::concat(Expression::asIdentifier('name'), ' ', Expression::asIdentifier('surname')));
 
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 
-        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+        if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
             $this->assertSame(
-                'select "id","name","surname","cached_name",("name" || " " || "surname") "full_name" from "user" where (("name" || " " || "surname") != "cached_name")',
-                $m->toQuery()->select()->render()
+                'select `id`,`name`,`surname`,`cached_name`,(concat(`name`,\' \',`surname`)) `full_name` from `user` where ((concat(`name`,\' \',`surname`)) != `cached_name`)',
+                $m->toQuery()->select()->getDebugQuery()
             );
-        } elseif ($this->getDatabasePlatform() instanceof OraclePlatform) {
+        } elseif ($this->getDatabasePlatform() instanceof SQlitePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
-                $m->toQuery()->select()->render()
-            );
-        } elseif ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->assertSame(
-                'select `id`,`name`,`surname`,`cached_name`,(CONCAT(`name`, \' \', `surname`)) `full_name` from `user` where ((CONCAT(`name`, \' \', `surname`)) != `cached_name`)',
-                $m->toQuery()->select()->render()
+                $m->toQuery()->select()->getDebugQuery()
             );
         }
 

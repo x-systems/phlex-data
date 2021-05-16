@@ -18,6 +18,10 @@ class Object_ extends Sql\Codec
 
     protected function doDecode($value)
     {
+        if (is_resource($value) && get_resource_type($value) === 'stream') {
+            $value = stream_get_contents($value);
+        }
+
         return self::jsonDecode($value);
     }
 }

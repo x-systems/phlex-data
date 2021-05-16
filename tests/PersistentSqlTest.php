@@ -4,14 +4,55 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Data\Exception;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 class PersistentSqlTest extends Sql\TestCase
 {
-    /**
-     * Test constructor.
-     */
+    public function testCodecResolution()
+    {
+        $persistence = (new \ReflectionClass(Persistence\Sql\Platform\Oracle::class))
+            ->newInstanceWithoutConstructor();
+
+        $this->assertSame([
+            Model\Field\Type\Object_::class => [Persistence\Sql\Platform\Oracle\Codec\Object_::class],
+            Model\Field\Type\Array_::class => [Persistence\Sql\Platform\Oracle\Codec\Array_::class],
+            0 => [Persistence\Sql\Codec\String_::class],
+            Model\Field\Type\Boolean::class => [Persistence\Sql\Codec\Boolean::class],
+            Model\Field\Type\Date::class => [Persistence\Sql\Codec\Date::class],
+            Model\Field\Type\DateTime::class => [Persistence\Sql\Codec\DateTime::class],
+            Model\Field\Type\Time::class => [Persistence\Sql\Codec\Time::class],
+            Model\Field\Type\Float_::class => [Persistence\Sql\Codec\Float_::class],
+            Model\Field\Type\Integer::class => [Persistence\Sql\Codec\Integer::class],
+            Model\Field\Type\String_::class => [Persistence\Sql\Codec\String_::class],
+            Model\Field\Type\Text::class => [Persistence\Sql\Codec\Text::class],
+        ], $persistence->getCodecs());
+
+        $persistence->setCodecs([
+            Model\Field\Type\Object_::class => ['fake_class'],
+        ]);
+
+        $this->assertSame([
+            Model\Field\Type\Object_::class => ['fake_class'],
+            Model\Field\Type\Array_::class => [Persistence\Sql\Platform\Oracle\Codec\Array_::class],
+            0 => [Persistence\Sql\Codec\String_::class],
+            Model\Field\Type\Boolean::class => [Persistence\Sql\Codec\Boolean::class],
+            Model\Field\Type\Date::class => [Persistence\Sql\Codec\Date::class],
+            Model\Field\Type\DateTime::class => [Persistence\Sql\Codec\DateTime::class],
+            Model\Field\Type\Time::class => [Persistence\Sql\Codec\Time::class],
+            Model\Field\Type\Float_::class => [Persistence\Sql\Codec\Float_::class],
+            Model\Field\Type\Integer::class => [Persistence\Sql\Codec\Integer::class],
+            Model\Field\Type\String_::class => [Persistence\Sql\Codec\String_::class],
+            Model\Field\Type\Text::class => [Persistence\Sql\Codec\Text::class],
+        ], $persistence->getCodecs());
+
+        $model = new Model($persistence, ['table' => 'fake']);
+
+        $field = $model->addField('array', ['type' => 'array']);
+
+        $this->assertSame(Persistence\Sql\Platform\Oracle\Codec\Array_::class, get_class($field->getPersistenceCodec()));
+    }
+
     public function testLoadArray()
     {
         $this->setDb([
@@ -216,9 +257,6 @@ class PersistentSqlTest extends Sql\TestCase
         $this->assertSame('Smith', $m->get('surname'));
     }
 
-    /**
-     * Test export.
-     */
     public function testExport()
     {
         $this->setDb([

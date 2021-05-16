@@ -57,8 +57,8 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
-        $this->assertSame('My Orders', $user->refModel('Orders')->getModelCaption());
-        $this->assertSame('My Orders', $user->ref('Orders')->getModelCaption());
+        $this->assertSame('My Orders', $user->refModel('Orders')->getCaption());
+        $this->assertSame('My Orders', $user->ref('Orders')->getCaption());
     }
 
     public function testModelProperty()

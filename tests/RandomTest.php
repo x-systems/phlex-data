@@ -242,7 +242,7 @@ class RandomTest extends Sql\TestCase
         $m->addField('name');
         $m->load(2);
 
-        $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, static function ($m, $update, $st) {
+        $m->onHook(Persistence\Query::HOOK_AFTER_UPDATE, static function ($m, $update, $st) {
             // we can use afterUpdate to make sure that record was updated
 
             if (!$st->rowCount()) {
@@ -346,11 +346,11 @@ class RandomTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
 
         // caption is not set, so generate it from class name Model
-        $this->assertSame('Phlex Data Model', $m->getModelCaption());
+        $this->assertSame('Phlex Data Model', $m->getCaption());
 
         // caption is set
         $m->caption = 'test';
-        $this->assertSame('test', $m->getModelCaption());
+        $this->assertSame('test', $m->getCaption());
     }
 
     public function testGetTitle()

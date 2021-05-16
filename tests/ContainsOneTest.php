@@ -27,8 +27,8 @@ class ContainsOneTest extends Sql\TestCase
         parent::setUp();
 
         // populate database for our models
-        $this->getMigrator(new Country($this->db))->dropIfExists()->create();
-        $this->getMigrator(new Invoice($this->db))->dropIfExists()->create();
+        $this->createMigrator(new Country($this->db))->dropIfExists()->create();
+        $this->createMigrator(new Invoice($this->db))->dropIfExists()->create();
 
         // fill in some default values
         $m = new Country($this->db);
@@ -67,8 +67,8 @@ class ContainsOneTest extends Sql\TestCase
 
         // test caption of containsOne reference
         $this->assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
-        $this->assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getModelCaption());
-        $this->assertSame('Secret Code', $a->door_code->getModelCaption());
+        $this->assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getCaption());
+        $this->assertSame('Secret Code', $a->door_code->getCaption());
     }
 
     /**

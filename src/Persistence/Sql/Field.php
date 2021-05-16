@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Expressionable;
 use Phlex\Data\Exception;
+use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 /**
  * @property Persistence\Sql\Join $join
  */
-class Field extends \Phlex\Data\Model\Field implements Expressionable
+class Field extends Model\Field implements Expressionable
 {
     /**
      * SQL fields are allowed to have expressions inside of them.
@@ -33,23 +33,23 @@ class Field extends \Phlex\Data\Model\Field implements Expressionable
      * When field is used as expression, this method will be called.
      * Universal way to convert ourselves to expression. Off-load implementation into persistence.
      */
-    public function getDsqlExpression(Expression $expression): Expression
+    public function toSqlExpression(): Expression
     {
         $model = $this->getOwner();
 
-        if (!$model->persistence || !$model->persistence instanceof \Phlex\Data\Persistence\Sql) {
+        if (!$model->persistence || !$model->persistence instanceof Persistence\Sql) {
             throw (new Exception('Field must have SQL persistence if it is used as part of expression'))
                 ->addMoreInfo('persistence', $model->persistence ?? null);
         }
 
-        if (isset($model->persistence_data['use_table_prefixes'])) {
+        if ($model->getOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX)) {
             $template = '{{}}.{}';
             $args = [
                 $this->getTablePrefix(),
                 $this->getPersistenceName(),
             ];
         } else {
-            // references set flag use_table_prefixes, so no need to check them here
+            // references set flag OPTION_USE_TABLE_PREFIX, so no need to check them here
             $template = '{}';
             $args = [
                 $this->getPersistenceName(),
@@ -62,7 +62,7 @@ class Field extends \Phlex\Data\Model\Field implements Expressionable
         }
 
         // Otherwise call method from expression
-        return $expression->expr($template, $args);
+        return $model->persistence->expr($template, $args);
     }
 
     protected function getTablePrefix(): string

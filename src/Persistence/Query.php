@@ -11,16 +11,26 @@ use Phlex\Data\Persistence;
 
 abstract class Query implements \IteratorAggregate
 {
+    /** @const string */
+    public const HOOK_INIT_SELECT = self::class . '@initSelect';
+    /** @const string */
+    public const HOOK_BEFORE_INSERT = self::class . '@beforeInsert';
+    /** @const string */
+    public const HOOK_AFTER_INSERT = self::class . '@afterInsert';
+    /** @const string */
+    public const HOOK_BEFORE_UPDATE = self::class . '@beforeUpdate';
+    /** @const string */
+    public const HOOK_AFTER_UPDATE = self::class . '@afterUpdate';
+    /** @const string */
+    public const HOOK_BEFORE_DELETE = self::class . '@beforeDelete';
+
     public const MODE_SELECT = 'select';
     public const MODE_UPDATE = 'update';
     public const MODE_INSERT = 'insert';
     public const MODE_DELETE = 'delete';
 
-    /** @var Model */
+    /** @var Model|null */
     protected $model;
-
-    /** @var Persistence */
-    protected $persistence;
 
     /** @var Model\Scope */
     protected $scope;
@@ -34,7 +44,7 @@ abstract class Query implements \IteratorAggregate
     /** @var string */
     protected $mode;
 
-    public function __construct(Model $model, Persistence $persistence = null)
+    public function __construct(Model $model)
     {
         $this->model = $model;
 
@@ -43,8 +53,11 @@ abstract class Query implements \IteratorAggregate
         $this->order = $model->order;
 
         $this->limit = $model->limit;
+    }
 
-        $this->persistence = $persistence ?? $model->persistence;
+    public function getPersistence(): ?Persistence
+    {
+        return $this->model->persistence;
     }
 
     public function find($id): ?array
@@ -159,7 +172,7 @@ abstract class Query implements \IteratorAggregate
         $this->initOrder();
         $this->initField(...func_get_args());
 
-        if ($this->model->loaded()) {
+        if ($this->model && $this->model->loaded()) {
             $this->whereId($this->model->getId());
         }
 
@@ -170,7 +183,10 @@ abstract class Query implements \IteratorAggregate
 
     abstract protected function initField($fieldName, string $alias = null): void;
 
-    protected function withMode(): self
+    /**
+     * @return static
+     */
+    protected function withMode()
     {
         if (!$this->mode) {
             $this->select();
@@ -215,14 +231,14 @@ abstract class Query implements \IteratorAggregate
 
     public function whereId($id): self
     {
-        if (!$this->model->primaryKey) {
+        if (!$this->model || !$this->model->primaryKey) {
             throw (new Exception('Unable to find record by "id" when Model::primaryKey is not defined.'))
                 ->addMoreInfo('id', $id);
         }
 
-        $idField = $this->model->getField($this->model->primaryKey);
+        $primaryKeyField = $this->model->getPrimaryKeyField();
 
-        return $this->where($idField, $idField->normalize($id));
+        return $this->where($primaryKeyField, $primaryKeyField->normalize($id));
     }
 
     abstract protected function initWhere(): void;
@@ -298,7 +314,7 @@ abstract class Query implements \IteratorAggregate
      */
     protected function hookOnModel(string $stage, array $args = []): void
     {
-        $hookSpotConst = get_class($this->persistence) . '::' . strtoupper('HOOK_' . $stage . '_' . $this->getMode() . '_QUERY');
+        $hookSpotConst = static::class . '::' . strtoupper('HOOK_' . $stage . '_' . $this->getMode());
         if (defined($hookSpotConst)) {
             $this->model->hook(constant($hookSpotConst), $args);
         }
@@ -358,7 +374,7 @@ abstract class Query implements \IteratorAggregate
         return $this->execute()->iterateAssociative();
     }
 
-    public function getModel(): Model
+    public function getModel(): ?Model
     {
         return $this->model;
     }

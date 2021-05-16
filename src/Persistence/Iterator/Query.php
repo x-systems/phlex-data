@@ -13,7 +13,7 @@ use Phlex\Data\Persistence;
 /**
  * Class to perform queries on Array_ persistence.
  *
- * @property \Phlex\Data\Persistence\Array_ $persistence
+ * @method Persistence\Array_ getPersistence()
  */
 class Query extends Persistence\Query
 {
@@ -29,11 +29,11 @@ class Query extends Persistence\Query
      */
     protected $fx;
 
-    public function __construct(Model $model, Persistence $persistence = null)
+    public function __construct(Model $model)
     {
-        parent::__construct($model, $persistence);
+        parent::__construct($model);
 
-        $this->iterator = $this->persistence->getRawDataIterator($model);
+        $this->iterator = $this->getPersistence()->getRawDataIterator($model);
 
         $this->fx = function (\Iterator $iterator) {
             return new Query\Result($iterator);
@@ -60,7 +60,7 @@ class Query extends Persistence\Query
     protected function initInsert(array $data): void
     {
         $this->fx = function (\Iterator $iterator) use ($data) {
-            $this->persistence->setRawData($this->model, $data, $data[$this->model->primaryKey] ?? null);
+            $this->getPersistence()->setRawData($this->model, $data, $data[$this->model->primaryKey] ?? null);
 
             return new Query\Result(null, 1);
         };
@@ -72,7 +72,7 @@ class Query extends Persistence\Query
             $rowsCount = 0;
 
             foreach ($iterator as $id => $row) {
-                $this->persistence->setRawData($this->model, array_merge($row, $data), $data[$this->model->primaryKey] ?? $id);
+                $this->getPersistence()->setRawData($this->model, array_merge($row, $data), $data[$this->model->primaryKey] ?? $id);
 
                 ++$rowsCount;
             }
@@ -86,7 +86,7 @@ class Query extends Persistence\Query
         $this->fx = function (\Iterator $iterator) {
             $rowsCount = 0;
             foreach ($iterator as $id => $row) {
-                $this->persistence->unsetRawData($this->model->table, $id);
+                $this->getPersistence()->unsetRawData($this->model->table, $id);
 
                 ++$rowsCount;
             }
@@ -156,7 +156,7 @@ class Query extends Persistence\Query
         }
 
         // get first record
-        if ($row = $this->persistence->query($this->model)->select([$fieldName])->getRow()) {
+        if ($row = $this->getPersistence()->query($this->model)->select([$fieldName])->getRow()) {
             if ($alias && array_key_exists($fieldName, $row)) {
                 $row[$alias] = $row[$fieldName];
                 unset($row[$fieldName]);

@@ -112,13 +112,6 @@ class Array_ extends Persistence
 
         $model = parent::add($model, $defaults);
 
-        if ($model->primaryKey && $model->hasField($model->primaryKey)) {
-            $f = $model->getPrimaryKeyField();
-            if (!$f->type) {
-                $f->type = 'integer';
-            }
-        }
-
         // if there is no model table specified, then create fake one named 'data'
         // and put all persistence data in there
         if (!$model->table) {
@@ -182,6 +175,6 @@ class Array_ extends Persistence
 
     public function query(Model $model): Persistence\Query
     {
-        return new Array_\Query($model, $this);
+        return new Array_\Query($model);
     }
 }

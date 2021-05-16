@@ -17,19 +17,6 @@ abstract class Persistence
     use \Phlex\Core\NameTrait;
 
     /** @const string */
-    public const HOOK_INIT_SELECT_QUERY = self::class . '@initSelect';
-    /** @const string */
-    public const HOOK_BEFORE_INSERT_QUERY = self::class . '@beforeInsert';
-    /** @const string */
-    public const HOOK_AFTER_INSERT_QUERY = self::class . '@afterInsert';
-    /** @const string */
-    public const HOOK_BEFORE_UPDATE_QUERY = self::class . '@beforeUpdate';
-    /** @const string */
-    public const HOOK_AFTER_UPDATE_QUERY = self::class . '@afterUpdate';
-    /** @const string */
-    public const HOOK_BEFORE_DELETE_QUERY = self::class . '@beforeDelete';
-
-    /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
 
     /** @const string */
@@ -37,24 +24,45 @@ abstract class Persistence
     /** @const string */
     public const ID_LOAD_ANY = self::class . '@idLoadAny';
 
+    /**
+     * Stores object custom codec resolution array.
+     *
+     * @var array
+     */
     protected $codecs = [];
 
+    /**
+     * Stores class default codec resolution array.
+     *
+     * @var array
+     */
     protected static $defaultCodecs = [
         [Persistence\Codec::class],
     ];
 
-    public static function getDefaultCodecs()
+    /**
+     * Retrieve the default codecs for the persistence class.
+     */
+    public static function getDefaultCodecs(): array
     {
         $parentClass = get_parent_class(static::class);
 
         return static::$defaultCodecs + ($parentClass ? $parentClass::getDefaultCodecs() : []);
     }
 
-    public function getCodecs()
+    /**
+     * Retrieve the active codecs for the persistence object.
+     */
+    public function getCodecs(): array
     {
         return (array) $this->codecs + $this->getDefaultCodecs();
     }
 
+    /**
+     * Add custom codecs to Persistence.
+     *
+     * @return static
+     */
     public function setCodecs(array $codecs)
     {
         $this->codecs = $codecs;
@@ -65,26 +73,25 @@ abstract class Persistence
     /**
      * Associate model with the data driver.
      */
-    public function add(Model $m, array $defaults = []): Model
+    public function add(Model $model, array $defaults = []): Model
     {
-        $m = Factory::factory($m, $defaults);
+        $model = Factory::factory($model, $defaults);
 
-        if ($m->persistence) {
-            if ($m->persistence === $this) {
-                return $m;
+        if ($model->persistence) {
+            if ($model->persistence === $this) {
+                return $model;
             }
 
             throw new Exception('Model is already related to another persistence');
         }
 
-        $m->persistence = $this;
-        $m->persistence_data = [];
-        $this->initPersistence($m);
-        $m = $this->_add($m);
+        $model->persistence = $this;
+        $this->initPersistence($model);
+        $model = $this->_add($model);
 
-        $this->hook(self::HOOK_AFTER_ADD, [$m]);
+        $this->hook(self::HOOK_AFTER_ADD, [$model]);
 
-        return $m;
+        return $model;
     }
 
     /**
@@ -92,7 +99,7 @@ abstract class Persistence
      * you can define additional methods or store additional data. This method
      * is executed before Model::doInitialize().
      */
-    protected function initPersistence(Model $m)
+    protected function initPersistence(Model $model)
     {
     }
 
@@ -165,7 +172,7 @@ abstract class Persistence
     {
         $data = $this->typecastSaveRow($model, $data);
 
-        $model->onHook(self::HOOK_AFTER_UPDATE_QUERY, function (Model $model, Persistence\Query $query, $result) use ($data) {
+        $model->onHook(Persistence\Query::HOOK_AFTER_UPDATE, function (Model $model, Persistence\Query $query, $result) use ($data) {
             if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->dirty[$model->primaryKey]) {
                 // ID was changed
                 $model->id = $data[$model->primaryKey];

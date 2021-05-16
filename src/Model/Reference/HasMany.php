@@ -6,6 +6,7 @@ namespace Phlex\Data\Model\Reference;
 
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 /**
  * Reference\HasMany class.
@@ -54,9 +55,7 @@ class HasMany extends Model\Reference
      */
     protected function referenceOurValue(): Model\Field
     {
-        $ourModel = $this->getOurModel();
-
-        $ourModel->persistence_data['use_table_prefixes'] = true;
+        $this->getOurModel()->setOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX);
 
         return $this->getOurField();
     }
@@ -66,8 +65,6 @@ class HasMany extends Model\Reference
      */
     public function ref(array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
-
         return $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
             $this->getOurValue()
@@ -79,8 +76,6 @@ class HasMany extends Model\Reference
      */
     public function refLink(array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
-
         $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
             $this->getTheirFieldName(),
             $this->referenceOurValue()
@@ -107,7 +102,7 @@ class HasMany extends Model\Reference
         $field = $alias ?? $fieldName;
 
         if (isset($defaults['concat'])) {
-            $defaults['aggregate'] = $this->getOurModel()->dsql()->groupConcat($field, $defaults['concat']);
+            $defaults['aggregate'] = Persistence\Sql\Expression::groupConcat($field, $defaults['concat']);
             $defaults['read_only'] = false;
             $defaults['never_save'] = true;
         }

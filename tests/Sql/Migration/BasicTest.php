@@ -27,7 +27,7 @@ class BasicTest extends \Phlex\Data\Tests\Sql\TestCase
     {
         $this->migrate('user');
 
-        $this->getMigrator()->table('user')->drop();
+        $this->createMigrator()->table('user')->drop();
     }
 
     protected function migrate($tableName)

@@ -39,11 +39,11 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
 
         // reset DB autoincrement to 1, tests rely on it
         if ($this->getDatabasePlatform() instanceof MySQLPlatform) {
-            $this->db->connection->expr('SET @@auto_increment_offset=1, @@auto_increment_increment=1')->execute();
+            $this->db->execute('SET @@auto_increment_offset=1, @@auto_increment_increment=1');
         }
 
         if ($this->debug) {
-            $this->db->connection->connection()->getConfiguration()->setSQLLogger(
+            $this->db->getConnection()->getConfiguration()->setSQLLogger(
                 new class($this) implements SQLLogger {
                     /** @var TestCase */
                     public $testCase;
@@ -77,12 +77,12 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
 
     protected function getDatabasePlatform(): AbstractPlatform
     {
-        return $this->db->connection->getDatabasePlatform();
+        return $this->db->getConnection()->getDatabasePlatform();
     }
 
-    protected function getSchemaManager(): AbstractSchemaManager
+    protected function createSchemaManager(): AbstractSchemaManager
     {
-        return $this->db->connection->connection()->getSchemaManager();
+        return $this->db->getConnection()->createSchemaManager();
     }
 
     private function convertSqlFromSqlite(string $sql): string
@@ -106,7 +106,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame($this->convertSqlFromSqlite($expectedSqliteSql), $actualSql, $message);
     }
 
-    public function getMigrator(Model $model = null): Persistence\Sql\Migration
+    public function createMigrator(Model $model = null): Persistence\Sql\Migration
     {
         return new Persistence\Sql\Migration($model ?: $this->db);
     }
@@ -119,7 +119,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
     {
         // we can not use SchemaManager::dropTable directly because of
         // our custom Oracle sequence for PK/AI
-        $this->getMigrator()->table($tableName)->dropIfExists();
+        $this->createMigrator()->table($tableName)->dropIfExists();
     }
 
     /**
@@ -156,30 +156,6 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                 }
 
                 $model->migrate();
-
-//                 $migrator = $this->getMigrator()->table($tableName);
-
-//                 $migrator->id('id');
-
-//                 foreach ($first_row as $field => $row) {
-//                     if ($field === 'id') {
-//                         continue;
-//                     }
-
-//                     if (is_int($row)) {
-//                         $fieldType = 'integer';
-//                     } elseif (is_float($row)) {
-//                         $fieldType = 'float';
-//                     } elseif ($row instanceof \DateTimeInterface) {
-//                         $fieldType = 'datetime';
-//                     } else {
-//                         $fieldType = 'string';
-//                     }
-
-//                     $migrator->field($field, ['type' => $fieldType]);
-//                 }
-
-//                 $migrator->create();
             }
 
             // import data
@@ -187,19 +163,20 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                 $hasId = (bool) key($data);
 
                 foreach ($data as $id => $row) {
-                    $query = $this->db->dsql();
                     if ($id === '_') {
                         continue;
                     }
 
-                    $query->table($tableName);
-                    $query->set($row);
+                    $query = $this->db->statement()
+                        ->insert()
+                        ->table($tableName)
+                        ->set($row);
 
                     if (!isset($row['id']) && $hasId) {
                         $query->set('id', $id);
                     }
 
-                    $query->insert();
+                    $query->execute();
                 }
             }
         }
@@ -219,13 +196,19 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
         foreach ($tableNames as $table) {
             $data2 = [];
 
-            $s = $this->db->dsql();
-            $data = $s->table($table)->getRows();
+            $data = $this->db->statement()->table($table)->execute()->fetchAllAssociative();
 
             foreach ($data as &$row) {
-                foreach ($row as &$val) {
-                    if (is_int($val)) { // @phpstan-ignore-line
-                        $val = (int) $val;
+                foreach ($row as &$v) {
+                    if (is_int($v) || is_float($v)) {
+                        $v = (string) $v;
+                    } elseif (is_bool($v)) {
+                        $v = $v ? '1' : '0';
+                    }
+
+                    if (is_resource($v) && get_resource_type($v) === 'stream'
+                        && $this->db->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\OraclePlatform) {
+                        $v = stream_get_contents($v);
                     }
                 }
 

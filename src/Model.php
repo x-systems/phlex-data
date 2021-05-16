@@ -12,6 +12,7 @@ use Phlex\Core\Factory;
 use Phlex\Core\HookTrait;
 use Phlex\Core\InitializerTrait;
 use Phlex\Core\ReadableCaptionTrait;
+use Phlex\Data\Persistence\Sql;
 
 /**
  * Data model class.
@@ -35,6 +36,7 @@ class Model implements \IteratorAggregate
     use InitializerTrait;
     use Model\AggregatesTrait;
     use Model\JoinsTrait;
+    use Model\OptionsTrait;
     use Model\ReferencesTrait;
     use Model\UserActionsTrait;
     use ReadableCaptionTrait;
@@ -146,14 +148,6 @@ class Model implements \IteratorAggregate
      * @var Persistence|Persistence\Sql|null
      */
     public $persistence;
-
-    /**
-     * Persistence store some custom information in here that may be useful
-     * for them. The key is the name of persistence driver.
-     *
-     * @var array
-     */
-    public $persistence_data = [];
 
     /** @var Model\Scope\RootScope */
     protected $scope;
@@ -380,7 +374,7 @@ class Model implements \IteratorAggregate
             'modifier' => Model\UserAction::MODIFIER_CREATE,
             'appliesTo' => Model\UserAction::APPLIES_TO_NO_RECORDS,
             'callback' => 'save',
-            'description' => 'Add ' . $this->getModelCaption(),
+            'description' => 'Add ' . $this->getCaption(),
         ]);
 
         $this->addUserAction('edit', [
@@ -726,7 +720,7 @@ class Model implements \IteratorAggregate
         $currentValue = array_key_exists($fieldName, $this->data)
             ? $this->data[$fieldName]
             : (array_key_exists($fieldName, $this->dirty) ? $this->dirty[$fieldName] : $field->default);
-        if (!$value instanceof \Atk4\Dsql\Expression && $field->compare($value, $currentValue)) {
+        if (!$value instanceof Sql\Expressionable && $field->compare($value, $currentValue)) {
             return $this;
         }
 
@@ -875,7 +869,7 @@ class Model implements \IteratorAggregate
      * Return (possibly localized) $model->caption.
      * If caption is not set, then generate it from model class name.
      */
-    public function getModelCaption(): string
+    public function getCaption(): string
     {
         return $this->caption ?: $this->readableCaption(
             (new \ReflectionClass(static::class))->isAnonymous() ? get_parent_class(static::class) : static::class
@@ -1803,7 +1797,7 @@ class Model implements \IteratorAggregate
     /**
      * Add expression field.
      *
-     * @param string|array|\Atk4\Dsql\Expression|\Closure $expression
+     * @param string|array|Sql\Expressionable|\Closure $expression
      *
      * @return Model\Field\Callback
      */

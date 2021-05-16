@@ -4,238 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1b12b837785b7e1ffd9307e2f865dda3",
+    "content-hash": "5dc7525f373f6d911d44988b05a49efa",
     "packages": [
-        {
-            "name": "atk4/core",
-            "version": "dev-develop",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/atk4/core.git",
-                "reference": "3387ec149250c59d506cabff46820811adc90a99"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/atk4/core/zipball/3387ec149250c59d506cabff46820811adc90a99",
-                "reference": "3387ec149250c59d506cabff46820811adc90a99",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "mahalux/atk4-hintable": "^1.2",
-                "php": ">=7.3.0",
-                "psr/log": "~1.0",
-                "symfony/polyfill-php74": "^1.17",
-                "symfony/polyfill-php80": "^1.17",
-                "symfony/polyfill-php81": "^1.22",
-                "symfony/yaml": "^3.4 || ^4.4 || ^5.1"
-            },
-            "require-dev": {
-                "atk4/data": "dev-develop",
-                "ergebnis/composer-normalize": "^2.13",
-                "friendsofphp/php-cs-fixer": "^2.17",
-                "johnkary/phpunit-speedtrap": "^3.2",
-                "phpstan/phpstan": "^0.12.58",
-                "phpunit/phpunit": ">=9.1",
-                "symfony/contracts": ">=1.1"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Atk4\\Core\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Romans Malinovskis",
-                    "email": "romans@agiletoolkit.org",
-                    "homepage": "https://nearly.guru/"
-                },
-                {
-                    "name": "Imants Horsts",
-                    "homepage": "https://darkside.lv/"
-                },
-                {
-                    "name": "Francesco Danti",
-                    "homepage": "https://oracoltech.com/"
-                },
-                {
-                    "name": "Michael Voříšek",
-                    "homepage": "https://mvorisek.cz/"
-                }
-            ],
-            "description": "Agile Core - collection of PHP Traits for designing object-oriented frameworks",
-            "homepage": "https://github.com/atk4/core",
-            "keywords": [
-                "Agile Toolkit",
-                "framework",
-                "php",
-                "traits"
-            ],
-            "support": {
-                "issues": "https://github.com/atk4/core/issues",
-                "source": "https://github.com/atk4/core/tree/develop"
-            },
-            "time": "2021-05-01T12:55:34+00:00"
-        },
-        {
-            "name": "atk4/data",
-            "version": "dev-develop",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/atk4/data.git",
-                "reference": "50c6361a4e98fb4531c5becf65cbf0b30f9f2487"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/atk4/data/zipball/50c6361a4e98fb4531c5becf65cbf0b30f9f2487",
-                "reference": "50c6361a4e98fb4531c5becf65cbf0b30f9f2487",
-                "shasum": ""
-            },
-            "require": {
-                "atk4/dsql": "dev-develop",
-                "ext-intl": "*",
-                "mahalux/atk4-hintable": "~1.2.1",
-                "php": ">=7.3.0"
-            },
-            "conflict": {
-                "atk4/schema": "*"
-            },
-            "require-dev": {
-                "ergebnis/composer-normalize": "^2.13",
-                "friendsofphp/php-cs-fixer": "^2.17",
-                "johnkary/phpunit-speedtrap": "^3.2",
-                "phpstan/phpstan": "^0.12.82",
-                "phpunit/phpcov": "*",
-                "phpunit/phpunit": ">=9.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Atk4\\Data\\": "src/",
-                    "Atk4\\Schema\\": "src-schema/"
-                },
-                "files": [
-                    "bootstrap-atk-types.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Romans Malinovskis",
-                    "email": "romans@agiletoolkit.org",
-                    "homepage": "https://nearly.guru/"
-                },
-                {
-                    "name": "Imants Horsts",
-                    "homepage": "https://darkside.lv/"
-                },
-                {
-                    "name": "Michael Voříšek",
-                    "homepage": "https://mvorisek.cz/"
-                }
-            ],
-            "description": "Agile Data - Database access abstraction framework",
-            "homepage": "https://github.com/atk4/data",
-            "keywords": [
-                "Active Record",
-                "builder",
-                "framework",
-                "mongodb",
-                "mysql",
-                "nosql",
-                "oracle",
-                "orm",
-                "postgresql",
-                "query",
-                "sql"
-            ],
-            "support": {
-                "issues": "https://github.com/atk4/data/issues",
-                "source": "https://github.com/atk4/data/tree/develop"
-            },
-            "time": "2021-04-29T08:28:10+00:00"
-        },
-        {
-            "name": "atk4/dsql",
-            "version": "dev-develop",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/atk4/dsql.git",
-                "reference": "d4cc87e246f4b8b5ed7cba4f25d8be3b0a1e2c0f"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/atk4/dsql/zipball/d4cc87e246f4b8b5ed7cba4f25d8be3b0a1e2c0f",
-                "reference": "d4cc87e246f4b8b5ed7cba4f25d8be3b0a1e2c0f",
-                "shasum": ""
-            },
-            "require": {
-                "atk4/core": "dev-develop",
-                "doctrine/dbal": "^2.10 || ^3.0",
-                "ext-pdo": "*",
-                "php": ">=7.3.0"
-            },
-            "require-dev": {
-                "ergebnis/composer-normalize": "^2.13",
-                "friendsofphp/php-cs-fixer": "^2.17",
-                "johnkary/phpunit-speedtrap": "^3.2",
-                "phpstan/phpstan": "^0.12.58",
-                "phpunit/phpcov": "*",
-                "phpunit/phpunit": ">=9.1"
-            },
-            "suggest": {
-                "jdorn/sql-formatter": "*"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Atk4\\Dsql\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Romans Malinovskis",
-                    "email": "romans@agiletoolkit.org",
-                    "homepage": "https://nearly.guru/"
-                },
-                {
-                    "name": "Imants Horsts",
-                    "homepage": "https://darkside.lv/"
-                },
-                {
-                    "name": "Michael Voříšek",
-                    "homepage": "https://mvorisek.cz/"
-                }
-            ],
-            "description": "Dynamic SQL Builder in PHP",
-            "homepage": "http://agiletoolkit.org/",
-            "keywords": [
-                "builder",
-                "framework",
-                "orm",
-                "sql"
-            ],
-            "support": {
-                "issues": "https://github.com/atk4/dsql/issues",
-                "source": "https://github.com/atk4/dsql/tree/develop"
-            },
-            "time": "2021-05-04T09:35:37+00:00"
-        },
         {
             "name": "composer/package-versions-deprecated",
             "version": "1.11.99.1",
@@ -965,54 +735,6 @@
             "time": "2021-05-10T13:42:57+00:00"
         },
         {
-            "name": "mahalux/atk4-hintable",
-            "version": "1.2.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mvorisek/atk4-hintable-mirror.git",
-                "reference": "ff9fb1502d6b95d8fccf920a26ab47981f1e5782"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/mvorisek/atk4-hintable-mirror/zipball/ff9fb1502d6b95d8fccf920a26ab47981f1e5782",
-                "reference": "ff9fb1502d6b95d8fccf920a26ab47981f1e5782",
-                "shasum": ""
-            },
-            "require": {
-                "atk4/data": "^2.4 || dev-develop",
-                "php": ">=7.3"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.16",
-                "johnkary/phpunit-speedtrap": "^3.2",
-                "phpstan/phpstan": "^0.12.82",
-                "phpunit/phpunit": "^9.3"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Mvorisek\\Atk4\\Hintable\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "proprietary"
-            ],
-            "authors": [
-                {
-                    "name": "Michael Voříšek",
-                    "email": "mvorisek@mvorisek.cz"
-                }
-            ],
-            "description": "Hintable extension for atk4 libraries",
-            "homepage": "https://www.mahalux.com/",
-            "support": {
-                "issues": "https://github.com/mvorisek/atk4-hintable-mirror/issues",
-                "source": "https://github.com/mvorisek/atk4-hintable-mirror/tree/1.2.1"
-            },
-            "time": "2021-04-15T15:10:36+00:00"
-        },
-        {
             "name": "nesbot/carbon",
             "version": "2.48.0",
             "source": {
@@ -1644,82 +1366,6 @@
             "time": "2021-01-07T16:49:33+00:00"
         },
         {
-            "name": "symfony/polyfill-php81",
-            "version": "v1.22.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/polyfill-php81.git",
-                "reference": "00dedc6d362a1b863dda3f8243516da9fdfbe657"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php81/zipball/00dedc6d362a1b863dda3f8243516da9fdfbe657",
-                "reference": "00dedc6d362a1b863dda3f8243516da9fdfbe657",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.1"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "1.22-dev"
-                },
-                "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Php81\\": ""
-                },
-                "files": [
-                    "bootstrap.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony polyfill backporting some PHP 8.1+ features to lower PHP versions",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "compatibility",
-                "polyfill",
-                "portable",
-                "shim"
-            ],
-            "support": {
-                "source": "https://github.com/symfony/polyfill-php81/tree/v1.22.1"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2021-01-07T16:49:33+00:00"
-        },
-        {
             "name": "symfony/translation",
             "version": "v5.2.7",
             "source": {
@@ -2206,16 +1852,16 @@
         },
         {
             "name": "composer/xdebug-handler",
-            "version": "2.0.0",
+            "version": "2.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/xdebug-handler.git",
-                "reference": "31d57697eb1971712a08031cfaff5a846d10bdf5"
+                "reference": "964adcdd3a28bf9ed5d9ac6450064e0d71ed7496"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/31d57697eb1971712a08031cfaff5a846d10bdf5",
-                "reference": "31d57697eb1971712a08031cfaff5a846d10bdf5",
+                "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/964adcdd3a28bf9ed5d9ac6450064e0d71ed7496",
+                "reference": "964adcdd3a28bf9ed5d9ac6450064e0d71ed7496",
                 "shasum": ""
             },
             "require": {
@@ -2250,7 +1896,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/xdebug-handler/issues",
-                "source": "https://github.com/composer/xdebug-handler/tree/2.0.0"
+                "source": "https://github.com/composer/xdebug-handler/tree/2.0.1"
             },
             "funding": [
                 {
@@ -2266,7 +1912,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-04-09T19:40:06+00:00"
+            "time": "2021-05-05T19:37:51+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -3155,16 +2801,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "0.12.85",
+            "version": "0.12.86",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "20e6333c0067875ad7697cd8acdf245c6ef69d03"
+                "reference": "a84fdc53ecca7643dbc89ef8880d8b393a6c155a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/20e6333c0067875ad7697cd8acdf245c6ef69d03",
-                "reference": "20e6333c0067875ad7697cd8acdf245c6ef69d03",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/a84fdc53ecca7643dbc89ef8880d8b393a6c155a",
+                "reference": "a84fdc53ecca7643dbc89ef8880d8b393a6c155a",
                 "shasum": ""
             },
             "require": {
@@ -3195,7 +2841,7 @@
             "description": "PHPStan - PHP Static Analysis Tool",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/0.12.85"
+                "source": "https://github.com/phpstan/phpstan/tree/0.12.86"
             },
             "funding": [
                 {
@@ -3211,7 +2857,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-04-27T14:13:16+00:00"
+            "time": "2021-05-08T11:29:01+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -5949,7 +5595,6 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "atk4/dsql": 20,
         "x-systems/phlex-core": 20
     },
     "prefer-stable": true,

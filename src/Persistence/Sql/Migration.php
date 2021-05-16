@@ -4,31 +4,26 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
-use Atk4\Dsql\Connection;
-use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Schema\Column;
-use Doctrine\DBAL\Schema\Table;
+use Doctrine\DBAL;
 use Phlex\Core\DiContainerTrait;
-use Phlex\Core\Exception;
+use Phlex\Data\Exception;
 use Phlex\Data\Model;
-use Phlex\Data\Model\Field;
 use Phlex\Data\Persistence;
 
 class Migration
 {
     use DiContainerTrait;
 
-    /** @var Connection */
-    public $connection;
+    /** @var Persistence\Sql */
+    public $persistence;
 
-    /** @var Table */
+    /** @var DBAL\Schema\Table */
     public $table;
 
     /**
      * Create new migration.
      *
-     * @param Connection|Persistence|Model $source
+     * @param DBAL\Connection|Persistence|Model $source
      */
     public function __construct($source = null)
     {
@@ -39,12 +34,10 @@ class Migration
 
     protected function setSource($source)
     {
-        if ($source instanceof Connection) {
-            $this->connection = $source;
-        } elseif ($source instanceof Persistence\Sql) {
-            $this->connection = $source->connection;
+        if ($source instanceof Persistence\Sql) {
+            $this->persistence = $source;
         } elseif ($source instanceof Model && $source->persistence instanceof Persistence\Sql) {
-            $this->connection = $source->persistence->connection;
+            $this->persistence = $source->persistence;
         } else {
             throw (new Exception('Source is specified incorrectly. Must be Connection, Persistence or initialized Model'))
                 ->addMoreInfo('source', $source);
@@ -55,19 +48,19 @@ class Migration
         }
     }
 
-    public function getDatabasePlatform(): AbstractPlatform
+    public function getDatabasePlatform(): DBAL\Platforms\AbstractPlatform
     {
-        return $this->connection->getDatabasePlatform();
+        return $this->persistence->connection->getDatabasePlatform();
     }
 
-    public function getSchemaManager(): AbstractSchemaManager
+    public function getSchemaManager(): DBAL\Schema\AbstractSchemaManager
     {
-        return $this->connection->connection()->getSchemaManager();
+        return $this->persistence->connection->getSchemaManager();
     }
 
     public function table($tableName): self
     {
-        $this->table = new Table($this->getDatabasePlatform()->quoteSingleIdentifier($tableName));
+        $this->table = new DBAL\Schema\Table($this->getDatabasePlatform()->quoteSingleIdentifier($tableName));
 
         return $this;
     }
@@ -90,7 +83,7 @@ class Migration
     {
         try {
             $this->drop();
-        } catch (\Doctrine\DBAL\Exception $e) {
+        } catch (DBAL\Exception $e) {
         }
 
         return $this;
@@ -111,12 +104,18 @@ class Migration
         return $model;
     }
 
-    public function addColumn(Model\Field $field): Column
+    public function addColumn(Model\Field $field): DBAL\Schema\Column
     {
-        return $field->getPersistenceCodec()->migrate($this); // @phpstan-ignore-line
+        $codec = $field->getPersistenceCodec();
+
+        if (!$codec instanceof Persistence\Sql\Codec) {
+            throw new Exception('Only fields with Persistence\Sql\Codec can be migrated to Persistence\Sql');
+        }
+
+        return $codec->migrate($this);
     }
 
-    protected function getReferenceField(Field $field): ?Field
+    protected function getReferenceField(Model\Field $field): ?Model\Field
     {
         $reference = $field->getReference();
         if ($reference instanceof Model\Reference\HasOne) {
@@ -129,7 +128,7 @@ class Migration
             $modelSeed = is_array($reference->model)
                 ? $reference->model
                 : [get_class($reference->model)];
-            $referenceModel = Model::fromSeed($modelSeed, [Persistence\Sql::createFromConnection($this->connection)]);
+            $referenceModel = Model::fromSeed($modelSeed, [Persistence\Sql::createFromConnection($this->persistence->connection)]);
 
             return $referenceModel->getField($referenceField);
         }

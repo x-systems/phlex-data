@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql\Field;
 
-use Atk4\Dsql\Expression as SqlExpression;
-use Atk4\Dsql\Expressionable;
 use Phlex\Core\InitializerTrait;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence\Sql;
 
-class Expression extends \Phlex\Data\Persistence\Sql\Field
+class Expression extends Sql\Field
 {
     use InitializerTrait;
 
     /**
      * Used expression.
      *
-     * @var \Closure|string|SqlExpression
+     * @var \Closure|string|Sql\Expression
      */
     public $expr;
 
@@ -80,27 +79,20 @@ class Expression extends \Phlex\Data\Persistence\Sql\Field
     /**
      * When field is used as expression, this method will be called.
      */
-    public function getDsqlExpression(SqlExpression $expression): SqlExpression
+    public function toSqlExpression(): Sql\Expression
     {
         $expr = $this->expr;
         if ($expr instanceof \Closure) {
-            $expr = $expr($this->getOwner(), $expression);
-        }
-
-        if ($expr instanceof Expressionable) {
-            $expr = $expr->getDsqlExpression($expression);
+            $expr = $expr($this->getOwner());
         }
 
         if (is_string($expr)) {
             // If our Model has expr() method (inherited from Persistence\Sql) then use it
             if ($this->getOwner()->hasMethod('expr')) {
-                return $this->getOwner()->expr('([])', [$this->getOwner()->expr($expr)]);
+                $expr = $this->getOwner()->expr($expr);
             }
-
-            // Otherwise call it from expression itself
-            return $expression->expr('([])', [$expression->expr($expr)]);
         }
 
-        return $expr;
+        return $expr->toSqlExpression()->consumedInParentheses();
     }
 }

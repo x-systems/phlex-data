@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
-use Atk4\Dsql\Expression;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
@@ -13,13 +12,13 @@ use Phlex\Data\Persistence;
  *
  * @property Persistence\Sql $persistence
  */
-class Join extends Model\Join implements \Atk4\Dsql\Expressionable
+class Join extends Model\Join implements Expressionable
 {
     /**
      * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
      *
-     * @var \Atk4\Dsql\Expression|string|null
+     * @var Expression|string|null
      */
     protected $on;
 
@@ -31,7 +30,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
         return '_' . ($this->foreign_alias ?: $this->foreign_table[0]);
     }
 
-    public function getDsqlExpression(Expression $expr): Expression
+    public function toSqlExpression(): Expression
     {
         /*
         // If our Model has expr() method (inherited from Persistence\Sql) then use it
@@ -44,7 +43,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
         */
 
         // Romans: Join\Sql shouldn't even be called if expr is undefined. I think we should leave it here to produce error.
-        return $this->getOwner()->expr('{}.{}', [$this->foreign_alias, $this->foreign_field]);
+        return new Expression('{}.{}', [$this->foreign_alias, $this->foreign_field]);
     }
 
     /**
@@ -54,7 +53,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
     {
         parent::doInitialize();
 
-        $this->getOwner()->persistence_data['use_table_prefixes'] = true;
+        $this->getOwner()->setOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX);
 
         // If kind is not specified, figure out join type
         if (!isset($this->kind)) {
@@ -66,7 +65,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
             $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
         }
 
-        $this->onHookShortToOwner(Persistence\Sql::HOOK_INIT_SELECT_QUERY, \Closure::fromCallable([$this, 'initSelectQuery']));
+        $this->onHookShortToOwner(Persistence\Query::HOOK_INIT_SELECT, \Closure::fromCallable([$this, 'initSelectQuery']));
 
         // Add necessary hooks
         if ($this->reverse) {
@@ -100,11 +99,11 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
     /**
      * Returns DSQL query.
      */
-    public function dsql(): \Atk4\Dsql\Query
+    public function statement(): Persistence\Sql\Statement
     {
-        $dsql = $this->getOwner()->persistence->query($this->getOwner())->dsql();
+        $statement = $this->getOwner()->persistence->query($this->getOwner())->getStatement(); // @phpstan-ignore-line
 
-        return $dsql->reset('table')->table($this->foreign_table, $this->foreign_alias);
+        return $statement->reset('table')->table($this->foreign_table, $this->foreign_alias);
     }
 
     /**
@@ -114,9 +113,9 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
     {
         // if ON is set, we don't have to worry about anything
         if ($this->on) {
-            $query->dsql()->join(
+            $query->getStatement()->join(
                 $this->foreign_table,
-                $this->on instanceof \Atk4\Dsql\Expression ? $this->on : $this->getOwner()->expr($this->on),
+                $this->on instanceof Expressionable ? $this->on : $this->getOwner()->expr($this->on),
                 $this->kind,
                 $this->foreign_alias
             );
@@ -124,7 +123,7 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
             return;
         }
 
-        $query->dsql()->join(
+        $query->getStatement()->join(
             $this->foreign_table,
             $this->getOwner()->expr('{{}}.{} = {}', [
                 ($this->foreign_alias ?: $this->foreign_table),
@@ -178,12 +177,15 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
             return;
         }
 
-        $query = $this->dsql();
-        $query->mode('insert');
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+        $query = $this->statement()
+            ->insert()
+            ->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+
         $this->save_buffer = [];
-        $query->set($this->foreign_field, null);
-        $query->insert();
+        $query
+            ->set($this->foreign_field, null)
+            ->execute();
+
         $this->id = $model->persistence->lastInsertId($model);
 
         if ($this->hasJoin()) {
@@ -206,11 +208,16 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
 
         $model = $this->getOwner();
 
-        $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+        $query = $this->statement()
+            ->insert()
+            ->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+
         $this->save_buffer = [];
-        $query->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id);
-        $query->insert();
+
+        $query
+            ->set($this->foreign_field, $this->hasJoin() ? $this->getJoin()->id : $id)
+            ->execute();
+
         $this->id = $model->persistence->lastInsertId($model);
     }
 
@@ -228,13 +235,17 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
         }
 
         $model = $this->getOwner();
-        $query = $this->dsql();
-        $query->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+        $query = $this->statement()
+            ->update()
+            ->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+
         $this->save_buffer = [];
 
         $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
 
-        $query->where($this->foreign_field, $id)->update();
+        $query
+            ->where($this->foreign_field, $id)
+            ->execute();
     }
 
     /**
@@ -249,9 +260,9 @@ class Join extends Model\Join implements \Atk4\Dsql\Expressionable
         }
 
         $model = $this->getOwner();
-        $query = $this->dsql();
+
         $id = $this->reverse ? $model->getId() : $model->get($this->master_field);
 
-        $query->where($this->foreign_field, $id)->delete();
+        $this->statement()->delete()->where($this->foreign_field, $id)->execute();
     }
 }

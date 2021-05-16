@@ -28,8 +28,8 @@ class ContainsManyTest extends Sql\TestCase
         parent::setUp();
 
         // populate database for our models
-        $this->getMigrator(new VatRate($this->db))->dropIfExists()->create();
-        $this->getMigrator(new Invoice($this->db))->dropIfExists()->create();
+        $this->createMigrator(new VatRate($this->db))->dropIfExists()->create();
+        $this->createMigrator(new Invoice($this->db))->dropIfExists()->create();
 
         // fill in some default values
         $m = new VatRate($this->db);
@@ -70,8 +70,8 @@ class ContainsManyTest extends Sql\TestCase
 
         // test caption of containsMany reference
         $this->assertSame('My Invoice Lines', $i->getField($i->fieldName()->lines)->getCaption());
-        $this->assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getModelCaption());
-        $this->assertSame('My Invoice Lines', $i->lines->getModelCaption());
+        $this->assertSame('My Invoice Lines', $i->refModel($i->fieldName()->lines)->getCaption());
+        $this->assertSame('My Invoice Lines', $i->lines->getCaption());
     }
 
     /**

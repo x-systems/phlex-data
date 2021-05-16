@@ -4,39 +4,36 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
-use Atk4\Dsql\Expression;
-use Atk4\Dsql\Expressionable;
-use Atk4\Dsql\Query as DsqlQuery;
-use Doctrine\DBAL\Result;
+use Doctrine\DBAL;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
 /**
  * Class to perform queries on Sql persistence.
- * Utilizes Atk4\Dsql\Query to perform the operations.
  *
- * @property Persistence\Sql $persistence
- *
- * @method DsqlQuery getDebugQuery()
- * @method DsqlQuery render()
- * @method DsqlQuery mode()
- * @method DsqlQuery reset()
- * @method DsqlQuery join()
+ * @method Persistence\Sql getPersistence()
+ * @method Statement       getDebugQuery()
+ * @method Statement       mode()
+ * @method Statement       reset()
+ * @method Statement       join()
  */
 class Query extends Persistence\Query implements Expressionable
 {
-    /** @var DsqlQuery */
-    protected $dsql;
+    public const MODE_REPLACE = 'replace';
+    public const MODE_TRUNCATE = 'truncate';
 
-    public function __construct(Model $model, Persistence\Sql $persistence = null)
+    /** @var Statement */
+    protected $statement;
+
+    public function __construct(Model $model)
     {
-        parent::__construct($model, $persistence);
+        parent::__construct($model);
 
-        $this->dsql = $model->persistence_data['dsql'] = $this->persistence->dsql();
+        $this->statement = $this->getPersistence()->statement();
 
         if ($model->table) {
-            $this->dsql->table($model->table, $model->table_alias ?? null);
+            $this->statement->table($model->table, $model->table_alias ?? null);
         }
 
         $this->addWithCursors();
@@ -62,16 +59,16 @@ class Query extends Persistence\Query implements Expressionable
             }
             // 2nd parameter here strictly define which fields should be selected
             // as result system fields will not be added if they are not requested
-            $subQuery = $withModel->toQuery()->select($fieldsFrom)->dsql();
+            $subQuery = $withModel->toQuery()->select($fieldsFrom)->getStatement();
 
             // add With cursor
-            $this->dsql->with($subQuery, $alias, $fieldsTo ?: null, $recursive);
+            $this->statement->with($subQuery, $alias, $fieldsTo ?: null, $recursive);
         }
     }
 
     protected function initSelect($fields = null): void
     {
-        $this->dsql->reset('field');
+        $this->statement->reset('field');
 
         // do nothing on purpose
         if ($fields === false) {
@@ -119,36 +116,36 @@ class Query extends Persistence\Query implements Expressionable
 
     protected function addField(Model\Field $field): void
     {
-        $this->dsql->field($field, $field->useAlias() ? $field->short_name : null);
+        $this->statement->field($field, $field->useAlias() ? $field->short_name : null);
     }
 
     protected function initInsert(array $data): void
     {
         if ($data) {
-            $this->dsql->mode('insert')->set($data);
+            $this->statement->mode('insert')->set($data);
         }
     }
 
     protected function initUpdate(array $data): void
     {
         if ($data) {
-            $this->dsql->mode('update')->set($data);
+            $this->statement->mode('update')->set($data);
         }
     }
 
     protected function initDelete(): void
     {
-        $this->dsql->mode('delete');
+        $this->statement->mode('delete');
     }
 
     protected function initExists(): void
     {
-        $this->dsql = $this->dsql->exists();
+        $this->statement = $this->statement->exists();
     }
 
     protected function initCount($alias = null): void
     {
-        $this->dsql->reset('field')->field('count(*)', $alias);
+        $this->statement->reset('field')->field(new Expression('count(*)'), $alias);
     }
 
     protected function initAggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): void
@@ -161,7 +158,7 @@ class Query extends Persistence\Query implements Expressionable
             $alias = $functionName . '_' . $field->short_name;
         }
 
-        $this->dsql->reset('field')->field($this->dsql->expr($expr, [$field]), $alias);
+        $this->statement->reset('field')->field(new Expression($expr, [$field]), $alias);
     }
 
     protected function initField($fieldName, string $alias = null): void
@@ -176,78 +173,73 @@ class Query extends Persistence\Query implements Expressionable
             $alias = $field->short_name;
         }
 
-        $this->dsql->reset('field')->field($field, $alias);
+        $this->statement->reset('field')->field($field, $alias);
     }
 
     protected function initOrder(): void
     {
-        $this->dsql->reset('order');
+        $this->statement->reset('order');
 
         foreach ((array) $this->order as [$field, $desc]) {
             if (is_string($field)) {
                 $field = $this->model->getField($field);
             }
 
-            if (!$field instanceof Expression && !$field instanceof Expressionable) {
+            if (!$field instanceof Expressionable) {
                 throw (new Exception('Unsupported order parameter'))
                     ->addMoreInfo('model', $this->model)
                     ->addMoreInfo('field', $field);
             }
 
-            $this->dsql->order($field, $desc);
+            $this->statement->order($field, $desc);
         }
     }
 
     protected function initLimit(): void
     {
-        $this->dsql->reset('limit');
+        $this->statement->reset('limit');
 
         if ($args = $this->getLimitArgs()) {
-            $this->dsql->limit(...$args);
+            $this->statement->limit(...$args);
         }
     }
 
-    protected function doExecute(): Result
+    protected function doExecute(): DBAL\Result
     {
-        return $this->dsql->execute();
+        return $this->getPersistence()->execute($this);
     }
 
     public function doGetRows(): array
     {
-        return $this->dsql->getRows();
+        return $this->execute()->fetchAllAssociative();
     }
 
     protected function doGetRow(): ?array
     {
-        return $this->dsql->getRow();
+        return $this->execute()->fetchAssociative() ?: null;
     }
 
     protected function doGetOne()
     {
-        return $this->dsql->getOne();
+        return $this->execute()->fetchOne();
     }
 
-    public function getDsqlExpression(Expression $expression): Expression
+    public function toSqlExpression(): Expression
     {
-        return $this->dsql;
+        return $this->statement->toSqlExpression();
     }
 
-    /**
-     * Return the underlying Dsql object performing the query to DB.
-     *
-     * @return \Atk4\Dsql\Query
-     */
-    public function dsql()
+    public function getStatement(): Statement
     {
-        return $this->dsql;
+        return $this->statement;
     }
 
     protected function initWhere(): void
     {
-        $this->fillWhere($this->dsql, $this->scope);
+        $this->fillWhere($this->statement, $this->scope);
     }
 
-    protected static function fillWhere(DsqlQuery $query, Model\Scope\AbstractScope $condition)
+    protected static function fillWhere(Expression $statement, Model\Scope\AbstractScope $condition)
     {
         if (!$condition->isEmpty()) {
             // peel off the single nested scopes to convert (((field = value))) to field = value
@@ -255,31 +247,36 @@ class Query extends Persistence\Query implements Expressionable
 
             // simple condition
             if ($condition instanceof Model\Scope\Condition) {
-                $query->where(...$condition->toQueryArguments());
+                $statement->where(...$condition->toQueryArguments()); // @phpstan-ignore-line
             }
 
             // nested conditions
             if ($condition instanceof Model\Scope) {
-                $expression = $condition->isOr() ? $query->orExpr() : $query->andExpr();
+                $expression = $condition->isOr() ? $statement->or() : $statement->and();
 
                 foreach ($condition->getNestedConditions() as $nestedCondition) {
                     self::fillWhere($expression, $nestedCondition);
                 }
 
-                $query->where($expression);
+                $statement->where($expression); // @phpstan-ignore-line
             }
         }
+    }
+
+    public function render(): string
+    {
+        return $this->withMode()->getStatement()->render();
     }
 
     public function getDebug(): array
     {
         return array_merge([
-            'sql' => $this->dsql->getDebugQuery(),
+            'sql' => $this->statement->getDebugQueryFormatted(),
         ], parent::getDebug());
     }
 
     public function __call($method, $args)
     {
-        return $this->dsql->{$method}(...$args);
+        return $this->statement->{$method}(...$args);
     }
 }

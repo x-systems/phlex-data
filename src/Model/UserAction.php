@@ -183,7 +183,7 @@ class UserAction
             return call_user_func($this->description, $this);
         }
 
-        return $this->description ?? $this->getCaption() . ' ' . $this->getOwner()->getModelCaption();
+        return $this->description ?? $this->getCaption() . ' ' . $this->getOwner()->getCaption();
     }
 
     /**

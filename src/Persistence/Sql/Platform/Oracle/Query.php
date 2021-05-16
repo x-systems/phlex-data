@@ -16,7 +16,7 @@ class Query extends Persistence\Sql\Query
     public function doGetRows(): array
     {
         return array_map(function ($row) {
-            unset($row['__dsql_rownum']);
+            unset($row['__phlex_rownum']);
 
             return $row;
         }, parent::doGetRows());
@@ -27,7 +27,7 @@ class Query extends Persistence\Sql\Query
         $row = parent::doGetRow();
 
         if ($row !== null) {
-            unset($row['__dsql_rownum']);
+            unset($row['__phlex_rownum']);
         }
 
         return $row;
@@ -35,8 +35,10 @@ class Query extends Persistence\Sql\Query
 
     public function getIterator(): \Traversable
     {
-        foreach (parent::getIterator() as $row) {
-            unset($row['__dsql_rownum']);
+        foreach ($this->execute()->iterateAssociative() as $row) {
+            if ($row !== null) {
+                unset($row['__phlex_rownum']);
+            }
 
             yield $row;
         }

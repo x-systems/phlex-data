@@ -7,9 +7,6 @@ namespace Phlex\Data\Tests\Sql\Expression;
 use Phlex\Core\PHPUnit;
 use Phlex\Data\Persistence\Sql;
 
-/**
- * @coversDefaultClass \Atk4\Dsql\Query
- */
 class RandomTest extends PHPUnit\TestCase
 {
     public function q(...$args)

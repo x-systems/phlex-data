@@ -9,8 +9,8 @@ use Phlex\Data\Model;
 /**
  * DoorCode model.
  *
- * @property string    $code       @Atk\Field()
- * @property \DateTime $valid_till @Atk\Field()
+ * @property string    $code       @Phlex\Field()
+ * @property \DateTime $valid_till @Phlex\Field()
  */
 class DoorCode extends Model
 {

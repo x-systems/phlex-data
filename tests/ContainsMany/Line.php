@@ -9,13 +9,13 @@ use Phlex\Data\Model;
 /**
  * Invoice lines model.
  *
- * @property VatRate   $vat_rate_id       @Atk\RefOne()
- * @property float     $price             @Atk\Field()
- * @property float     $qty               @Atk\Field()
- * @property \DateTime $add_date          @Atk\Field()
- * @property string    $total_gross       @Atk\Field()
- * @property Discount  $discounts         @Atk\RefOne()
- * @property float     $discounts_percent @Atk\Field()
+ * @property VatRate   $vat_rate_id       @Phlex\RefOne()
+ * @property float     $price             @Phlex\Field()
+ * @property float     $qty               @Phlex\Field()
+ * @property \DateTime $add_date          @Phlex\Field()
+ * @property string    $total_gross       @Phlex\Field()
+ * @property Discount  $discounts         @Phlex\RefOne()
+ * @property float     $discounts_percent @Phlex\Field()
  */
 class Line extends Model
 {

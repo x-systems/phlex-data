@@ -15,7 +15,7 @@ use Phlex\Data\Model;
  *   1. Define model field no later than in Model::doInitialize() like:
  *      <code>$m->addField('firstName');</code>
  *   2. Annotate model property in class phpdoc like:
- *      <code>@property string $firstName @Atk\Field()</code>
+ *      <code>@property string $firstName @Phlex\Field()</code>
  *      - use "field_name" parameter to change the target field name, by default mapped to the same name
  *      - use "visibility" parameter to limit the visibility, valid values are:
  *        - "public"        = default, no access restrictions

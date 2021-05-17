@@ -9,8 +9,8 @@ use Phlex\Data\Model;
 /**
  * VAT rate model.
  *
- * @property string $name @Atk\Field()
- * @property int    $rate @Atk\Field()
+ * @property string $name @Phlex\Field()
+ * @property int    $rate @Phlex\Field()
  */
 class VatRate extends Model
 {

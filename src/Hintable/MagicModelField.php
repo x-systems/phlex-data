@@ -6,7 +6,7 @@ namespace Phlex\Data\Hintable;
 
 use Phlex\Core\Hintable\MagicAbstract;
 use Phlex\Data\Exception;
-use Phlex\Data\Model;
+use Phlex\Data\Model; // import for phpstan
 
 /**
  * @template TTargetClass of object

@@ -17,7 +17,7 @@ use Phlex\Data\Persistence\Sql;
 /**
  * Data model class.
  *
- * @property int                 $id       @Atk\Field(visibility="protected_set") Contains ID of the current record.
+ * @property int                 $id       @Phlex\Field(visibility="protected_set") Contains ID of the current record.
  *                                         If the value is null then the record is considered to be new.
  * @property Field[]|Reference[] $elements
  *

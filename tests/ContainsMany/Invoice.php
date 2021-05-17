@@ -9,11 +9,11 @@ use Phlex\Data\Model;
 /**
  * Invoice model.
  *
- * @property string $ref_no              @Atk\Field()
- * @property float  $amount              @Atk\Field()
- * @property Line   $lines               @Atk\RefOne()
- * @property string $total_gross         @Atk\Field()
- * @property float  $discounts_total_sum @Atk\Field()
+ * @property string $ref_no              @Phlex\Field()
+ * @property float  $amount              @Phlex\Field()
+ * @property Line   $lines               @Phlex\RefOne()
+ * @property string $total_gross         @Phlex\Field()
+ * @property float  $discounts_total_sum @Phlex\Field()
  */
 class Invoice extends Model
 {

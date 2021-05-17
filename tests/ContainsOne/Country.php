@@ -9,7 +9,7 @@ use Phlex\Data\Model;
 /**
  * Country model.
  *
- * @property string $name @Atk\Field()
+ * @property string $name @Phlex\Field()
  */
 class Country extends Model
 {

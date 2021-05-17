@@ -9,8 +9,8 @@ use Phlex\Data\Model;
 /**
  * Each line can have multiple discounts.
  *
- * @property int       $percent    @Atk\Field()
- * @property \DateTime $valid_till @Atk\Field()
+ * @property int       $percent    @Phlex\Field()
+ * @property \DateTime $valid_till @Phlex\Field()
  */
 class Discount extends Model
 {

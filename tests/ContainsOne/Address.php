@@ -9,11 +9,11 @@ use Phlex\Data\Model;
 /**
  * Address model.
  *
- * @property Country   $country_id @Atk\RefOne()
- * @property string    $address    @Atk\Field()
- * @property \DateTime $built_date @Atk\Field()
- * @property string[]  $tags       @Atk\Field()
- * @property DoorCode  $door_code  @Atk\RefOne()
+ * @property Country   $country_id @Phlex\RefOne()
+ * @property string    $address    @Phlex\Field()
+ * @property \DateTime $built_date @Phlex\Field()
+ * @property string[]  $tags       @Phlex\Field()
+ * @property DoorCode  $door_code  @Phlex\RefOne()
  */
 class Address extends Model
 {

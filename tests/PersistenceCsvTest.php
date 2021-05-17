@@ -8,9 +8,6 @@ use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 use Phlex\Data\Tests\Model\Person;
 
-/**
- * @coversDefaultClass \Atk4\Data\Model
- */
 class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
 {
     /** @var \SplFileObject */
@@ -68,9 +65,6 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         return $data;
     }
 
-    /**
-     * Test constructor.
-     */
     public function testTestcase()
     {
         $data = [
@@ -169,9 +163,6 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         );
     }
 
-    /**
-     * Test export.
-     */
     public function testExport()
     {
         $data = [

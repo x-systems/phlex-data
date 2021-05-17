@@ -40,4 +40,12 @@ trait AggregatesTrait
     {
         return $this->toQuery()->aggregate('min', $field)->getOne();
     }
+
+    /**
+     * Get the number of records.
+     */
+    public function getCount()
+    {
+        return $this->toQuery()->count()->getOne();
+    }
 }

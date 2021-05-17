@@ -375,13 +375,13 @@ class ConditionSqlTest extends Sql\TestCase
             ['name', 'Peter'],
         ));
 
-        $this->assertEquals(2, $u->toQuery()->count()->getOne());
+        $this->assertEquals(2, $u->getCount());
 
         $u->addCondition(Model\Scope::createOr(
             ['name', 'Peter'],
             ['name', 'Joe'],
         ));
-        $this->assertEquals(1, $u->toQuery()->count()->getOne());
+        $this->assertEquals(1, $u->getCount());
     }
 
     /**

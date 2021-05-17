@@ -256,7 +256,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame(2, $m->toQuery()->count()->getOne());
+        $this->assertSame(2, $m->getCount());
     }
 
     /**
@@ -272,7 +272,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame(2, $m->toQuery()->count()->getOne());
+        $this->assertSame(2, $m->getCount());
 
         // use alias as array key if it is set
         $q = $m->toQuery()->field('name', 'first_name');
@@ -670,39 +670,39 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
             ['id' => 1, 'f1' => 'A'],
             ['id' => 2, 'f1' => 'B'],
         ]);
-        $this->assertSame(2, $m->toQuery()->count()->getOne());
+        $this->assertSame(2, $m->getCount());
 
         $m->import([
             ['f1' => 'C'],
             ['f1' => 'D'],
         ]);
-        $this->assertSame(4, $m->toQuery()->count()->getOne());
+        $this->assertSame(4, $m->getCount());
 
         $m->import([
             ['id' => 6, 'f1' => 'E'],
             ['id' => 7, 'f1' => 'F'],
         ]);
-        $this->assertSame(6, $m->toQuery()->count()->getOne());
+        $this->assertSame(6, $m->getCount());
 
         $m->delete(6);
-        $this->assertSame(5, $m->toQuery()->count()->getOne());
+        $this->assertSame(5, $m->getCount());
 
         $m->import([
             ['f1' => 'G'],
             ['f1' => 'H'],
         ]);
-        $this->assertSame(7, $m->toQuery()->count()->getOne());
+        $this->assertSame(7, $m->getCount());
 
         $m->import([
             ['id' => 99, 'f1' => 'I'],
             ['id' => 20, 'f1' => 'J'],
         ]);
-        $this->assertSame(9, $m->toQuery()->count()->getOne());
+        $this->assertSame(9, $m->getCount());
 
         $m->import([
             ['f1' => 'K'],
         ]);
-        $this->assertSame(10, $m->toQuery()->count()->getOne());
+        $this->assertSame(10, $m->getCount());
 
         $this->assertSame([
             1 => ['id' => 1, 'f1' => 'A'],
@@ -733,10 +733,10 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model($p);
         $m->addField('f1');
 
-        $this->assertSame(4, $m->toQuery()->count()->getOne());
+        $this->assertSame(4, $m->getCount());
 
         $m->setLimit(3);
-        $this->assertSame(3, $m->toQuery()->count()->getOne());
+        $this->assertSame(3, $m->getCount());
         $this->assertSame([
             ['id' => 0, 'f1' => 'A'],
             ['id' => 1, 'f1' => 'D'],
@@ -744,7 +744,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], array_values($m->export()));
 
         $m->setLimit(2, 1);
-        $this->assertSame(2, $m->toQuery()->count()->getOne());
+        $this->assertSame(2, $m->getCount());
         $this->assertSame([
             ['id' => 1, 'f1' => 'D'],
             ['id' => 2, 'f1' => 'E'],
@@ -753,7 +753,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         // well, this is strange, that you can actually change limit on-the-fly and then previous
         // limit is not taken into account, but most likely you will never set it multiple times
         $m->setLimit(3);
-        $this->assertSame(3, $m->toQuery()->count()->getOne());
+        $this->assertSame(3, $m->getCount());
     }
 
     /**
@@ -771,19 +771,19 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $this->assertSame(4, $m->toQuery()->count()->getOne());
+        $this->assertSame(4, $m->getCount());
         $this->assertSame(['data' => $dbData], $this->getInternalPersistenceData($p));
 
         $m->addCondition('name', 'Sarah');
-        $this->assertSame(3, $m->toQuery()->count()->getOne());
+        $this->assertSame(3, $m->getCount());
 
         $m->addCondition('surname', 'Smith');
-        $this->assertSame(1, $m->toQuery()->count()->getOne());
+        $this->assertSame(1, $m->getCount());
         $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->export());
         $this->assertSame([4 => ['id' => 4, 'name' => 'Sarah', 'surname' => 'Smith']], $m->toQuery()->select()->getRows());
 
         $m->addCondition('surname', 'Siiiith');
-        $this->assertSame(0, $m->toQuery()->count()->getOne());
+        $this->assertSame(0, $m->getCount());
     }
 
     public function testUnsupportedAggregate()
@@ -876,10 +876,10 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $user->hasOne('country_id', ['model' => $country]);
 
         $cc = (clone $country)->load(1);
-        $this->assertSame(2, $cc->ref('Users')->toQuery()->count()->getOne());
+        $this->assertSame(2, $cc->ref('Users')->getCount());
 
         $cc = (clone $country)->load(2);
-        $this->assertSame(1, $cc->ref('Users')->toQuery()->count()->getOne());
+        $this->assertSame(1, $cc->ref('Users')->getCount());
     }
 
     public function testLoadAnyThrowsExceptionOnRecordNotFound()

@@ -192,7 +192,7 @@ class ExpressionSqlTest extends Sql\TestCase
         $this->assertNull($m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
     }
 
-    public function testExpressionActionAlias()
+    public function testExpressionQueryAlias()
     {
         $m = new Model($this->db, ['table' => false]);
         $m->addExpression('x', '2+3');
@@ -205,7 +205,7 @@ class ExpressionSqlTest extends Sql\TestCase
         $q = $m->toQuery()->field('x');
         $this->assertEquals([0 => ['x' => 5]], $q->getRows());
 
-        // FX actions
+        // aggregates
         $q = $m->toQuery()->aggregate('sum', 'x', 'foo');
         $this->assertEquals([0 => ['foo' => 5]], $q->getRows());
 

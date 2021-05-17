@@ -79,7 +79,7 @@ class RandomTest extends Sql\TestCase
 
         $m = new Model_Rate($this->db);
 
-        $this->assertEquals(2, $m->toQuery()->count()->getOne());
+        $this->assertEquals(2, $m->getCount());
     }
 
     public function testTitleImport()
@@ -224,7 +224,7 @@ class RandomTest extends Sql\TestCase
             $m->load(2)->get()
         );
 
-        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->toQuery()->count()->getOne());
+        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->getCount());
         $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 

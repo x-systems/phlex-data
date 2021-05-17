@@ -90,7 +90,7 @@ jobs:
           - php: 'latest'
             type: 'PHPUnit Burn'
     env:
-      LOG_COVERAGE: "${{ fromJSON('{true: \"1\", false: \"\"}')[matrix.php == 'latest' && matrix.type == 'PHPUnit' && (github.event_name == 'pull_request' || (github.event_name == 'push' && endsWith(github.ref, '.x') ))] }}"
+      LOG_COVERAGE: "${{ fromJSON('{true: \"1\", false: \"\"}')[matrix.php == 'latest' && matrix.type == 'PHPUnit' && (github.event_name == 'pull_request' || (github.event_name == 'push' && && startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '.x') ))] }}"
     services:
       mysql:
         image: mysql:8

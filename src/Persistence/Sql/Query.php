@@ -247,11 +247,10 @@ class Query extends Persistence\Query implements Expressionable
 
             // simple condition
             if ($condition instanceof Model\Scope\Condition) {
-                $statement->where(...$condition->toQueryArguments()); // @phpstan-ignore-line
-            }
-
-            // nested conditions
-            if ($condition instanceof Model\Scope) {
+                if ($args = $condition->toQueryArguments()) {
+                    $statement->where(...$args); // @phpstan-ignore-line
+                }
+            } elseif ($condition instanceof Model\Scope) { // nested conditions
                 $expression = $condition->isOr() ? $statement->or() : $statement->and();
 
                 foreach ($condition->getNestedConditions() as $nestedCondition) {

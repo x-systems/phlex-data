@@ -1394,7 +1394,12 @@ class StatementTest extends PHPUnit\TestCase
                 ->or()
                 ->where('a', 1)
                 ->having('b', 1) // mixing does not matter as here having is an alias of where
-        )->render();
+        );
+
+        $this->assertSame(
+            'select sum(:a) "salary" from "employee" group by "type" having ("a" = :b or "b" = :c)',
+            $q->render()
+        );
     }
 
     public function testReset()

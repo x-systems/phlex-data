@@ -32,7 +32,7 @@ class Callback extends Model\Field
         $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, function () {
             $model = $this->getOwner();
 
-            $model->data[$this->short_name] = ($this->expr)($model);
+            $model->getDataRef()[$this->short_name] = ($this->expr)($model);
         });
     }
 }

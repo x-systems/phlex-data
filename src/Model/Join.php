@@ -403,7 +403,7 @@ class Join
     /**
      * Clears id and save buffer.
      */
-    protected function afterUnload()
+    protected function afterUnload(): void
     {
         $this->id = null;
         $this->save_buffer = [];

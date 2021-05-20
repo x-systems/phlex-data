@@ -10,7 +10,7 @@ use Phlex\Data\Model;
 /**
  * The root scope object used in the Model::$scope property
  * All other conditions of the Model object are elements of the root scope
- * Scope elements are joined only using AND junction.
+ * Scope elements are joined only using JUNCTION_AND.
  */
 class RootScope extends Model\Scope
 {
@@ -19,11 +19,13 @@ class RootScope extends Model\Scope
 
     protected function __construct(array $nestedConditions = [])
     {
-        parent::__construct($nestedConditions, self::AND);
+        parent::__construct($nestedConditions, self::JUNCTION_AND);
     }
 
     public function setModel(Model $model)
     {
+        $model->assertIsModel();
+
         if ($this->model !== $model) {
             $this->model = $model;
 

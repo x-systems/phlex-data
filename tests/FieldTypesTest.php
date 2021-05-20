@@ -37,6 +37,7 @@ class FieldTypesTest extends Sql\TestCase
     {
         $m = new Model($this->pers);
         $m->addField('email', ['type' => 'email']);
+        $m = $m->createEntity();
 
         // null value
         $m->set('email', null);
@@ -59,11 +60,12 @@ class FieldTypesTest extends Sql\TestCase
         $m->set('email', 'qq');
     }
 
-    public function testEmailMultipleValues()
+    public function testEmailMultipleValues(): void
     {
         $m = new Model($this->pers);
         $m->addField('email', ['type' => 'email']);
         $m->addField('emails', ['type' => ['email', 'allow_multiple' => true]]);
+        $m = $m->createEntity();
 
         $m->set('emails', 'bar@exampe.com, foo@example.com');
         $this->assertSame('bar@exampe.com, foo@example.com', $m->get('emails'));
@@ -73,10 +75,11 @@ class FieldTypesTest extends Sql\TestCase
         $m->set('email', 'bar@exampe.com, foo@example.com');
     }
 
-    public function testEmailValidateDns()
+    public function testEmailValidateDns(): void
     {
         $m = new Model($this->pers);
         $m->addField('email', ['type' => ['email', 'dns_check' => true]]);
+        $m = $m->createEntity();
 
         $m->set('email', ' foo@gmail.com');
 
@@ -85,7 +88,7 @@ class FieldTypesTest extends Sql\TestCase
         $m->set('email', ' foo@lrcanoetuhasnotdusantotehusontehuasntddaontehudnouhtd.com');
     }
 
-    public function testEmailWithName()
+    public function testEmailWithName(): void
     {
         $m = new Model($this->pers);
         $m->addField('email_name', ['type' => ['email', 'include_names' => true]]);
@@ -93,6 +96,7 @@ class FieldTypesTest extends Sql\TestCase
         $m->addField('email_idn', ['type' => ['email', 'dns_check' => true]]);
         $m->addField('email', ['type' => 'email']);
 
+        $m = $m->createEntity();
         $m->set('email_name', 'Romans <me@gmail.com>');
         $m->set('email_names', 'Romans1 <me1@gmail.com>, Romans2 <me2@gmail.com>; Romans Žlutý Kůň <me3@gmail.com>');
         $m->set('email_idn', 'test@háčkyčárky.cz'); // official IDN test domain

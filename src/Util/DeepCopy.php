@@ -185,7 +185,7 @@ class DeepCopy
             if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->getId()])) {
                 $this->debug('Skipping ' . get_class($source));
 
-                $destination->load($this->mapping[$source->table][$source->getId()]);
+                $destination = $destination->load($this->mapping[$source->table][$source->getId()]);
             } else {
                 $this->debug('Copying ' . get_class($source));
 
@@ -210,6 +210,7 @@ class DeepCopy
                 unset($data[$source->primaryKey]);
 
                 // Copy fields as they are
+                $destination = $destination->createEntity();
                 foreach ($data as $key => $val) {
                     if ($destination->hasField($key) && $destination->getField($key)->isEditable()) {
                         $destination->set($key, $val);

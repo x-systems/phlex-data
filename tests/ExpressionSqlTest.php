@@ -11,12 +11,12 @@ use Phlex\Data\Persistence\Sql\Expression;
 
 class ExpressionSqlTest extends Sql\TestCase
 {
-    public function testNakedExpression()
+    public function testNakedExpression(): void
     {
         $m = new Model($this->db, ['table' => false]);
         $m->addExpression('x', '2+3');
-        $m->tryLoadAny();
-        $this->assertEquals(5, $m->get('x'));
+
+        $this->assertEquals(5, $m->tryLoadAny()->get('x'));
     }
 
     public function testBasic()
@@ -38,11 +38,11 @@ class ExpressionSqlTest extends Sql\TestCase
             );
         }
 
-        $ii = (clone $i)->tryLoad(1);
+        $ii = $i->tryLoad(1);
         $this->assertEquals(10, $ii->get('total_net'));
         $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
-        $ii = (clone $i)->tryLoad(2);
+        $ii = $i->tryLoad(2);
         $this->assertEquals(20, $ii->get('total_net'));
         $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
@@ -55,11 +55,11 @@ class ExpressionSqlTest extends Sql\TestCase
             );
         }
 
-        $i->tryLoad(1);
+        $i = $i->tryLoad(1);
         $this->assertEquals(($i->get('total_net') + $i->get('total_vat')) * 2, $i->get('double_total_gross'));
     }
 
-    public function testBasicCallback()
+    public function testBasicCallback(): void
     {
         $this->setDb([
             'invoice' => [
@@ -80,16 +80,16 @@ class ExpressionSqlTest extends Sql\TestCase
             );
         }
 
-        $ii = (clone $i)->tryLoad(1);
+        $ii = $i->tryLoad(1);
         $this->assertEquals(10, $ii->get('total_net'));
         $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
 
-        $ii = (clone $i)->tryLoad(2);
+        $ii = $i->tryLoad(2);
         $this->assertEquals(20, $ii->get('total_net'));
         $this->assertEquals($ii->get('total_net') + $ii->get('total_vat'), $ii->get('total_gross'));
     }
 
-    public function testQuery()
+    public function testQuery(): void
     {
         $this->setDb([
             'invoice' => [
@@ -108,9 +108,9 @@ class ExpressionSqlTest extends Sql\TestCase
             );
         }
 
-        $i->tryLoad(1);
-        $this->assertEquals(10, $i->get('total_net'));
-        $this->assertEquals(30, $i->get('sum_net'));
+        $ii = $i->tryLoad(1);
+        $this->assertEquals(10, $ii->get('total_net'));
+        $this->assertEquals(30, $ii->get('sum_net'));
 
         $q = $this->db->statement()
             ->field($i->toQuery()->count(), 'total_orders')
@@ -122,7 +122,7 @@ class ExpressionSqlTest extends Sql\TestCase
         );
     }
 
-    public function testExpressions()
+    public function testExpressions(): void
     {
         $this->setDb([
             'user' => [
@@ -150,13 +150,13 @@ class ExpressionSqlTest extends Sql\TestCase
             );
         }
 
-        $m->tryLoad(1);
-        $this->assertNull($m->get('name'));
-        $m->tryLoad(2);
-        $this->assertSame('Sue', $m->get('name'));
+        $mm = $m->tryLoad(1);
+        $this->assertNull($mm->get('name'));
+        $mm = $m->tryLoad(2);
+        $this->assertSame('Sue', $mm->get('name'));
     }
 
-    public function testReloading()
+    public function testReloading(): void
     {
         $this->setDb($dbData = [
             'math' => [
@@ -169,13 +169,13 @@ class ExpressionSqlTest extends Sql\TestCase
 
         $m->addExpression('sum', '[a] + [b]');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertEquals(4, $mm->get('sum'));
 
         $mm->save(['a' => 3]);
         $this->assertEquals(5, $mm->get('sum'));
 
-        $this->assertEquals(9, $m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
+        $this->assertEquals(9, $m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
 
         $this->setDb($dbData);
         $m = new Model($this->db, ['table' => 'math', 'reload_after_save' => false]);
@@ -183,16 +183,16 @@ class ExpressionSqlTest extends Sql\TestCase
 
         $m->addExpression('sum', '[a] + [b]');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertEquals(4, $mm->get('sum'));
 
         $mm->save(['a' => 3]);
         $this->assertEquals(4, $mm->get('sum'));
 
-        $this->assertNull($m->unload()->save(['a' => 4, 'b' => 5])->get('sum'));
+        $this->assertNull($m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
     }
 
-    public function testExpressionQueryAlias()
+    public function testExpressionActionAlias(): void
     {
         $m = new Model($this->db, ['table' => false]);
         $m->addExpression('x', '2+3');
@@ -219,7 +219,7 @@ class ExpressionSqlTest extends Sql\TestCase
         $this->assertEquals([0 => ['sum_x' => 5]], $q->getRows());
     }
 
-    public function testNeverSaveNeverPersist()
+    public function testNeverSaveNeverPersist(): void
     {
         $this->setDb([
             'invoice' => [
@@ -235,18 +235,18 @@ class ExpressionSqlTest extends Sql\TestCase
         $i->addExpression('one_basic', [$i->expr('1'), 'type' => 'integer', 'system' => true]);
         $i->addExpression('one_never_save', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_save' => true]);
         $i->addExpression('one_never_persist', [$i->expr('1'), 'type' => 'integer', 'system' => true, 'never_persist' => true]);
-        $i->loadAny();
+        $ii = $i->loadAny();
 
         // normal fields
-        $this->assertSame(0, $i->get('zero_basic'));
-        $this->assertSame(1, $i->get('one_basic'));
+        $this->assertSame(0, $ii->get('zero_basic'));
+        $this->assertSame(1, $ii->get('one_basic'));
 
         // never_save - are loaded from DB, but not saved
-        $this->assertSame(0, $i->get('zero_never_save'));
-        $this->assertSame(1, $i->get('one_never_save'));
+        $this->assertSame(0, $ii->get('zero_never_save'));
+        $this->assertSame(1, $ii->get('one_never_save'));
 
         // never_persist - are not loaded from DB and not saved - as result expressions will not be executed
-        $this->assertNull($i->get('zero_never_persist'));
-        $this->assertNull($i->get('one_never_persist'));
+        $this->assertNull($ii->get('zero_never_persist'));
+        $this->assertNull($ii->get('one_never_persist'));
     }
 }

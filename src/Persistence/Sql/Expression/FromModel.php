@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Phlex\Data\Persistence\Sql\Expression;
 
 use Phlex\Data\Exception;
+use Phlex\Data\Model;
 use Phlex\Data\Persistence\Sql;
 
-class Condition extends Sql\Expression
+class FromModel extends Sql\Expression
 {
     public const JUNCTION_AND = ' and ';
     public const JUNCTION_OR = ' or ';
@@ -15,19 +16,19 @@ class Condition extends Sql\Expression
     protected $template = '[conditions]';
 
     /** @var string */
-    protected $junction = self::JUNCTION_AND;
+    protected $operator = self::OPERATOR_AND;
 
     /** @var array<array> */
     protected $conditions = [];
 
-    public function __construct(string $junction = self::JUNCTION_AND)
+    public function __construct($model, $properties = [], $arguments = null)
     {
-        if (!in_array($junction, [self::JUNCTION_AND, self::JUNCTION_OR], true)) {
-            throw (new Exception('Unsupported junction operator'))
-                ->addMoreInfo('junction', $junction);
+        if (!is_a($model, Model::class, true)) {
+            throw new Exception('Model should be instance of Phlex\Data\Model');
         }
 
-        $this->junction = $junction;
+        if (is_string($model)) {
+        }
     }
 
     public function where($field, $operator = null, $value = null)
@@ -186,7 +187,11 @@ class Condition extends Sql\Expression
 
         // special conditions (IS | IS NOT) if value is null
         if ($value === null) { // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
-            $operator = in_array($operator, ['!=', '<>', 'not', 'not in', 'is not'], true) ? 'is not' : 'is';
+            if (in_array($operator, ['=', 'is'], true)) {
+                $operator = 'is';
+            } elseif (in_array($operator, ['!=', '<>', 'not', 'is not'], true)) {
+                $operator = 'is not';
+            }
 
             return new Sql\Expression("{field} {$operator} null", compact('field'));
         }
@@ -198,13 +203,13 @@ class Condition extends Sql\Expression
 
         // special conditions (IN | NOT IN) if value is array
         if (is_array($value)) {
-            $operator = in_array($operator, ['!=', '<>', 'not', 'not in', 'is not'], true) ? 'not in' : 'in';
+            $operator = in_array($operator, ['!=', '<>', 'not', 'not in'], true) ? 'not in' : 'in';
 
             // special treatment of empty array condition
             if (empty($value)) {
                 return $operator === 'in' ?
-                    new Sql\Expression('1 = 0') : // never true
-                    new Sql\Expression('1 = 1'); // always true
+                new Sql\Expression('1 = 0') : // never true
+                new Sql\Expression('1 = 1'); // always true
             }
 
             $value = Sql\Expression::asParameterList($value)->consumedInParentheses();
@@ -216,7 +221,7 @@ class Condition extends Sql\Expression
     protected function _render_conditions()
     {
         if ($this->conditions) {
-            return Sql\Expression::asParameterList($this->getConditionExpressionsList(), $this->junction);
+            return Sql\Expression::asParameterList($this->getConditionExpressionsList(), $this->operator);
         }
     }
 }

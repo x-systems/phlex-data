@@ -42,7 +42,7 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         return $fileObject;
     }
 
-    protected function setDb($data): void
+    protected function setDb(array $data): void
     {
         $this->file->ftruncate(0);
         $this->file->fputcsv(array_keys(reset($data)));
@@ -65,7 +65,7 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         return $data;
     }
 
-    public function testTestcase()
+    public function testTestcase(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -77,7 +77,7 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame($data, $data2);
     }
 
-    public function testBaseData()
+    public function testBaseData(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -90,8 +90,10 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
+        $m = $m->loadAny();
 
-        $this->assertSame($data, $m->export(['name', 'surname']));
+        $this->assertSame('John', $m->get('name'));
+        $this->assertSame('Smith', $m->get('surname'));
     }
 
     public function testLoadAny()
@@ -107,13 +109,13 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m->loadAny();
 
+        $m = $m->loadAny();
         $this->assertSame('John', $m->get('name'));
         $this->assertSame('Smith', $m->get('surname'));
     }
 
-    public function testLoadAnyException()
+    public function testLoadAnyException(): void
     {
         $data = [
             ['name' => 'John', 'surname' => 'Smith'],
@@ -126,13 +128,13 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m->load(2);
+        $mm = $m->load(2);
 
-        $this->assertSame('Sarah', $m->get('name'));
-        $this->assertSame('Jones', $m->get('surname'));
+        $this->assertSame('Sarah', $mm->get('name'));
+        $this->assertSame('Jones', $mm->get('surname'));
 
-        $m->tryLoad(3);
-        $this->assertFalse($m->loaded());
+        $mm = $m->tryLoad(3);
+        $this->assertFalse($mm->isLoaded());
     }
 
     public function testPersistenceCopy()
@@ -152,7 +154,7 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         $m2 = $m->withPersistence($p2);
 
         foreach ($m as $row) {
-            (clone $m2)->save($row->get());
+            $m2->createEntity()->save($row->get());
         }
 
         $this->file->fseek(0);

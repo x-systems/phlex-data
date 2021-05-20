@@ -36,12 +36,12 @@ class ModelWithoutIdTest extends Sql\TestCase
      */
     public function testBasic()
     {
-        $this->m->tryLoadAny();
-        $this->assertSame('John', $this->m->get('name'));
+        $m = $this->m->tryLoadAny();
+        $this->assertSame('John', $m->get('name'));
 
         $this->m->setOrder('name', 'desc');
-        $this->m->tryLoadAny();
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->tryLoadAny();
+        $this->assertSame('Sue', $m->get('name'));
 
         $n = [];
         foreach ($this->m as $row) {
@@ -50,22 +50,23 @@ class ModelWithoutIdTest extends Sql\TestCase
         $this->assertSame(['Sue', 'John'], $n);
     }
 
-    public function testGetIdException()
+    public function testGetIdException(): void
     {
-        $this->m->loadAny();
+        $m = $this->m->loadAny();
         $this->expectException(Exception::class);
         $this->expectErrorMessage('ID field is not defined');
-        $this->m->dummy = $this->m->getId();
+        $m->getId();
     }
 
-    public function testSetIdException()
+    public function testSetIdException(): void
     {
+        $m = $this->m->createEntity();
         $this->expectException(Exception::class);
         $this->expectErrorMessage('ID field is not defined');
-        $this->m->setId(1);
+        $m->setId(1);
     }
 
-    public function testFail1()
+    public function testFail1(): void
     {
         $this->expectException(Exception::class);
         $this->m->load(1);
@@ -74,7 +75,7 @@ class ModelWithoutIdTest extends Sql\TestCase
     /**
      * Inserting into model without ID should be OK.
      */
-    public function testInsert()
+    public function testInsert(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
@@ -87,14 +88,14 @@ class ModelWithoutIdTest extends Sql\TestCase
     /**
      * Since no ID is set, a new record will be created if saving is attempted.
      */
-    public function testSave1()
+    public function testSave1(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform) {
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
-        $this->m->tryLoadAny();
-        $this->m->saveAndUnload();
+        $m = $this->m->tryLoadAny();
+        $m->saveAndUnload();
 
         $this->assertEquals(3, $this->m->getCount());
     }
@@ -108,8 +109,8 @@ class ModelWithoutIdTest extends Sql\TestCase
             $this->markTestIncomplete('PostgreSQL requires PK specified in SQL to use autoincrement');
         }
 
-        $this->m->tryLoadAny();
-        $this->m->save();
+        $m = $this->m->tryLoadAny();
+        $m->save();
 
         $this->assertEquals(3, $this->m->getCount());
     }
@@ -117,22 +118,23 @@ class ModelWithoutIdTest extends Sql\TestCase
     /**
      * Conditions should work fine.
      */
-    public function testLoadBy()
+    public function testLoadBy(): void
     {
-        $this->m->loadBy('name', 'Sue');
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->loadBy('name', 'Sue');
+        $this->assertSame('Sue', $m->get('name'));
     }
 
-    public function testLoadCondition()
+    public function testLoadCondition(): void
     {
         $this->m->addCondition('name', 'Sue');
-        $this->m->loadAny();
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->loadAny();
+        $this->assertSame('Sue', $m->get('name'));
     }
 
-    public function testFailDelete1()
+    public function testFailDelete1(): void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessageMatches('~Unable to find record~');
         $this->m->delete(4);
     }
 }

@@ -35,7 +35,24 @@ class MyDateTime extends \DateTime
 
 class TypecastingTest extends Sql\TestCase
 {
-    public function testType()
+    /** @var string */
+    private $defaultTzBackup;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->defaultTzBackup = date_default_timezone_get();
+    }
+
+    protected function tearDown(): void
+    {
+        date_default_timezone_set($this->defaultTzBackup);
+
+        parent::tearDown();
+    }
+
+    public function testType(): void
     {
         $dbData = [
             'types' => [
@@ -66,7 +83,7 @@ class TypecastingTest extends Sql\TestCase
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
         $m->addField('array', ['type' => 'array']);
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
 
         $this->assertSame('foo', $mm->get('string'));
         $this->assertTrue($mm->get('boolean'));
@@ -78,7 +95,7 @@ class TypecastingTest extends Sql\TestCase
         $this->assertSame([1, 2, 3], $mm->get('array'));
         $this->assertSame(8.202343, $mm->get('float'));
 
-        $m/*->duplicate()*/ ->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData = [
             'types' => [
@@ -118,7 +135,7 @@ class TypecastingTest extends Sql\TestCase
         $this->assertEquals($first, $duplicate);
     }
 
-    public function testEmptyValues()
+    public function testEmptyValues(): void
     {
         // Oracle always converts empty string to null
         // see https://stackoverflow.com/questions/13278773/null-vs-empty-string-in-oracle#13278879
@@ -158,7 +175,7 @@ class TypecastingTest extends Sql\TestCase
         $m->addField('float', ['type' => 'float']);
         $m->addField('array', ['type' => 'array']);
         $m->addField('object', ['type' => 'object']);
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
 
         // Only
         $this->assertSame($emptyStringValue, $mm->get('string'));
@@ -188,13 +205,13 @@ class TypecastingTest extends Sql\TestCase
         $this->assertNull($mm->get('array'));
         $this->assertNull($mm->get('object'));
         if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
-            $this->assertSame([], $mm->dirty);
+            $this->assertSame([], $mm->getDirtyRef());
         }
 
         $mm->save();
         $this->assertEquals($dbData, $this->getDb());
 
-        $m/*->duplicate()*/ ->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
 
         $dbData['types'][2] = [
             'id' => 2,
@@ -214,7 +231,7 @@ class TypecastingTest extends Sql\TestCase
         $this->assertEquals($dbData, $this->getDb());
     }
 
-    public function testTypecastNull()
+    public function testTypecastNull(): void
     {
         $dbData = [
             'test' => [
@@ -227,6 +244,7 @@ class TypecastingTest extends Sql\TestCase
         $m->addField('a');
         $m->addField('b');
         $m->addField('c');
+        $m = $m->createEntity();
 
         unset($row['id']);
         $m->setMulti($row);
@@ -237,7 +255,7 @@ class TypecastingTest extends Sql\TestCase
         $this->assertEquals($dbData, $this->getDb());
     }
 
-    public function testTypeCustom1()
+    public function testTypeCustom1(): void
     {
         $dbData = [
             'types' => [
@@ -271,7 +289,7 @@ class TypecastingTest extends Sql\TestCase
 
         $m->addField('rot13', ['type' => ['string', 'codec' => [Persistence\Sql\Codec\Dynamic::class, 'encodeFx' => $rot, 'decodeFx' => $rot]]]);
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
 
         $this->assertSame('hello world', $mm->get('rot13'));
         $this->assertSame(1, (int) $mm->getId());
@@ -280,7 +298,7 @@ class TypecastingTest extends Sql\TestCase
         $this->assertSame('2013-02-20', (string) $mm->get('date'));
         $this->assertSame('12:00:50.235689', (string) $mm->get('time'));
 
-        (clone $m)/*->duplicate()*/ ->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
+        $m->createEntity()->setMulti(array_diff_key($mm->get(), ['id' => true]))->save();
         $m->delete(1);
 
         unset($dbData['types'][0]);
@@ -290,7 +308,7 @@ class TypecastingTest extends Sql\TestCase
         $this->assertEquals($dbData, $this->getDb());
     }
 
-    public function testTryLoad()
+    public function testTryLoad(): void
     {
         $this->setDb([
             'types' => [
@@ -304,12 +322,12 @@ class TypecastingTest extends Sql\TestCase
 
         $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
-        $m->tryLoad(1);
+        $m = $m->tryLoad(1);
 
         $this->assertTrue($m->get('date') instanceof MyDate);
     }
 
-    public function testTryLoadAny()
+    public function testTryLoadAny(): void
     {
         $this->setDb([
             'types' => [
@@ -323,12 +341,12 @@ class TypecastingTest extends Sql\TestCase
 
         $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
-        $m->tryLoadAny();
+        $m = $m->tryLoadAny();
 
         $this->assertTrue($m->get('date') instanceof MyDate);
     }
 
-    public function testTryLoadBy()
+    public function testTryLoadBy(): void
     {
         $this->setDb([
             'types' => [
@@ -342,12 +360,12 @@ class TypecastingTest extends Sql\TestCase
 
         $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
-        $m->loadBy('id', 1);
+        $m = $m->loadBy('id', 1);
 
         $this->assertTrue($m->get('date') instanceof MyDate);
     }
 
-    public function testLoadBy()
+    public function testLoadBy(): void
     {
         $this->setDb([
             'types' => [
@@ -360,17 +378,17 @@ class TypecastingTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('date', ['type' => ['date', 'dateTimeClass' => MyDate::class]]);
 
-        $m->loadAny();
-        $this->assertTrue($m->loaded());
-        $d = $m->get('date');
-        $m->unload();
+        $m2 = $m->loadAny();
+        $this->assertTrue($m2->isLoaded());
+        $d = $m2->get('date');
+        $m2->unload();
 
-        $m->loadBy('date', $d);
-        $this->assertTrue($m->loaded());
-        $m->unload();
+        $m2 = $m->loadBy('date', $d);
+        $this->assertTrue($m2->isLoaded());
+        $m2->unload();
 
-        $m->addCondition('date', $d)->loadAny();
-        $this->assertTrue($m->loaded());
+        $m2 = $m->addCondition('date', $d)->loadAny();
+        $this->assertTrue($m2->isLoaded());
     }
 
     public function testTypecastTimezone()
@@ -424,13 +442,13 @@ class TypecastingTest extends Sql\TestCase
 
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
-        $m->loadAny();
+        $m = $m->loadAny();
 
         // must respect 'actual'
         $this->assertNotNull($m->get('ts'));
     }
 
-    public function testBadTimestamp()
+    public function testBadTimestamp(): void
     {
         $sql_time = '20blah16-10-25 11:44:08';
 
@@ -445,10 +463,10 @@ class TypecastingTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
         $this->expectException(Exception::class);
-        $m->loadAny();
+        $m = $m->loadAny();
     }
 
-    public function testDirtyTimestamp()
+    public function testDirtyTimestamp(): void
     {
         $sql_time = '2016-10-25 11:44:08';
 
@@ -462,13 +480,14 @@ class TypecastingTest extends Sql\TestCase
 
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'datetime']);
-        $m->loadAny();
+        $m = $m->loadAny();
+
         $m->set('ts', clone $m->get('ts'));
 
         $this->assertFalse($m->isDirty('ts'));
     }
 
-    public function testTimestampSave()
+    public function testTimestampSave(): void
     {
         $this->setDb([
             'types' => [
@@ -480,7 +499,7 @@ class TypecastingTest extends Sql\TestCase
 
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'date']);
-        $m->loadAny();
+        $m = $m->loadAny();
         $m->set('ts', new \DateTime('2012-02-30'));
         $m->save();
 
@@ -488,44 +507,46 @@ class TypecastingTest extends Sql\TestCase
         $this->assertEquals(['types' => [1 => ['id' => 1, 'date' => '2012-03-01']]], $this->getDb());
     }
 
-    public function testIntegerSave()
+    public function testIntegerSave(): void
     {
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('i', ['type' => 'integer']);
+        $m = $m->createEntity();
 
-        $m->data['i'] = 1;
-        $this->assertSame([], $m->dirty);
+        $m->getDataRef()['i'] = 1;
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('i', '2');
-        $this->assertSame(['i' => 1], $m->dirty);
+        $this->assertSame(['i' => 1], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         // same test without type integer
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('i');
+        $m = $m->createEntity();
 
-        $m->data['i'] = 1;
-        $this->assertSame([], $m->dirty);
+        $m->getDataRef()['i'] = 1;
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('i', '2');
-        $this->assertSame(['i' => 1], $m->dirty);
+        $this->assertSame(['i' => 1], $m->getDirtyRef());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
 
         $m->set('i', 1);
-        $this->assertSame([], $m->dirty);
+        $this->assertSame([], $m->getDirtyRef());
     }
 
-    public function testDirtyTime()
+    public function testDirtyTime(): void
     {
         $sql_time = '11:44:08';
         $sql_time_new = '12:34:56';
@@ -540,7 +561,7 @@ class TypecastingTest extends Sql\TestCase
 
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
-        $m->loadAny();
+        $m = $m->loadAny();
 
         $m->set('ts', $sql_time_new);
         $this->assertTrue($m->isDirty('ts'));
@@ -552,7 +573,7 @@ class TypecastingTest extends Sql\TestCase
         $this->assertTrue($m->isDirty('ts'));
     }
 
-    public function testDirtyTimeAfterSave()
+    public function testDirtyTimeAfterSave(): void
     {
         $sql_time = '11:44:08';
         $sql_time_new = '12:34:56';
@@ -567,7 +588,7 @@ class TypecastingTest extends Sql\TestCase
 
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('ts', ['actual' => 'date', 'type' => 'time']);
-        $m->loadAny();
+        $m = $m->loadAny();
 
         $m->set('ts', $sql_time);
         $this->assertTrue($m->isDirty('ts'));

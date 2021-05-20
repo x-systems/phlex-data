@@ -12,7 +12,7 @@ class PersistentArrayOfStringsTest extends \Phlex\Core\PHPUnit\TestCase
     /**
      * Test typecasting.
      */
-    public function testTypecasting()
+    public function testTypecasting(): void
     {
         $p = new Persistence\Array_([
             'user' => [],
@@ -35,7 +35,8 @@ class PersistentArrayOfStringsTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('array', ['type' => 'array']);
         $m->addField('object', ['type' => 'object']);
 
-        $m->setMulti([
+        $mm = $m->createEntity();
+        $mm->setMulti([
             'string' => "Two\r\nLines  ",
             'text' => "Two\r\nLines  ",
             'integer' => 123,
@@ -48,7 +49,7 @@ class PersistentArrayOfStringsTest extends \Phlex\Core\PHPUnit\TestCase
             'array' => ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
             'object' => (object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
         ]);
-        $m->saveAndUnload();
+        $mm->saveAndUnload();
 
         // no typecasting option set in export()
         $data = $m->export(null, null, false);

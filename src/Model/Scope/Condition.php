@@ -13,7 +13,7 @@ class Condition extends AbstractScope
 {
     use ReadableCaptionTrait;
 
-    /** @var string|Model\Field|Sql\Expression */
+    /** @var string|Model\Field|Sql\Expressionable */
     public $key;
 
     /** @var string */
@@ -35,6 +35,9 @@ class Condition extends AbstractScope
     public const OPERATOR_REGEXP = 'REGEXP';
     public const OPERATOR_NOT_REGEXP = 'NOT REGEXP';
 
+    /**
+     * @var array<string, array<string, string>>
+     */
     protected static $operators = [
         self::OPERATOR_EQUALS => [
             'negate' => self::OPERATOR_DOESNOT_EQUAL,
@@ -86,6 +89,11 @@ class Condition extends AbstractScope
         ],
     ];
 
+    /**
+     * @param string|Sql\Expressionable $key
+     * @param string|mixed|null         $operator
+     * @param mixed|null                $value
+     */
     public function __construct($key, $operator = null, $value = null)
     {
         if ($key instanceof AbstractScope) {
@@ -139,18 +147,23 @@ class Condition extends AbstractScope
 
     protected function onChangeModel(): void
     {
-        if ($model = $this->getModel()) {
+        $model = $this->getModel();
+        if ($model !== null) {
             // if we have a definitive scalar value for a field
             // sets it as default value for field and locks it
             // new records will automatically get this value assigned for the field
             // @todo: consider this when condition is part of OR scope
             if ($this->operator === self::OPERATOR_EQUALS && !is_object($this->value) && !is_array($this->value)) {
                 // key containing '/' means chained references and it is handled in toQueryArguments method
-                if (is_string($field = $this->key) && !str_contains($field, '/')) {
+                $field = $this->key;
+                if (is_string($field) && !str_contains($field, '/')) {
                     $field = $model->getField($field);
                 }
 
-                if ($field instanceof Model\Field) {
+                // TODO Model/field should not be mutated, see:
+                // https://github.com/atk4/data/issues/662
+                // for now, do not set default at least for PK/ID
+                if ($field instanceof Model\Field && !$field->isPrimaryKey()) {
                     $field->system = true;
                     $field->default = $this->value;
                 }
@@ -168,7 +181,8 @@ class Condition extends AbstractScope
         $operator = $this->operator;
         $value = $this->value;
 
-        if ($model = $this->getModel()) {
+        $model = $this->getModel();
+        if ($model !== null) {
             if (is_string($field)) {
                 // shorthand for adding conditions on references
                 // use chained reference names separated by "/"
@@ -276,7 +290,8 @@ class Condition extends AbstractScope
     {
         $words = [];
 
-        if (is_string($field = $this->key)) {
+        $field = $this->key;
+        if (is_string($field)) {
             if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
@@ -305,7 +320,7 @@ class Condition extends AbstractScope
         if ($field instanceof Model\Field) {
             $words[] = $field->getCaption();
         } elseif ($field instanceof Sql\Expressionable) {
-            $words[] = "expression '{$field->toSqlExpression()->getDebugQuery()}'";
+            $words[] = $this->valueToWords($model, $field);
         }
 
         return implode(' ', array_filter($words));
@@ -316,6 +331,9 @@ class Condition extends AbstractScope
         return $this->operator ? self::$operators[$this->operator]['label'] : '';
     }
 
+    /**
+     * @param mixed $value
+     */
     protected function valueToWords(Model $model, $value): string
     {
         if ($value === null) {
@@ -344,7 +362,8 @@ class Condition extends AbstractScope
         }
 
         // handling of scope on references
-        if (is_string($field = $this->key)) {
+        $field = $this->key;
+        if (is_string($field)) {
             if (str_contains($field, '/')) {
                 $references = explode('/', $field);
 
@@ -364,7 +383,7 @@ class Condition extends AbstractScope
         $title = null;
         if ($field instanceof Model\Field && $field->getReference() !== null) {
             // make sure we set the value in the Model
-            $model = clone $model;
+            $model = $model->isEntity() ? clone $model : $model->createEntity();
             $model->set($field->short_name, $value);
 
             // then take the title

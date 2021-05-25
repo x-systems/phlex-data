@@ -15,7 +15,7 @@ class ContainsMany extends ContainsOne
     protected function getDefaultPersistence(Model $theirModel)
     {
         $persistence = new Persistence\Array_([
-            $this->table_alias => $this->getOurFieldValue() ?: [],
+            $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? $this->getOurFieldValue() : [],
         ]);
 
         return $persistence->setCodecs($this->getOwner()->persistence->getCodecs());
@@ -38,7 +38,7 @@ class ContainsMany extends ContainsOne
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) {
                 $this->getOurModel()->save([
-                    $this->getOurFieldName() => $theirModel->export(null, null, false) ?: null,
+                    $this->getOurFieldName() => $theirModel->getModel()->export(null, null, false) ?: null,
                 ]);
             });
         }

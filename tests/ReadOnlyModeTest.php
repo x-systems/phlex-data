@@ -12,6 +12,7 @@ use Phlex\Data\Model;
  */
 class ReadOnlyModeTest extends Sql\TestCase
 {
+    /** @var Model */
     public $m;
 
     protected function setUp(): void
@@ -33,14 +34,14 @@ class ReadOnlyModeTest extends Sql\TestCase
     /**
      * Basic operation should work just fine on model without ID.
      */
-    public function testBasic()
+    public function testBasic(): void
     {
-        $mm = (clone $this->m)->tryLoadAny();
-        $this->assertSame('John', $mm->get('name'));
+        $m = $this->m->tryLoadAny();
+        $this->assertSame('John', $m->get('name'));
 
         $this->m->setOrder('name', 'desc');
-        $mm = (clone $this->m)->tryLoadAny();
-        $this->assertSame('Sue', $mm->get('name'));
+        $m = $this->m->tryLoadAny();
+        $this->assertSame('Sue', $m->get('name'));
 
         $this->assertEquals([1 => 'John', 2 => 'Sue'], $this->m->getTitles());
     }
@@ -48,21 +49,21 @@ class ReadOnlyModeTest extends Sql\TestCase
     /**
      * Read only model can be loaded just fine.
      */
-    public function testLoad()
+    public function testLoad(): void
     {
-        $this->m->load(1);
-        $this->assertTrue($this->m->loaded());
+        $m = $this->m->load(1);
+        $this->assertTrue($m->isLoaded());
     }
 
     /**
      * Model cannot be saved.
      */
-    public function testLoadSave()
+    public function testLoadSave(): void
     {
-        $this->m->load(1);
-        $this->m->set('name', 'X');
+        $m = $this->m->load(1);
+        $m->set('name', 'X');
         $this->expectException(Exception::class);
-        $this->m->save();
+        $m->save();
     }
 
     /**
@@ -79,28 +80,28 @@ class ReadOnlyModeTest extends Sql\TestCase
      */
     public function testSave1()
     {
-        $this->m->tryLoadAny();
+        $m = $this->m->tryLoadAny();
         $this->expectException(Exception::class);
-        $this->m->saveAndUnload();
+        $m->saveAndUnload();
     }
 
     /**
      * Conditions should work fine.
      */
-    public function testLoadBy()
+    public function testLoadBy(): void
     {
-        $this->m->loadBy('name', 'Sue');
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->loadBy('name', 'Sue');
+        $this->assertSame('Sue', $m->get('name'));
     }
 
-    public function testLoadCondition()
+    public function testLoadCondition(): void
     {
         $this->m->addCondition('name', 'Sue');
-        $this->m->loadAny();
-        $this->assertSame('Sue', $this->m->get('name'));
+        $m = $this->m->loadAny();
+        $this->assertSame('Sue', $m->get('name'));
     }
 
-    public function testFailDelete1()
+    public function testFailDelete1(): void
     {
         $this->expectException(Exception::class);
         $this->m->delete(1);

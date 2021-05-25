@@ -202,23 +202,27 @@ class HasOne extends Model\Reference
         $theirModel = $this->createTheirModel($defaults);
 
         // add hook to set ourFieldName = null when record of referenced model is deleted
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function ($theirModel) {
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) {
             $this->getOurField()->setNull();
         });
 
-        if ($ourValue = $this->getOurFieldValue()) {
-            // if our model is loaded, then try to load referenced model
-            if ($this->theirFieldName) {
-                $theirModel->tryLoadBy($this->theirFieldName, $ourValue);
+        if ($this->getOurModel()->isEntity()) {
+            if ($ourValue = $this->getOurFieldValue()) {
+                // if our model is loaded, then try to load referenced model
+                if ($this->theirFieldName) {
+                    $theirModel = $theirModel->tryLoadBy($this->theirFieldName, $ourValue);
+                } else {
+                    $theirModel = $theirModel->tryLoad($ourValue);
+                }
             } else {
-                $theirModel->tryLoad($ourValue);
+                $theirModel = $theirModel->createEntity();
             }
         }
 
         // their model will be reloaded after saving our model to reflect changes in referenced fields
         $theirModel->reload_after_save = false;
 
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function ($theirModel) {
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) {
             $theirValue = $this->theirFieldName ? $theirModel->get($this->theirFieldName) : $theirModel->getId();
 
             if ($this->getOurFieldValue() !== $theirValue) {

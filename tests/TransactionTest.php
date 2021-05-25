@@ -11,7 +11,7 @@ use Phlex\Data\Model;
  */
 class TransactionTest extends Sql\TestCase
 {
-    public function testAtomicOperations()
+    public function testAtomicOperations(): void
     {
         $this->setDb([
             'item' => [
@@ -23,7 +23,7 @@ class TransactionTest extends Sql\TestCase
 
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $m->load(2);
+        $m = $m->load(2);
 
         $m->onHook(Model::HOOK_AFTER_SAVE, static function ($m) {
             throw new \Exception('Awful thing happened');
@@ -49,7 +49,7 @@ class TransactionTest extends Sql\TestCase
         $this->assertSame('Sue', $this->getDb()['item'][2]['name']);
     }
 
-    public function testBeforeSaveHook()
+    public function testBeforeSaveHook(): void
     {
         $this->setDb([
             'item' => [
@@ -60,21 +60,22 @@ class TransactionTest extends Sql\TestCase
         // test insert
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHook(Model::HOOK_BEFORE_SAVE, function ($model, $is_update) {
-            $this->assertFalse($is_update);
+        $testCase = $this;
+        $m->onHookShort(Model::HOOK_BEFORE_SAVE, static function (bool $isUpdate) use ($testCase) {
+            $testCase->assertFalse($isUpdate);
         });
-        $m->save(['name' => 'Foo']);
+        $m->createEntity()->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
-            $this->assertTrue($is_update);
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
+            $testCase->assertTrue($isUpdate);
         });
-        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
+        $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
-    public function testAfterSaveHook()
+    public function testAfterSaveHook(): void
     {
         $this->setDb([
             'item' => [
@@ -85,21 +86,22 @@ class TransactionTest extends Sql\TestCase
         // test insert
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
-            $this->assertFalse($is_update);
+        $testCase = $this;
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
+            $testCase->assertFalse($isUpdate);
         });
-        $m->save(['name' => 'Foo']);
+        $m->createEntity()->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $m->onHook(Model::HOOK_AFTER_SAVE, function ($model, $is_update) {
-            $this->assertTrue($is_update);
+        $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
+            $testCase->assertTrue($isUpdate);
         });
-        $m->loadBy('name', 'John')->save(['name' => 'Foo']);
+        $m = $m->loadBy('name', 'John')->save(['name' => 'Foo']);
     }
 
-    public function testOnRollbackHook()
+    public function testOnRollbackHook(): void
     {
         $this->setDb([
             'item' => [
@@ -114,13 +116,14 @@ class TransactionTest extends Sql\TestCase
 
         $hook_called = false;
         $values = [];
-        $m->onHook(Model::HOOK_ROLLBACK, function ($mm, $e) use (&$hook_called, &$values) {
+        $m->onHook(Model::HOOK_ROLLBACK, static function (Model $model, \Exception $e) use (&$hook_called, &$values) {
             $hook_called = true;
-            $values = $mm->get(); // model field values are still the same no matter we rolled back
-            $mm->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
+            $values = $model->get(); // model field values are still the same no matter we rolled back
+            $model->breakHook(false); // if we break hook and return false then exception is not thrown, but rollback still happens
         });
 
         // this will fail because field foo is not in DB and call onRollback hook
+        $m = $m->createEntity();
         $m->setMulti(['name' => 'Jane', 'foo' => 'bar']);
         $m->save();
 

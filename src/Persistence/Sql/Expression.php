@@ -504,12 +504,12 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
 
     public static function and(): Expression\Condition
     {
-        return new Expression\Condition(Expression\Condition::OPERATOR_AND);
+        return new Expression\Condition(Expression\Condition::JUNCTION_AND);
     }
 
     public static function or(): Expression\Condition
     {
-        return new Expression\Condition(Expression\Condition::OPERATOR_OR);
+        return new Expression\Condition(Expression\Condition::JUNCTION_OR);
     }
 
     /**

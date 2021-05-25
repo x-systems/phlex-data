@@ -66,22 +66,22 @@ class PersistentSqlTest extends Sql\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
-//     public function testModelLoadOneAndAny()
+//     public function testModelLoadOneAndAny(): void
 //     {
 //         $this->setDb([
 //             'user' => [
@@ -98,15 +98,15 @@ class PersistentSqlTest extends Sql\TestCase
 //         $this->assertSame('John', (clone $mm)->load(1)->get('name'));
 //         $this->assertNull((clone $mm)->tryload(2)->get('name'));
 //         $this->assertSame('John', (clone $mm)->tryLoadOne()->get('name'));
-//         $this->assertSame('John', (clone $mm)->loadOne()->get('name'));
+//         $this->assertSame('John', (clone $mm)->loadAny()->get('name'));
 //         $this->assertSame('John', (clone $mm)->tryLoadAny()->get('name'));
 //         $this->assertSame('John', (clone $mm)->loadAny()->get('name'));
 
 //         $mm = (clone $m)->addCondition('surname', 'Jones');
 //         $this->assertSame('Sarah', (clone $mm)->load(2)->get('name'));
 //         $this->assertNull((clone $mm)->tryload(1)->get('name'));
-//         $this->assertSame('Sarah', (clone $mm)->tryloadOne()->get('name'));
-//         $this->assertSame('Sarah', (clone $mm)->loadOne()->get('name'));
+//         $this->assertSame('Sarah', (clone $mm)->tryLoadAny()->get('name'));
+//         $this->assertSame('Sarah', (clone $mm)->loadAny()->get('name'));
 //         $this->assertSame('Sarah', (clone $mm)->tryLoadAny()->get('name'));
 //         $this->assertSame('Sarah', (clone $mm)->loadAny()->get('name'));
 
@@ -114,10 +114,10 @@ class PersistentSqlTest extends Sql\TestCase
 //         (clone $m)->tryLoadAny();
 //         $this->expectException(Exception::class);
 //         $this->expectExceptionMessage('Ambiguous conditions, more than one record can be loaded.');
-//         (clone $m)->tryLoadOne();
+//         (clone $m)->tryLoadAny();
 //     }
 
-    public function testPersistenceInsert()
+    public function testPersistenceInsert(): void
     {
         $dbData = [
             'user' => [
@@ -137,22 +137,22 @@ class PersistentSqlTest extends Sql\TestCase
             $ids[] = $this->db->insert($m, $row);
         }
 
-        $mm = (clone $m)->load($ids[0]);
+        $mm = $m->load($ids[0]);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load($ids[1]);
+        $mm = $m->load($ids[1]);
         $this->assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
 
-        $mm = (clone $m)->load($ids[0]);
+        $mm = $m->load($ids[0]);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load($ids[1]);
+        $mm = $m->load($ids[1]);
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
-    public function testModelInsert()
+    public function testModelInsert(): void
     {
         $dbData = [
             'user' => [
@@ -171,12 +171,12 @@ class PersistentSqlTest extends Sql\TestCase
             $ms[] = $m->insert($row);
         }
 
-        $this->assertSame('John', (clone $m)->load($ms[0])->get('name'));
+        $this->assertSame('John', $m->load($ms[0])->get('name'));
 
-        $this->assertSame('Jones', (clone $m)->load($ms[1])->get('surname'));
+        $this->assertSame('Jones', $m->load($ms[1])->get('surname'));
     }
 
-    public function testModelSaveNoReload()
+    public function testModelSaveNoReload(): void
     {
         $this->setDb([
             'user' => [
@@ -191,6 +191,7 @@ class PersistentSqlTest extends Sql\TestCase
 
         // insert new record, model id field
         $m->reload_after_save = false;
+        $m = $m->createEntity();
         $m->save(['name' => 'Jane', 'surname' => 'Doe']);
         $this->assertSame('Jane', $m->get('name'));
         $this->assertSame('Doe', $m->get('surname'));
@@ -199,7 +200,7 @@ class PersistentSqlTest extends Sql\TestCase
         $this->assertEquals(3, $m->getId());
     }
 
-    public function testModelInsertRows()
+    public function testModelInsertRows(): void
     {
         $dbData = [
             'user' => [
@@ -222,7 +223,7 @@ class PersistentSqlTest extends Sql\TestCase
         $this->assertEquals(2, $m->getCount());
     }
 
-    public function testPersistenceDelete()
+    public function testPersistenceDelete(): void
     {
         $dbData = [
             'user' => [
@@ -240,24 +241,25 @@ class PersistentSqlTest extends Sql\TestCase
         foreach ($dbData['user'] as $id => $row) {
             $ids[] = $this->db->insert($m, $row);
         }
-        $this->assertFalse($m->loaded());
 
         $m->delete($ids[0]);
-        $this->assertFalse($m->loaded());
 
-        $m->load($ids[1]);
-        $this->assertSame('Jones', $m->get('surname'));
-        $m->set('surname', 'Smith');
-        $m->save();
+        $m2 = $m->load($ids[1]);
+        $this->assertSame('Jones', $m2->get('surname'));
+        $m2->set('surname', 'Smith');
+        $m2->save();
 
-        $m->tryLoad($ids[0]);
-        $this->assertFalse($m->loaded());
+        $m2 = $m->tryLoad($ids[0]);
+        $this->assertFalse($m2->isLoaded());
 
-        $m->load($ids[1]);
-        $this->assertSame('Smith', $m->get('surname'));
+        $m2 = $m->load($ids[1]);
+        $this->assertSame('Smith', $m2->get('surname'));
     }
 
-    public function testExport()
+    /**
+     * Test export.
+     */
+    public function testExport(): void
     {
         $this->setDb([
             'user' => [

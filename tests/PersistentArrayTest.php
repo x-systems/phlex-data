@@ -17,10 +17,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         return $this->getProtected($db, 'data');
     }
 
-    /**
-     * Test constructor.
-     */
-    public function testLoadArray()
+    public function testLoadArray(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -32,50 +29,28 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
         $mm->unload();
-        $this->assertFalse($mm->loaded());
+        $this->assertFalse($mm->isLoaded());
 
-        $mm->tryLoadAny();
-        $this->assertTrue($mm->loaded());
+        $mm = $m->tryLoadAny();
+        $this->assertTrue($mm->isLoaded());
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
-    public function testSaveAs()
-    {
-        $p = new Persistence\Array_([
-            'person' => [
-                1 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'M'],
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
-            ],
-        ]);
-
-        $m = new Male($p);
-        $m->load(1);
-        $m->saveAs(Female::class);
-        $m->delete();
-
-        $this->assertEquals([
-            'person' => [
-                2 => ['name' => 'Sarah', 'surname' => 'Jones', 'gender' => 'F'],
-                3 => ['name' => 'John', 'surname' => 'Smith', 'gender' => 'F'],
-            ],
-        ], $this->getInternalPersistenceData($p));
-    }
-
-    public function testSaveAndUnload()
+    public function testSaveAndUnload(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -85,15 +60,15 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ]);
         $m = new Male($p, ['table' => 'user']);
 
-        $m->load(1);
-        $this->assertTrue($m->loaded());
+        $m = $m->load(1);
+        $this->assertTrue($m->isLoaded());
         $m->set('gender', 'F');
         $m->saveAndUnload();
-        $this->assertFalse($m->loaded());
+        $this->assertFalse($m->isLoaded());
 
         $m = new Female($p, ['table' => 'user']);
-        $m->load(1);
-        $this->assertTrue($m->loaded());
+        $m = $m->load(1);
+        $this->assertTrue($m->isLoaded());
 
         $this->assertSame([
             'user' => [
@@ -103,7 +78,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($p));
     }
 
-    public function testUpdateArray()
+    public function testUpdateArray(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -115,11 +90,11 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $mm->set('name', 'Peter');
         $mm->save();
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $mm->set('surname', 'Smith');
         $mm->save();
         $mm->set('surname', 'QQ');
@@ -132,7 +107,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
             ],
         ], $this->getInternalPersistenceData($p));
 
-        $m->unload();
+        $m = $m->createEntity();
         $m->setMulti(['name' => 'Foo', 'surname' => 'Bar']);
         $m->save();
 
@@ -145,7 +120,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($p));
     }
 
-    public function testInsert()
+    public function testInsert(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -167,10 +142,10 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
             ],
         ], $this->getInternalPersistenceData($p));
 
-        $this->assertSame('3', $p->lastInsertID());
+        $this->assertSame('3', $p->lastInsertId());
     }
 
-    public function testIterator()
+    public function testIterator(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -194,7 +169,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
     /**
      * Test short format.
      */
-    public function testShortFormat()
+    public function testShortFormat(): void
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -204,25 +179,25 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Jones', $mm->get('surname'));
         $mm->set('surname', 'Smith');
         $mm->save();
 
-        $mm = (clone $m)->load(1);
+        $mm = $m->load(1);
         $this->assertSame('John', $mm->get('name'));
 
-        $mm = (clone $m)->load(2);
+        $mm = $m->load(2);
         $this->assertSame('Smith', $mm->get('surname'));
     }
 
     /**
      * Test export.
      */
-    public function testExport()
+    public function testExport(): void
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -246,7 +221,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
     /**
      * Test Model->toQuery()->count().
      */
-    public function testActionCount()
+    public function testActionCount(): void
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -262,7 +237,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
     /**
      * Test Model->toQuery()->field().
      */
-    public function testActionField()
+    public function testQueryField(): void
     {
         $p = new Persistence\Array_([
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -276,30 +251,41 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
 
         // use alias as array key if it is set
         $q = $m->toQuery()->field('name', 'first_name');
-        $this->assertSame(['first_name' => 'John'], $q->getOne());
+        $this->assertSame([
+            1 => ['first_name' => 'John'],
+            2 => ['first_name' => 'Sarah'],
+        ], $q->getRows());
 
         // if alias is not set, then use field name as key
         $q = $m->toQuery()->field('name');
-        $this->assertSame(['name' => 'John'], $q->getOne());
+        $this->assertSame([
+            1 => ['name' => 'John'],
+            2 => ['name' => 'Sarah'],
+        ], $q->getRows());
     }
 
     /**
      * Test Model->addCondition operator LIKE.
      */
-    public function testLike()
+    public function testLike(): void
     {
         $dbData = ['countries' => [
-            1 => ['id' => 1, 'name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
-            2 => ['id' => 2, 'name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
-            3 => ['id' => 3, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
-            4 => ['id' => 4, 'name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
-            5 => ['id' => 5, 'name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
-            6 => ['id' => 6, 'name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
-            7 => ['id' => 7, 'name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
-            8 => ['id' => 8, 'name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
-            9 => ['id' => 9, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
-            10 => ['id' => 10, 'code' => null, 'country' => 'Germany', 'active' => 1],
+            1 => ['name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
+            2 => ['name' => 'ABC8', 'code' => 12, 'country' => 'Ireland', 'active' => 0],
+            3 => ['name' => null, 'code' => 13, 'country' => 'Latvia', 'active' => 1],
+            4 => ['name' => 'ABC6', 'code' => 14, 'country' => 'UK', 'active' => 0],
+            5 => ['name' => 'ABC5', 'code' => 15, 'country' => 'UK', 'active' => 0],
+            6 => ['name' => 'ABC4', 'code' => 16, 'country' => 'Ireland', 'active' => 1],
+            7 => ['name' => 'ABC3', 'code' => 17, 'country' => 'Latvia', 'active' => 0],
+            8 => ['name' => 'ABC2', 'code' => 18, 'country' => 'Russia', 'active' => 1],
+            9 => ['name' => null, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
+            10 => ['code' => null, 'country' => 'Germany', 'active' => 1],
         ]];
+
+        $dbDataCountries = $dbData['countries'];
+        foreach ($dbDataCountries as $k => $v) {
+            $dbDataCountries[$k] = array_merge(['id' => $k], $v);
+        }
 
         $p = new Persistence\Array_($dbData);
         $m = new Model($p, ['table' => 'countries']);
@@ -307,103 +293,92 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('country');
         $m->addField('active', ['type' => 'boolean']);
 
-        // if no condition we should get all the data back
-//         $iterator = $m->toQuery()->select();
-//         $result = $m->persistence->applyScope($m, $iterator);
-//         $this->assertInstanceOf(\Phlex\Data\Action\Iterator::class, $result);
-//         $m->unload();
-//         unset($iterator);
-//         unset($result);
-
         // case : str%
         $m->addCondition('country', 'LIKE', 'La%');
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(3, count($result));
-        $this->assertSame($dbData['countries'][3], $result[3]);
-        $this->assertSame($dbData['countries'][7], $result[7]);
-        $this->assertSame($dbData['countries'][9], $result[9]);
+        $this->assertCount(3, $result);
+        $this->assertSame($dbDataCountries[3], $result[3]);
+        $this->assertSame($dbDataCountries[7], $result[7]);
+        $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         // case : str% NOT LIKE
         $m->scope()->clear();
         $m->addCondition('country', 'NOT LIKE', 'La%');
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(7, count($m->export()));
-        $this->assertSame($dbData['countries'][1], $result[1]);
-        $this->assertSame($dbData['countries'][2], $result[2]);
-        $this->assertSame($dbData['countries'][4], $result[4]);
-        $this->assertSame($dbData['countries'][5], $result[5]);
-        $this->assertSame($dbData['countries'][6], $result[6]);
-        $this->assertSame($dbData['countries'][8], $result[8]);
+        $this->assertCount(7, $m->export());
+        $this->assertSame($dbDataCountries[1], $result[1]);
+        $this->assertSame($dbDataCountries[2], $result[2]);
+        $this->assertSame($dbDataCountries[4], $result[4]);
+        $this->assertSame($dbDataCountries[5], $result[5]);
+        $this->assertSame($dbDataCountries[6], $result[6]);
+        $this->assertSame($dbDataCountries[8], $result[8]);
         unset($result);
 
         // case : %str
         $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%ia');
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(4, count($result));
-        $this->assertSame($dbData['countries'][3], $result[3]);
-        $this->assertSame($dbData['countries'][7], $result[7]);
-        $this->assertSame($dbData['countries'][8], $result[8]);
-        $this->assertSame($dbData['countries'][9], $result[9]);
+        $this->assertCount(4, $result);
+        $this->assertSame($dbDataCountries[3], $result[3]);
+        $this->assertSame($dbDataCountries[7], $result[7]);
+        $this->assertSame($dbDataCountries[8], $result[8]);
+        $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         // case : %str%
         $m->scope()->clear();
         $m->addCondition('country', 'LIKE', '%a%');
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(8, count($result));
-        $this->assertSame($dbData['countries'][1], $result[1]);
-        $this->assertSame($dbData['countries'][2], $result[2]);
-        $this->assertSame($dbData['countries'][3], $result[3]);
-        $this->assertSame($dbData['countries'][6], $result[6]);
-        $this->assertSame($dbData['countries'][7], $result[7]);
-        $this->assertSame($dbData['countries'][8], $result[8]);
-        $this->assertSame($dbData['countries'][9], $result[9]);
+        $this->assertCount(8, $result);
+        $this->assertSame($dbDataCountries[1], $result[1]);
+        $this->assertSame($dbDataCountries[2], $result[2]);
+        $this->assertSame($dbDataCountries[3], $result[3]);
+        $this->assertSame($dbDataCountries[6], $result[6]);
+        $this->assertSame($dbDataCountries[7], $result[7]);
+        $this->assertSame($dbDataCountries[8], $result[8]);
+        $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         // case : boolean field
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '0');
-        $this->assertSame(4, count($m->export()));
+        $this->assertCount(4, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '1');
-        $this->assertSame(6, count($m->export()));
+        $this->assertCount(6, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%0%');
-        $this->assertSame(4, count($m->export()));
+        $this->assertCount(4, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%1%');
-        $this->assertSame(6, count($m->export()));
+        $this->assertCount(6, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%999%');
-        $this->assertSame(0, count($m->export()));
+        $this->assertCount(0, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('active', 'LIKE', '%ABC%');
-        $this->assertSame(0, count($m->export()));
+        $this->assertCount(0, $m->export());
 
         // null value
         $m->scope()->clear();
         $m->addCondition('code', '=', null);
-        $this->assertSame(1, count($m->export()));
+        $this->assertCount(1, $m->export());
 
         $m->scope()->clear();
         $m->addCondition('code', '!=', null);
-        $this->assertSame(9, count($m->export()));
+        $this->assertCount(9, $m->export());
     }
 
     /**
      * Test Model->addCondition operator REGEXP.
      */
-    public function testConditions()
+    public function testConditions(): void
     {
         $dbData = ['countries' => [
             1 => ['id' => 1, 'name' => 'ABC9', 'code' => 11, 'country' => 'Ireland', 'active' => 1],
@@ -417,110 +392,97 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
             9 => ['id' => 9, 'code' => 19, 'country' => 'Latvia', 'active' => 1],
         ]];
 
+        $dbDataCountries = $dbData['countries'];
+        foreach ($dbDataCountries as $k => $v) {
+            $dbDataCountries[$k] = array_merge(['id' => $k], $v);
+        }
+
         $p = new Persistence\Array_($dbData);
         $m = new Model($p, ['table' => 'countries']);
         $m->addField('code', ['type' => 'integer']);
         $m->addField('country');
         $m->addField('active', ['type' => 'boolean']);
 
-        // if no condition we should get all the data back
-//         $iterator = $m->toQuery()->select();
-//         $result = $m->persistence->applyScope($m, $iterator);
-//         $this->assertInstanceOf(\Phlex\Data\Action\Iterator::class, $result);
-//         $m->unload();
-//         unset($iterator);
-//         unset($result);
-
         $m->scope()->clear();
         $m->addCondition('country', 'REGEXP', 'Ireland|UK');
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(5, count($result));
-        $this->assertSame($dbData['countries'][1], $result[1]);
-        $this->assertSame($dbData['countries'][2], $result[2]);
-        $this->assertSame($dbData['countries'][4], $result[4]);
-        $this->assertSame($dbData['countries'][5], $result[5]);
-        $this->assertSame($dbData['countries'][6], $result[6]);
+        $this->assertCount(5, $result);
+        $this->assertSame($dbDataCountries[1], $result[1]);
+        $this->assertSame($dbDataCountries[2], $result[2]);
+        $this->assertSame($dbDataCountries[4], $result[4]);
+        $this->assertSame($dbDataCountries[5], $result[5]);
+        $this->assertSame($dbDataCountries[6], $result[6]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('country', 'NOT REGEXP', 'Ireland|UK|Latvia');
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(1, count($result));
-        $this->assertSame($dbData['countries'][8], $result[8]);
+        $this->assertCount(1, $result);
+        $this->assertSame($dbDataCountries[8], $result[8]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '>', 18);
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(1, count($result));
-        $this->assertSame($dbData['countries'][9], $result[9]);
+        $this->assertCount(1, $result);
+        $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '>=', 18);
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(2, count($result));
-        $this->assertSame($dbData['countries'][8], $result[8]);
-        $this->assertSame($dbData['countries'][9], $result[9]);
+        $this->assertCount(2, $result);
+        $this->assertSame($dbDataCountries[8], $result[8]);
+        $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '<', 12);
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(1, count($result));
-        $this->assertSame($dbData['countries'][1], $result[1]);
+        $this->assertCount(1, $result);
+        $this->assertSame($dbDataCountries[1], $result[1]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '<=', 12);
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(2, count($result));
-        $this->assertSame($dbData['countries'][1], $result[1]);
-        $this->assertSame($dbData['countries'][2], $result[2]);
+        $this->assertCount(2, $result);
+        $this->assertSame($dbDataCountries[1], $result[1]);
+        $this->assertSame($dbDataCountries[2], $result[2]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', [11, 12]);
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(2, count($result));
-        $this->assertSame($dbData['countries'][1], $result[1]);
-        $this->assertSame($dbData['countries'][2], $result[2]);
+        $this->assertCount(2, $result);
+        $this->assertSame($dbDataCountries[1], $result[1]);
+        $this->assertSame($dbDataCountries[2], $result[2]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', 'IN', []);
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(0, count($result));
+        $this->assertCount(0, $result);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', 'NOT IN', [11, 12, 13, 14, 15, 16, 17]);
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(2, count($result));
-        $this->assertSame($dbData['countries'][8], $result[8]);
-        $this->assertSame($dbData['countries'][9], $result[9]);
+        $this->assertCount(2, $result);
+        $this->assertSame($dbDataCountries[8], $result[8]);
+        $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
 
         $m->scope()->clear();
         $m->addCondition('code', '!=', [11, 12, 13, 14, 15, 16, 17]);
         $result = $m->toQuery()->select()->getRows();
-        $this->assertSame(2, count($result));
-        $this->assertSame($dbData['countries'][8], $result[8]);
-        $this->assertSame($dbData['countries'][9], $result[9]);
+        $this->assertCount(2, $result);
+        $this->assertSame($dbDataCountries[8], $result[8]);
+        $this->assertSame($dbDataCountries[9], $result[9]);
         unset($result);
-        $m->unload();
     }
 
-    public function testAggregates()
+    public function testAggregates(): void
     {
         $p = new Persistence\Array_(['invoices' => [
             1 => ['id' => 1, 'number' => 'ABC9', 'items' => 11, 'active' => 1],
@@ -545,7 +507,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame(135, $m->toQuery()->aggregate('sum', 'items')->getOne());
     }
 
-    public function testExists()
+    public function testExists(): void
     {
         $p = new Persistence\Array_(['invoices' => [
             1 => ['id' => 1, 'number' => 'ABC9', 'items' => 11, 'active' => 1],
@@ -578,7 +540,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
     /**
      * Test Model->setOrder().
      */
-    public function testOrder()
+    public function testOrder(): void
     {
         $dbData = [
             1 => ['id' => 1, 'f1' => 'A', 'f2' => 'B'],
@@ -646,21 +608,19 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame($d, array_values($m->export(['f1', 'f2', 'id']))); // array_values to get rid of keys
     }
 
-    public function testNoKeyException()
+    public function testNoKeyException(): void
     {
         $p = new Persistence\Array_([
             ['id' => 3, 'f1' => 'A'],
-            ['id' => 5, 'f1' => 'D'],
         ]);
-        $m = new Model($p);
-        $m->addField('f1');
 
-        // array keys do not match id field value
+        $m = new Model($p);
         $this->expectException(Exception::class);
+
         $m->export();
     }
 
-    public function testImportAndAutoincrement()
+    public function testImportAndAutoincrement(): void
     {
         $p = new Persistence\Array_([]);
         $m = new Model($p);
@@ -721,7 +681,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
     /**
      * Test Model->setLimit().
      */
-    public function testLimit()
+    public function testLimit(): void
     {
         // order by one field ascending
         $p = new Persistence\Array_([
@@ -759,7 +719,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
     /**
      * Test Model->addCondition().
      */
-    public function testCondition()
+    public function testCondition(): void
     {
         $p = new Persistence\Array_($dbData = [
             1 => ['name' => 'John', 'surname' => 'Smith'],
@@ -786,7 +746,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame(0, $m->getCount());
     }
 
-    public function testUnsupportedAggregate()
+    public function testUnsupportedAggregate(): void
     {
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
@@ -796,7 +756,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m->toQuery()->aggregate('UNSUPPORTED', 'name');
     }
 
-    public function testUnsupportedCondition1()
+    public function testUnsupportedCondition1(): void
     {
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
@@ -805,7 +765,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addCondition('name');
     }
 
-    public function testUnsupportedCondition2()
+    public function testUnsupportedCondition2(): void
     {
         $p = new Persistence\Array_([1 => ['name' => 'John']]);
         $m = new Model($p);
@@ -817,7 +777,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
     /**
      * Test Model->hasOne().
      */
-    public function testHasOne()
+    public function testHasOne(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -840,17 +800,17 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
 
         $user->hasOne('country_id', ['model' => $country]);
 
-        $uu = (clone $user)->load(1);
+        $uu = $user->load(1);
         $this->assertSame('Latvia', $uu->ref('country_id')->get('name'));
 
-        $uu = (clone $user)->load(2);
+        $uu = $user->load(2);
         $this->assertSame('UK', $uu->ref('country_id')->get('name'));
     }
 
     /**
      * Test Model->hasMany().
      */
-    public function testHasMany()
+    public function testHasMany(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -875,33 +835,33 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $country->hasMany('Users', ['model' => $user]);
         $user->hasOne('country_id', ['model' => $country]);
 
-        $cc = (clone $country)->load(1);
+        $cc = $country->load(1);
         $this->assertSame(2, $cc->ref('Users')->getCount());
 
-        $cc = (clone $country)->load(2);
+        $cc = $country->load(2);
         $this->assertSame(1, $cc->ref('Users')->getCount());
     }
 
-    public function testLoadAnyThrowsExceptionOnRecordNotFound()
+    public function testLoadAnyThrowsExceptionOnRecordNotFound(): void
     {
         $p = new Persistence\Array_();
         $m = new Model($p);
         $m->addField('name');
-        $this->expectExceptionCode(404);
-        $m->loadAny();
+        $this->expectException(Model\RecordNotFoundException::class);
+        $m = $m->loadAny();
     }
 
-    public function testTryLoadAnyNotThrowsExceptionOnRecordNotFound()
+    public function testTryLoadAnyNotThrowsExceptionOnRecordNotFound(): void
     {
         $p = new Persistence\Array_();
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m->tryLoadAny();
-        $this->assertFalse($m->loaded());
+        $m = $m->tryLoadAny();
+        $this->assertFalse($m->isLoaded());
     }
 
-    public function testTryLoadAnyReturnsFirstRecord()
+    public function testTryLoadAnyReturnsFirstRecord(): void
     {
         $a = [
             2 => ['name' => 'John', 'surname' => 'Smith'],
@@ -912,7 +872,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model($p);
         $m->addField('name');
         $m->addField('surname');
-        $m->tryLoadAny();
+        $m = $m->tryLoadAny();
         $this->assertSame(2, $m->getId());
     }
 }

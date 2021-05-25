@@ -8,6 +8,7 @@ use Phlex\Data\Model;
 use Phlex\Data\Tests\Model\Smbo\Account;
 use Phlex\Data\Tests\Model\Smbo\Document;
 use Phlex\Data\Tests\Model\Smbo\Payment;
+use Phlex\Data\Tests\Model\Smbo\Transfer;
 
 /**
  * Practical test contributed by Sortmybooks.com.
@@ -39,18 +40,18 @@ class SmboTransferTest extends Sql\TestCase
     /**
      * Testing transfer between two accounts.
      */
-    public function testTransfer()
+    public function testTransfer(): void
     {
-        $aib = (new Account($this->db))->save(['name' => 'AIB']);
-        $boi = (new Account($this->db))->save(['name' => 'BOI']);
+        $aib = (new Account($this->db))->createEntity()->save(['name' => 'AIB']);
+        $boi = (new Account($this->db))->createEntity()->save(['name' => 'BOI']);
 
         $t = $aib->transfer($boi, 100); // create transfer between accounts
-
         $t->save();
 
         $this->assertEquals(-100, $aib->reload()->get('balance'));
         $this->assertEquals(100, $boi->reload()->get('balance'));
 
+        $t = new Transfer($this->db);
         $data = $t->export(['id', 'transfer_document_id']);
         usort($data, function ($e1, $e2) {
             return $e1['id'] < $e2['id'] ? -1 : 1;
@@ -61,25 +62,25 @@ class SmboTransferTest extends Sql\TestCase
         ], $data);
     }
 
-    public function testRef()
+    public function testRef(): void
     {
         // create accounts and payments
         $a = new Account($this->db);
 
-        $aa = clone $a;
+        $aa = $a->createEntity();
         $aa->save(['name' => 'AIB']);
-        $aa->ref('Payment')->save(['amount' => 10]);
-        $aa->ref('Payment')->save(['amount' => 20]);
+        $aa->ref('Payment')->createEntity()->save(['amount' => 10]);
+        $aa->ref('Payment')->createEntity()->save(['amount' => 20]);
         $aa->unload();
 
-        $aa = clone $a;
+        $aa = $a->createEntity();
         $aa->save(['name' => 'BOI']);
-        $aa->ref('Payment')->save(['amount' => 30]);
-        $a->unload();
+        $aa->ref('Payment')->createEntity()->save(['amount' => 30]);
+        $aa->unload();
 
         // create payment without link to account
         $p = new Payment($this->db);
-        $p->saveAndUnload(['amount' => 40]);
+        $p->createEntity()->saveAndUnload(['amount' => 40]);
 
         // Account is not loaded, will dump all Payments related to ANY Account
         $data = $a->ref('Payment')->export(['amount']);
@@ -91,7 +92,7 @@ class SmboTransferTest extends Sql\TestCase
         ], $data);
 
         // Account is loaded, will dump all Payments related to that particular Account
-        $a->load(1);
+        $a = $a->load(1);
         $data = $a->ref('Payment')->export(['amount']);
         $this->assertEquals([
             ['amount' => 10],
@@ -100,7 +101,7 @@ class SmboTransferTest extends Sql\TestCase
     }
 
     /*
-    public function testBasicEntities()
+    public function testBasicEntities(): void
     {
         $db = Persistence\Sql::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
 

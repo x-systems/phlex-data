@@ -151,7 +151,7 @@ class DeepCopyTest extends Sql\TestCase
         $this->createMigrator(new DcPayment($this->db))->dropIfExists()->create();
     }
 
-    public function testBasic()
+    public function testBasic(): void
     {
         $client = new DcClient($this->db);
         $client_id = $client->insert(['name' => 'John']);
@@ -162,7 +162,7 @@ class DeepCopyTest extends Sql\TestCase
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
             ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
-        $quote->loadAny();
+        $quote = $quote->loadAny();
 
         // total price should match
         $this->assertEquals(90.00, $quote->get('total'));
@@ -263,7 +263,7 @@ class DeepCopyTest extends Sql\TestCase
         $this->assertEquals(5, $client3->ref('Invoices')->toQuery()->aggregate('sum', 'due')->getOne());
     }
 
-    public function testError()
+    public function testError(): void
     {
         $client = new DcClient($this->db);
         $client_id = $client->insert(['name' => 'John']);
@@ -275,7 +275,7 @@ class DeepCopyTest extends Sql\TestCase
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
             ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
-        $quote->loadAny();
+        $quote = $quote->loadAny();
 
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function ($m) {
@@ -305,7 +305,7 @@ class DeepCopyTest extends Sql\TestCase
         }
     }
 
-    public function testDeepError()
+    public function testDeepError(): void
     {
         $client = new DcClient($this->db);
         $client_id = $client->insert(['name' => 'John']);
@@ -316,7 +316,7 @@ class DeepCopyTest extends Sql\TestCase
             ['name' => 'tools', 'qty' => 5, 'price' => 10],
             ['name' => 'work', 'qty' => 1, 'price' => 40],
         ]]);
-        $quote->loadAny();
+        $quote = $quote->loadAny();
 
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function ($m) {

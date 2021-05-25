@@ -125,7 +125,7 @@ class LFriend extends Model
             $c = clone $this;
             $c->skip_reverse = true;
 
-            $c->loadBy([
+            $c = $c->loadBy([
                 'user_id' => $this->get('friend_id'),
                 'friend_id' => $this->get('user_id'),
             ])->delete();
@@ -152,21 +152,22 @@ class LookupSqlTest extends Sql\TestCase
     /**
      * test various ways to import countries.
      */
-    public function testImportCountriesBasic()
+    public function testImportCountriesBasic(): void
     {
         $c = new LCountry($this->db);
 
         $results = [];
 
         // should be OK, will set country name, rest of fields will be null
-        (clone $c)->saveAndUnload(['name' => 'Canada']);
+        $c->createEntity()->saveAndUnload(['name' => 'Canada']);
 
         // adds another country, but with more fields
-        (clone $c)->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
+        $c->createEntity()->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
 
         // setting field prior will affect save()
-        $c->set('is_eu', true);
-        $c->save(['name' => 'Estonia', 'code' => 'ES']);
+        $cc = $c->createEntity();
+        $cc->set('is_eu', true);
+        $cc->save(['name' => 'Estonia', 'code' => 'ES']);
 
         // is_eu will NOT BLEED into this record, because insert() does not make use of current model values.
         $c->insert(['name' => 'Korea', 'code' => 'KR']);
@@ -226,7 +227,7 @@ class LookupSqlTest extends Sql\TestCase
         ], $this->getDb(['country']));
     }
 
-    public function testImportInternationalUsers()
+    public function testImportInternationalUsers(): void
     {
         $c = new LCountry($this->db);
 
@@ -280,7 +281,7 @@ class LookupSqlTest extends Sql\TestCase
         ], $this->getDb(['country', 'user']));
     }
 
-    public function testImportByLookup()
+    public function testImportByLookup(): void
     {
         $c = new LCountry($this->db);
 
@@ -355,7 +356,7 @@ class LookupSqlTest extends Sql\TestCase
      *
      * TODO - that's left for hasMTM implementation..., to be coming later
      *
-    public function testImportInternationalFriends()
+    public function testImportInternationalFriends(): void
     {
         $c = new LCountry($this->db);
 
@@ -363,7 +364,7 @@ class LookupSqlTest extends Sql\TestCase
         $c->insert(['Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
         // Inserting Users into Latvia can also specify Friends. In this case Friend name will be looked up
-        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain,Imants']]]);
+        $c->insert(['Latvia', 'Users' => ['Imants', ['Juris', 'friend_names' => 'Alain, Imants']]]);
 
         // Inserting This time explicitly specify friend attributes
         $c->insert(['UK', 'Users' => [

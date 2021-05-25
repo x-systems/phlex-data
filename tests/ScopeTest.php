@@ -73,20 +73,13 @@ class STicket extends Model
 
 class ScopeTest extends Sql\TestCase
 {
-    protected $user;
-    protected $country;
-    protected $ticket;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->country = new SCountry($this->db);
-
-        $this->createMigrator($this->country)->dropIfExists()->create();
-
-        // Specifying hasMany here will perform input
-        $this->country->import([
+        $country = new SCountry($this->db);
+        $this->createMigrator($country)->dropIfExists()->create();
+        $country->import([
             ['name' => 'Canada', 'code' => 'CA'],
             ['name' => 'Latvia', 'code' => 'LV'],
             ['name' => 'Japan', 'code' => 'JP'],
@@ -96,11 +89,9 @@ class ScopeTest extends Sql\TestCase
             ['name' => 'Brazil', 'code' => 'BR'],
         ]);
 
-        $this->user = new SUser($this->db);
-
-        $this->createMigrator($this->user)->dropIfExists()->create();
-
-        $this->user->import([
+        $user = new SUser($this->db);
+        $this->createMigrator($user)->dropIfExists()->create();
+        $user->import([
             ['name' => 'John', 'surname' => 'Smith', 'country_code' => 'CA'],
             ['name' => 'Jane', 'surname' => 'Doe', 'country_code' => 'LV'],
             ['name' => 'Alain', 'surname' => 'Prost', 'country_code' => 'FR'],
@@ -108,11 +99,9 @@ class ScopeTest extends Sql\TestCase
             ['name' => 'Rubens', 'surname' => 'Barichello', 'country_code' => 'BR'],
         ]);
 
-        $this->ticket = new STicket($this->db);
-
-        $this->createMigrator($this->ticket)->dropIfExists()->create();
-
-        $this->ticket->import([
+        $ticket = new STicket($this->db);
+        $this->createMigrator($ticket)->dropIfExists()->create();
+        $ticket->import([
             ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],
             ['number' => '002', 'venue' => 'Best Stadium', 'user' => 2],
             ['number' => '003', 'venue' => 'Best Stadium', 'user' => 2],
@@ -121,22 +110,22 @@ class ScopeTest extends Sql\TestCase
         ]);
     }
 
-    public function testCondition()
+    public function testCondition(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition = new Condition('name', 'John');
 
         $user->scope()->add($condition);
 
-        $user->loadAny();
+        $user = $user->loadAny();
 
         $this->assertEquals('Smith', $user->get('surname'));
     }
 
-    public function testConditionToWords()
+    public function testConditionToWords(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition = new Condition(new Expression('false'));
 
@@ -172,16 +161,16 @@ class ScopeTest extends Sql\TestCase
 
         $this->assertEquals('Surname is equal to User Name', $condition->toWords($user));
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         $country->addCondition('Users/#', '>', 0);
 
         $this->assertEquals('Country that has reference Users where number of records is greater than 0', $country->scope()->toWords());
     }
 
-    public function testContitionToWordsImmutableReference()
+    public function testContitionToWordsImmutableReference(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition = new Condition('country_id', 2);
 
@@ -192,7 +181,7 @@ class ScopeTest extends Sql\TestCase
         $this->assertSame($originalReferenceModelData, $user->getField('country_id')->getReference()->getOwner()->data);
     }
 
-    public function testConditionUnsupportedToWords()
+    public function testConditionUnsupportedToWords(): void
     {
         $condition = new Condition('name', 'abc');
 
@@ -200,15 +189,15 @@ class ScopeTest extends Sql\TestCase
         $condition->toWords();
     }
 
-    public function testConditionUnsupportedOperator()
+    public function testConditionUnsupportedOperator(): void
     {
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
         $country->addCondition('name', '==', 'abc');
     }
 
-    public function testConditionUnsupportedNegate()
+    public function testConditionUnsupportedNegate(): void
     {
         $condition = new Condition(new Expression('false'));
 
@@ -216,17 +205,17 @@ class ScopeTest extends Sql\TestCase
         $condition->negate();
     }
 
-    public function testRootScopeUnsupportedNegate()
+    public function testRootScopeUnsupportedNegate(): void
     {
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         $this->expectException(Exception::class);
         $country->scope()->negate();
     }
 
-    public function testConditionOnReferencedRecords()
+    public function testConditionOnReferencedRecords(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $user->addCondition('country_id/code', 'LV');
 
@@ -236,7 +225,7 @@ class ScopeTest extends Sql\TestCase
             $this->assertEquals('LV', $u->get('country_code'));
         }
 
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         // users that have no ticket
         $user->addCondition('Tickets/#', 0);
@@ -247,7 +236,7 @@ class ScopeTest extends Sql\TestCase
             $this->assertTrue(in_array($u->get('name'), ['Alain', 'Aerton', 'Rubens'], true));
         }
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         // countries with more than one user
         $country->addCondition('Users/#', '>', 1);
@@ -256,7 +245,7 @@ class ScopeTest extends Sql\TestCase
             $this->assertEquals('BR', $c->get('code'));
         }
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         // countries with users that have ticket number 001
         $country->addCondition('Users/Tickets/number', '001');
@@ -265,7 +254,7 @@ class ScopeTest extends Sql\TestCase
             $this->assertEquals('CA', $c->get('code'));
         }
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         // countries with users that have more than one ticket
         $country->addCondition('Users/Tickets/#', '>', 1);
@@ -274,7 +263,7 @@ class ScopeTest extends Sql\TestCase
             $this->assertEquals('LV', $c->get('code'));
         }
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         // countries with users that have any tickets
         $country->addCondition('Users/Tickets/#', '>', 0);
@@ -285,7 +274,7 @@ class ScopeTest extends Sql\TestCase
             $this->assertTrue(in_array($c->get('code'), ['LV', 'CA', 'BR'], true));
         }
 
-        $country = clone $this->country;
+        $country = new SCountry($this->db);
 
         // countries with users that have no tickets
         $country->addCondition('Users/Tickets/#', 0);
@@ -296,7 +285,7 @@ class ScopeTest extends Sql\TestCase
             $this->assertTrue(in_array($c->get('code'), ['FR'], true));
         }
 
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         // users with tickets that have more than two users per country
         // test if a model can be referenced multiple times
@@ -318,9 +307,9 @@ class ScopeTest extends Sql\TestCase
         }
     }
 
-    public function testScope()
+    public function testScope(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = ['name', 'John'];
         $condition2 = new Condition('country_code', 'CA');
@@ -333,7 +322,7 @@ class ScopeTest extends Sql\TestCase
 
         $scope = Scope::createOr($scope1, $scope2);
 
-        $this->assertEquals(Scope::OR, $scope->getJunction());
+        $this->assertEquals(Scope::JUNCTION_OR, $scope->getJunction());
 
         $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\')', $scope->toWords($user));
 
@@ -358,16 +347,16 @@ class ScopeTest extends Sql\TestCase
 
         $this->assertEquals('(Name is equal to \'John\' and Code is equal to \'CA\') or (Surname is equal to \'Doe\' and Code is equal to \'LV\') or Code is equal to \'BR\'', $scope->toWords($user));
 
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $user->scope()->add($scope);
 
         $this->assertEquals(4, count($user->export()));
     }
 
-    public function testScopeToWords()
+    public function testScopeToWords(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'CA');
@@ -380,9 +369,9 @@ class ScopeTest extends Sql\TestCase
         $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'CA\') and Surname is not equal to \'Prost\'', $scope->toWords($user));
     }
 
-    public function testNegate()
+    public function testNegate(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', '!=', 'Alain');
         $condition2 = new Condition('country_code', '!=', 'FR');
@@ -396,9 +385,9 @@ class ScopeTest extends Sql\TestCase
         }
     }
 
-    public function testAnd()
+    public function testAnd(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
@@ -410,9 +399,9 @@ class ScopeTest extends Sql\TestCase
         $this->assertEquals('(Name is equal to \'Alain\' and Code is equal to \'FR\') or Name is equal to \'John\'', $scope->toWords($user));
     }
 
-    public function testOr()
+    public function testOr(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
@@ -424,9 +413,9 @@ class ScopeTest extends Sql\TestCase
         $this->assertEquals('(Name is equal to \'Alain\' or Code is equal to \'FR\') and Name is equal to \'John\'', $scope->toWords($user));
     }
 
-    public function testMerge()
+    public function testMerge(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
@@ -436,9 +425,9 @@ class ScopeTest extends Sql\TestCase
         $this->assertEquals('Name is equal to \'Alain\' and Code is equal to \'FR\'', $scope->toWords($user));
     }
 
-    public function testDestroyEmpty()
+    public function testDestroyEmpty(): void
     {
-        $user = clone $this->user;
+        $user = new SUser($this->db);
 
         $condition1 = new Condition('name', 'Alain');
         $condition2 = new Condition('country_code', 'FR');
@@ -452,13 +441,13 @@ class ScopeTest extends Sql\TestCase
         $this->assertEmpty($scope->toWords($user));
     }
 
-    public function testInvalid1()
+    public function testInvalid1(): void
     {
         $this->expectException(Exception::class);
         new Condition('name', '>', ['a', 'b']);
     }
 
-    public function testInvalid2()
+    public function testInvalid2(): void
     {
         $this->expectException(Exception::class);
         new Condition('name', ['a', 'b' => ['c']]);

@@ -29,7 +29,7 @@ abstract class AbstractScope
         $this->onChangeModel();
     }
 
-    abstract protected function onChangeModel();
+    abstract protected function onChangeModel(): void;
 
     /**
      * Get the model this condition is associated with.

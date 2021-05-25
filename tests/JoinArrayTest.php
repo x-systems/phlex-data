@@ -15,7 +15,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         return $this->getProtected($db, 'data');
     }
 
-    public function testDirection()
+    public function testDirection(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m = new Model($db, ['table' => 'user']);
@@ -42,7 +42,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame('foo_id', $this->getProtected($j, 'foreign_field'));
     }
 
-    public function testJoinException()
+    public function testJoinException(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m = new Model($db, ['table' => 'user']);
@@ -51,7 +51,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $j = $m->join('contact.foo_id', ['master_field' => 'test_id']);
     }
 
-    public function testJoinSaving1()
+    public function testJoinSaving1(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
@@ -60,7 +60,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'John');
         $m_u2->set('contact_phone', '+123');
         $m_u2->save();
@@ -71,7 +71,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($db));
 
         $m_u2->unload();
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'Peter');
         $m_u2->set('contact_id', 1);
         $m_u2->save();
@@ -86,7 +86,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($db));
 
         $m_u2->unload();
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'Joe');
         $m_u2->set('contact_phone', '+321');
         $m_u2->save();
@@ -103,7 +103,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    public function testJoinSaving2()
+    public function testJoinSaving2(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
@@ -111,7 +111,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $j = $m_u->join('contact.test_id');
         $j->addField('contact_phone');
 
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'John');
         $m_u2->set('contact_phone', '+123');
         $m_u2->save();
@@ -122,7 +122,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($db));
 
         $m_u2->unload();
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'Peter');
         $m_u2->save();
         $this->assertEquals([
@@ -136,11 +136,11 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($db));
 
         $m_c = new Model($db, ['table' => 'contact']);
-        $m_c->load(2);
+        $m_c = $m_c->load(2);
         $m_c->delete();
 
         $m_u2->unload();
-        $m_u2 = clone $m_u;
+        $m_u2 = $m_u->createEntity();
         $m_u2->set('name', 'Sue');
         $m_u2->set('contact_phone', '+444');
         $m_u2->save();
@@ -156,13 +156,14 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    public function testJoinSaving3()
+    public function testJoinSaving3(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
         $m_u->addField('name');
         $j = $m_u->join('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');
+        $m_u = $m_u->createEntity();
 
         $m_u->set('name', 'John');
         $m_u->set('contact_phone', '+123');
@@ -175,7 +176,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    /*public function testJoinSaving4()
+    /*public function testJoinSaving4(): void
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, 'user');
@@ -183,6 +184,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m_u->addField('code');
         $j = $m_u->join('contact.code', ['master_field' => 'code']);
         $j->addField('contact_phone');
+        $m_u = $m_u->createEntity();
 
         $m_u->get('name') = 'John';
         $m_u->get('code') = 'C28';
@@ -196,7 +198,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($db));
     }*/
 
-    public function testJoinLoading()
+    public function testJoinLoading(): void
     {
         $db = new Persistence\Array_([
             'user' => [
@@ -214,23 +216,23 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = (clone $m_u)->load(1);
+        $m_u2 = $m_u->load(1);
         $this->assertEquals([
             'name' => 'John', 'contact_id' => 1, 'contact_phone' => '+123', 'id' => 1,
         ], $m_u2->get());
 
-        $m_u2 = (clone $m_u)->load(3);
+        $m_u2 = $m_u->load(3);
         $this->assertEquals([
             'name' => 'Joe', 'contact_id' => 2, 'contact_phone' => '+321', 'id' => 3,
         ], $m_u2->get());
 
-        $m_u2 = (clone $m_u)->tryLoad(4);
+        $m_u2 = $m_u->tryLoad(4);
         $this->assertEquals([
             'name' => null, 'contact_id' => null, 'contact_phone' => null, 'id' => null,
         ], $m_u2->get());
     }
 
-    public function testJoinUpdate()
+    public function testJoinUpdate(): void
     {
         $db = new Persistence\Array_([
             'user' => [
@@ -248,7 +250,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u2 = (clone $m_u)->load(1);
+        $m_u2 = $m_u->load(1);
         $m_u2->set('name', 'John 2');
         $m_u2->set('contact_phone', '+555');
         $m_u2->save();
@@ -264,7 +266,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2 = (clone $m_u)->load(3);
+        $m_u2 = $m_u->load(3);
         $m_u2->set('name', 'XX');
         $m_u2->set('contact_phone', '+999');
         $m_u2->save();
@@ -280,7 +282,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
             ],
         ], $this->getInternalPersistenceData($db));
 
-        $m_u2 = (clone $m_u)->tryLoad(4);
+        $m_u2 = $m_u->tryLoad(4);
         $m_u2->set('name', 'YYY');
         $m_u2->set('contact_phone', '+777');
         $m_u2->save();
@@ -299,7 +301,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    public function testJoinDelete()
+    public function testJoinDelete(): void
     {
         $db = new Persistence\Array_([
             'user' => [
@@ -319,7 +321,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
 
-        $m_u->load(1);
+        $m_u = $m_u->load(1);
         $m_u->delete();
 
         $this->assertSame([
@@ -334,7 +336,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         ], $this->getInternalPersistenceData($db));
     }
 
-    public function testLoadMissing()
+    public function testLoadMissing(): void
     {
         $db = new Persistence\Array_([
             'user' => [
@@ -352,22 +354,22 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $j = $m_u->join('contact');
         $j->addField('contact_phone');
         $this->expectException(Exception::class);
-        $m_u->load(2);
+        $m_u = $m_u->load(2);
     }
 
     /*
-    public function testReverseJoin()
+    public function testReverseJoin(): void
     {
         $db = new Persistence\Array_();
         $m = new Model($db);
         $m->addField('name');
     }
 
-    public function testMultipleJoins()
+    public function testMultipleJoins(): void
     {
     }
 
-    public function testTrickyCases()
+    public function testTrickyCases(): void
     {
         $db = new Persistence\Array_();
         $m = new Model($db);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Phlex\Data\Model;
 
 class ConditionSqlTest extends Sql\TestCase
@@ -21,27 +22,40 @@ class ConditionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
-        $mm = clone $m;
-        $mmm = (clone $mm)->tryLoad(1);
-        $this->assertSame('John', $mmm->get('name'));
-        $mmm = (clone $mm)->tryLoad(2);
-        $this->assertSame('Sue', $mmm->get('name'));
+        $mm = $m->tryLoad(1);
+        $this->assertSame('John', $mm->get('name'));
+        $mm = $m->tryLoad(2);
+        $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('gender', 'M');
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertSame('John', $mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertNull($mm2->get('name'));
 
-        $this->assertSameSql('select "id","name","gender" from "user" where "gender" = :a', $mm->toQuery()->render());
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+            $this->assertSame(
+                'select "id","name","gender" from "user" where "gender" = :a',
+                $mm->toQuery()->render()
+            );
+        }
 
         $mm = clone $m;
         $mm->withId(2); // = addCondition(id, 2)
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertNull($mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertSame('Sue', $mm2->get('name'));
+    }
+
+    public function testEntityNoScopeCloning()
+    {
+        $m = new Model($this->db, ['table' => 'user']);
+        $scope = $m->scope();
+        $this->assertSame($scope, $m->createEntity()->getModel()->scope());
+        $this->expectException(\Phlex\Data\Exception::class);
+        $m->createEntity()->scope();
     }
 
     public function testEntityReloadWithDifferentIdException()
@@ -56,12 +70,14 @@ class ConditionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
-        $mm = clone $m;
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
+        $m = $m->tryLoad(1);
+        $this->assertSame('John', $m->get('name'));
+        \Closure::bind(function () use ($m) {
+            $m->_entityId = 2;
+        }, null, Model::class)();
         $this->expectException(\Phlex\Data\Exception::class);
-        $this->expectExceptionMessageMatches('~different~');
-        $mm->tryLoad(2);
+        $this->expectExceptionMessageMatches('~entity.+different~');
+        $m->reload();
     }
 
     public function testNull()
@@ -103,39 +119,38 @@ class ConditionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
-        $mm = clone $m;
-        $mmm = (clone $mm)->tryLoad(1);
-        $this->assertSame('John', $mmm->get('name'));
-        $mmm = (clone $mm)->tryLoad(2);
-        $this->assertSame('Sue', $mmm->get('name'));
+        $mm = $m->tryLoad(1);
+        $this->assertSame('John', $mm->get('name'));
+        $mm = $m->tryLoad(2);
+        $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('gender', 'M');
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertSame('John', $mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertNull($mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('gender', '!=', 'M');
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertNull($mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('id', '>', 1);
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertNull($mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition('id', 'in', [1, 3]);
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertSame('John', $mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertNull($mm2->get('name'));
     }
 
     public function testExpressions1()
@@ -150,25 +165,24 @@ class ConditionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
-        $mm = clone $m;
-        $mmm = (clone $mm)->tryLoad(1);
-        $this->assertSame('John', $mmm->get('name'));
-        $mmm = (clone $mm)->tryLoad(2);
-        $this->assertSame('Sue', $mmm->get('name'));
+        $mm = $m->tryLoad(1);
+        $this->assertSame('John', $mm->get('name'));
+        $mm = $m->tryLoad(2);
+        $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[] > 1', [$mm->getField('id')]));
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertNull($mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[id] > 1'));
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertNull($mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertSame('Sue', $mm2->get('name'));
     }
 
     public function testExpressions2()
@@ -183,39 +197,38 @@ class ConditionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender', 'surname']);
 
-        $mm = clone $m;
-        $mmm = (clone $mm)->tryLoad(1);
-        $this->assertSame('John', $mmm->get('name'));
-        $mmm = (clone $mm)->tryLoad(2);
-        $this->assertSame('Sue', $mmm->get('name'));
+        $mm = $m->tryLoad(1);
+        $this->assertSame('John', $mm->get('name'));
+        $mm = $m->tryLoad(2);
+        $this->assertSame('Sue', $mm->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] = [surname]'));
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertNull($mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($m->getField('name'), $m->getField('surname'));
-        $mm->tryLoad(1);
-        $this->assertNull($mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertNull($mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertSame('Sue', $mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] != [surname]'));
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertSame('John', $mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertNull($mm2->get('name'));
 
         $mm = clone $m;
         $mm->addCondition($m->getField('name'), '!=', $m->getField('surname'));
-        $mm->tryLoad(1);
-        $this->assertSame('John', $mm->get('name'));
-        $mm->tryLoad(2);
-        $this->assertNull($mm->get('name'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertSame('John', $mm2->get('name'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertNull($mm2->get('name'));
     }
 
     public function testExpressionJoin()
@@ -236,38 +249,37 @@ class ConditionSqlTest extends Sql\TestCase
 
         $m->join('contact')->addField('contact_phone');
 
-        $mm = clone $m;
-        $mmm = (clone $mm)->tryLoad(1);
-        $this->assertSame('John', $mmm->get('name'));
-        $this->assertSame('+123 smiths', $mmm->get('contact_phone'));
-        $mmm = (clone $mm)->tryLoad(2);
-        $this->assertSame('Sue', $mmm->get('name'));
-        $this->assertSame('+321 sues', $mmm->get('contact_phone'));
-        $mmm = (clone $mm)->tryLoad(3);
-        $this->assertSame('Peter', $mmm->get('name'));
-        $this->assertSame('+123 smiths', $mmm->get('contact_phone'));
+        $mm2 = $m->tryLoad(1);
+        $this->assertSame('John', $mm2->get('name'));
+        $this->assertSame('+123 smiths', $mm2->get('contact_phone'));
+        $mm2 = $m->tryLoad(2);
+        $this->assertSame('Sue', $mm2->get('name'));
+        $this->assertSame('+321 sues', $mm2->get('contact_phone'));
+        $mm2 = $m->tryLoad(3);
+        $this->assertSame('Peter', $mm2->get('name'));
+        $this->assertSame('+123 smiths', $mm2->get('contact_phone'));
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('[name] = [surname]'));
-        $mm->tryLoad(1);
-        $this->assertFalse($mm->loaded());
-        $mm->tryLoad(2);
-        $this->assertSame('Sue', $mm->get('name'));
-        $this->assertSame('+321 sues', $mm->get('contact_phone'));
-        $mm->tryLoad(3);
-        $this->assertFalse($mm->loaded());
+        $mm2 = $mm->tryLoad(1);
+        $this->assertFalse($mm2->isLoaded());
+        $mm2 = $mm->tryLoad(2);
+        $this->assertSame('Sue', $mm2->get('name'));
+        $this->assertSame('+321 sues', $mm2->get('contact_phone'));
+        $mm2 = $mm->tryLoad(3);
+        $this->assertFalse($mm2->isLoaded());
 
         $mm = clone $m;
         $mm->addCondition($mm->expr('\'+123 smiths\' = [contact_phone]'));
-        $mmm = (clone $mm)->tryLoad(1);
-        $this->assertSame('John', $mmm->get('name'));
-        $this->assertSame('+123 smiths', $mmm->get('contact_phone'));
-        $mmm = (clone $mm)->tryLoad(2);
-        $this->assertNull($mmm->get('name'));
-        $this->assertNull($mmm->get('contact_phone'));
-        $mmm = (clone $mm)->tryLoad(3);
-        $this->assertSame('Peter', $mmm->get('name'));
-        $this->assertSame('+123 smiths', $mmm->get('contact_phone'));
+        $mm2 = $mm->tryLoad(1);
+        $this->assertSame('John', $mm2->get('name'));
+        $this->assertSame('+123 smiths', $mm2->get('contact_phone'));
+        $mm2 = $mm->tryLoad(2);
+        $this->assertNull($mm2->get('name'));
+        $this->assertNull($mm2->get('contact_phone'));
+        $mm2 = $mm->tryLoad(3);
+        $this->assertSame('Peter', $mm2->get('name'));
+        $this->assertSame('+123 smiths', $mm2->get('contact_phone'));
     }
 
     public function testArrayCondition()
@@ -283,22 +295,22 @@ class ConditionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', ['John', 'Doe']);
-        $this->assertSame(1, count($m->export()));
+        $this->assertCount(1, $m->export());
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', 'in', ['Johhny', 'Doe', 'Mary']);
-        $this->assertSame(2, count($m->export()));
+        $this->assertCount(2, $m->export());
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', []); // this should not fail, always should be false
-        $this->assertSame(0, count($m->export()));
+        $this->assertCount(0, $m->export());
 
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
         $m->addCondition('name', 'not in', []); // this should not fail, always should be true
-        $this->assertSame(3, count($m->export()));
+        $this->assertCount(3, $m->export());
     }
 
     public function testDateCondition()
@@ -314,7 +326,7 @@ class ConditionSqlTest extends Sql\TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        $m->tryLoadBy('date', new \DateTime('08-12-1982'));
+        $m = $m->tryLoadBy('date', new \DateTime('08-12-1982'));
         $this->assertSame('Sue', $m->get('name'));
     }
 
@@ -332,7 +344,7 @@ class ConditionSqlTest extends Sql\TestCase
         $m->addField('date', ['type' => 'date']);
 
         $m->addCondition('date', new \DateTime('08-12-1982'));
-        $m->loadAny();
+        $m = $m->loadAny();
         $this->assertSame('Sue', $m->get('name'));
     }
 
@@ -355,7 +367,7 @@ class ConditionSqlTest extends Sql\TestCase
             $this->expectExceptionMessageMatches('~could not be converted to string~');
         }
 
-        $m->tryLoadBy('name', new \DateTime('08-12-1982'));
+        $m = $m->tryLoadBy('name', new \DateTime('08-12-1982'));
     }
 
     public function testOrConditions()
@@ -373,14 +385,14 @@ class ConditionSqlTest extends Sql\TestCase
         $u->addCondition(Model\Scope::createOr(
             ['name', 'John'],
             ['name', 'Peter'],
-        ));
+            ));
 
         $this->assertEquals(2, $u->getCount());
 
         $u->addCondition(Model\Scope::createOr(
             ['name', 'Peter'],
             ['name', 'Joe'],
-        ));
+            ));
         $this->assertEquals(1, $u->getCount());
     }
 
@@ -400,12 +412,14 @@ class ConditionSqlTest extends Sql\TestCase
 
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
 
-        $u->loadBy('name', 'John');
+        $u2 = $u->loadBy('name', 'John');
+        $this->assertSame(['id' => 1, 'name' => 'John'], $u2->get());
         $this->assertTrue($u->scope()->isEmpty());
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value
 
-        $u->tryLoadBy('name', 'John');
+        $u2 = $u->tryLoadBy('name', 'Joe');
+        $this->assertSame(['id' => 3, 'name' => 'Joe'], $u2->get());
         $this->assertTrue($u->scope()->isEmpty());
         $this->assertFalse($u->getField('name')->system); // should not set field as system
         $this->assertNull($u->getField('name')->default); // should not set field default value
@@ -434,18 +448,18 @@ class ConditionSqlTest extends Sql\TestCase
         $u->addField('created', ['type' => 'datetime']);
 
         $t = (clone $u)->addCondition('created', 'like', '%19%');
-        $this->assertSame(2, count($t->export())); // only year 2019 records
+        $this->assertCount(2, $t->export()); // only year 2019 records
 
         $t = (clone $u)->addCondition('active', 'like', '%1%');
-        $this->assertSame(2, count($t->export())); // only active records
+        $this->assertCount(2, $t->export()); // only active records
 
         $t = (clone $u)->addCondition('active', 'like', '%0%');
-        $this->assertSame(1, count($t->export())); // only inactive records
+        $this->assertCount(1, $t->export()); // only inactive records
 
         $t = (clone $u)->addCondition('active', 'like', '%999%');
-        $this->assertSame(0, count($t->export())); // bad value, so it will not match anything
+        $this->assertCount(0, $t->export()); // bad value, so it will not match anything
 
         $t = (clone $u)->addCondition('active', 'like', '%ABC%');
-        $this->assertSame(0, count($t->export())); // bad value, so it will not match anything
+        $this->assertCount(0, $t->export()); // bad value, so it will not match anything
     }
 }

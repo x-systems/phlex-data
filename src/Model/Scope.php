@@ -7,6 +7,7 @@ namespace Phlex\Data\Model;
 use Phlex\Core\ContainerTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence\Sql;
 
 /**
  * @property Scope\AbstractScope[] $elements
@@ -16,21 +17,21 @@ class Scope extends Scope\AbstractScope
     use ContainerTrait;
 
     // junction definitions
-    public const OR = 'OR';
-    public const AND = 'AND';
+    public const JUNCTION_OR = 'OR';
+    public const JUNCTION_AND = 'AND';
 
-    /** @var self::AND|self::OR Junction to use in case more than one element. */
-    protected $junction = self::AND;
+    /** @var self::JUNCTION_AND|self::JUNCTION_OR Junction to use in case more than one element. */
+    protected $junction = self::JUNCTION_AND;
 
     /**
      * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param Scope\AbstractScope[]|array[] $nestedConditions
+     * @param array<int, Scope\AbstractScope|string|Expressionable|array<mixed>> $nestedConditions
      */
-    public function __construct(array $nestedConditions = [], string $junction = self::AND)
+    public function __construct(array $nestedConditions = [], string $junction = self::JUNCTION_AND)
     {
-        if (!in_array($junction, [self::OR, self::AND], true)) {
-            throw (new Exception('Using invalid CompondCondition junction'))
+        if (!in_array($junction, [self::JUNCTION_OR, self::JUNCTION_AND], true)) {
+            throw (new Exception('Using invalid Scope junction'))
                 ->addMoreInfo('junction', $junction);
         }
 
@@ -67,6 +68,10 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
+     * @param Scope\AbstractScope|array|string|Sql\Expressionable $field
+     * @param string|mixed|null                                   $operator
+     * @param mixed|null                                          $value
+     *
      * @return $this
      */
     public function addCondition($field, $operator = null, $value = null)
@@ -112,7 +117,7 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
-     * @return self::AND|self::OR
+     * @return self::JUNCTION_AND|self::JUNCTION_OR
      */
     public function getJunction(): string
     {
@@ -120,19 +125,19 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
-     * Checks if junction is OR.
+     * Checks if junction is JUNCTION_OR.
      */
     public function isOr(): bool
     {
-        return $this->junction === self::OR;
+        return $this->junction === self::JUNCTION_OR;
     }
 
     /**
-     * Checks if junction is AND.
+     * Checks if junction is JUNCTION_AND.
      */
     public function isAnd(): bool
     {
-        return $this->junction === self::AND;
+        return $this->junction === self::JUNCTION_AND;
     }
 
     /**
@@ -166,7 +171,7 @@ class Scope extends Scope\AbstractScope
      */
     public function negate()
     {
-        $this->junction = $this->junction === self::OR ? self::AND : self::OR;
+        $this->junction = $this->junction === self::JUNCTION_OR ? self::JUNCTION_AND : self::JUNCTION_OR;
 
         foreach ($this->elements as $nestedCondition) {
             $nestedCondition->negate();
@@ -190,18 +195,22 @@ class Scope extends Scope\AbstractScope
     }
 
     /**
+     * @param Scope\AbstractScope|string|Sql\Expressionable|array<mixed> ...$conditions
+     *
      * @return static
      */
     public static function createAnd(...$conditions)
     {
-        return new static($conditions, self::AND);
+        return new static($conditions, self::JUNCTION_AND);
     }
 
     /**
+     * @param Scope\AbstractScope|string|Sql\Expressionable|array<mixed> ...$conditions
+     *
      * @return static
      */
     public static function createOr(...$conditions)
     {
-        return new static($conditions, self::OR);
+        return new static($conditions, self::JUNCTION_OR);
     }
 }

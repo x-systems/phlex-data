@@ -92,6 +92,16 @@ class Model implements \IteratorAggregate
     public const FIELD_FILTER_ONLY_FIELDS = 'only fields';
 
     /**
+     * @var static|null not-null if and only if this instance is an entity
+     */
+    private $_model;
+
+    /**
+     * @var mixed once set, loading a different ID will result in an error
+     */
+    private $_entityId;
+
+    /**
      * The class used by addField() method.
      *
      * @todo use Field::class here and refactor addField() method to not use namespace prefixes.
@@ -103,7 +113,7 @@ class Model implements \IteratorAggregate
     public $_default_seed_addField = [Model\Field::class];
 
     /**
-     * The class used by addField() method.
+     * The class used by addExpression() method.
      *
      * @var string|array
      */
@@ -150,7 +160,7 @@ class Model implements \IteratorAggregate
     public $persistence;
 
     /** @var Model\Scope\RootScope */
-    protected $scope;
+    private $scope;
 
     /**
      * Array of limit set.
@@ -182,7 +192,7 @@ class Model implements \IteratorAggregate
      *
      * @var array
      */
-    public $data = [];
+    private $data = [];
 
     /**
      * After loading an active record from DataSet it will be stored in
@@ -198,7 +208,7 @@ class Model implements \IteratorAggregate
      *
      * @var array
      */
-    public $dirty = [];
+    private $dirty = [];
 
     /**
      * Setting model as read_only will protect you from accidentally
@@ -213,19 +223,11 @@ class Model implements \IteratorAggregate
     public $read_only = false;
 
     /**
-     * Once set, Model behaves like an entity and loading a different ID
-     * will result in an error.
-     *
-     * @var mixed
-     */
-    private $entityId;
-
-    /**
      * While in most cases your id field will be called 'id', sometimes
      * you would want to use a different one or maybe don't create field
      * at all.
      *
-     * @var string
+     * @var string|null
      */
     public $primaryKey = 'id';
 
@@ -326,7 +328,8 @@ class Model implements \IteratorAggregate
     {
         $this->scope = \Closure::bind(function () {
             return new Model\Scope\RootScope();
-        }, null, Model\Scope\RootScope::class)();
+        }, null, Model\Scope\RootScope::class)()
+            ->setModel($this);
 
         $this->setDefaults($defaults);
 
@@ -335,12 +338,66 @@ class Model implements \IteratorAggregate
         }
     }
 
+    public function isEntity(): bool
+    {
+        return $this->_model !== null;
+    }
+
+    public function assertIsModel(): void
+    {
+        if ($this->isEntity()) {
+            throw new Exception('Expected model, but instance is an entity');
+        }
+    }
+
+    public function assertIsEntity(): void
+    {
+        if (!$this->isEntity()) {
+            throw new Exception('Expected entity, but instance is a model');
+        }
+    }
+
+    /**
+     * @return static
+     */
+    public function getModel(bool $allowOnModel = false): self
+    {
+        if ($allowOnModel && !$this->isEntity()) {
+            return $this;
+        }
+
+        $this->assertIsEntity();
+
+        return $this->_model;
+    }
+
+    /**
+     * @return static
+     */
+    public function createEntity(): self
+    {
+        $this->assertIsModel();
+
+        $this->_model = $this;
+        try {
+            $model = clone $this;
+        } finally {
+            $this->_model = null;
+        }
+        $model->_entityId = null;
+        $model->scope = null; // @phpstan-ignore-line
+
+        return $model;
+    }
+
     /**
      * Clones model object.
      */
     public function __clone()
     {
-        $this->scope = (clone $this->scope)->setModel($this);
+        if (!$this->isEntity()) {
+            $this->scope = (clone $this->scope)->setModel($this);
+        }
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
         $this->_cloneCollection('userActions');
@@ -362,7 +419,7 @@ class Model implements \IteratorAggregate
             return; // don't declare actions for model without primaryKey
         }
 
-        $this->initEntityHooks();
+        $this->initEntityIdHooks();
 
         if ($this->read_only) {
             return; // don't declare action for read-only model
@@ -402,37 +459,61 @@ class Model implements \IteratorAggregate
         ]);
     }
 
-    private function initEntityHooks(): void
+    private function initEntityIdAndAssertUnchanged(): void
     {
-        $checkFx = function () {
-            if ($this->getId() === null) { // allow unload
-                return;
-            }
+        $id = $this->getId();
+        if ($id === null) { // allow unload
+            return;
+        }
 
-            if ($this->entityId === null) {
-                $this->entityId = $this->getId();
-            } else {
-                if (!$this->compare($this->primaryKey, $this->entityId)) {
-                    $newId = $this->getId();
-                    $this->unload(); // data for different ID were loaded, make sure to discard them
+        if ($this->_entityId === null) {
+            // set entity ID to the first seen ID
+            $this->_entityId = $id;
+        } elseif (!$this->compare($this->primaryKey, $this->_entityId)) {
+            $this->unload(); // data for different ID were loaded, make sure to discard them
 
-                    throw (new Exception('Model is loaded as an entity, ID can not be changed to a different one'))
-                        ->addMoreInfo('entityId', $this->entityId)
-                        ->addMoreInfo('newId', $newId);
-                }
-            }
+            throw (new Exception('Model instance is an entity, ID can not be changed to a different one ' . $this->_entityId . ' ' . $id))
+                ->addMoreInfo('entityId', $this->_entityId)
+                ->addMoreInfo('newId', $id);
+        }
+    }
+
+    private function initEntityIdHooks(): void
+    {
+        $fx = function () {
+            $this->initEntityIdAndAssertUnchanged();
         };
 
-        $this->onHookShort(self::HOOK_BEFORE_LOAD, $checkFx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_LOAD, $checkFx, [], -10);
-        $this->onHookShort(self::HOOK_BEFORE_INSERT, $checkFx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_INSERT, $checkFx, [], -10);
-        $this->onHookShort(self::HOOK_BEFORE_UPDATE, $checkFx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_UPDATE, $checkFx, [], -10);
-        $this->onHookShort(self::HOOK_BEFORE_DELETE, $checkFx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_DELETE, $checkFx, [], -10);
-        $this->onHookShort(self::HOOK_BEFORE_SAVE, $checkFx, [], 10);
-        $this->onHookShort(self::HOOK_AFTER_SAVE, $checkFx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_LOAD, $fx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_LOAD, $fx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_INSERT, $fx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_INSERT, $fx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_UPDATE, $fx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_UPDATE, $fx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_DELETE, $fx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_DELETE, $fx, [], -10);
+        $this->onHookShort(self::HOOK_BEFORE_SAVE, $fx, [], 10);
+        $this->onHookShort(self::HOOK_AFTER_SAVE, $fx, [], -10);
+    }
+
+    /**
+     * @internal should be not used outside phlex-data
+     */
+    public function &getDataRef(): array
+    {
+        $this->assertIsEntity();
+
+        return $this->data;
+    }
+
+    /**
+     * @internal should be not used outside phlex-data
+     */
+    public function &getDirtyRef(): array
+    {
+        $this->assertIsEntity();
+
+        return $this->dirty;
     }
 
     /**
@@ -478,7 +559,7 @@ class Model implements \IteratorAggregate
      *
      * @param array|object $seed
      */
-    public function addField(string $name, $seed = []): Model\Field
+    public function addField(string $fieldName, $seed = []): Model\Field
     {
         if (is_object($seed)) {
             $field = $seed;
@@ -486,7 +567,7 @@ class Model implements \IteratorAggregate
             $field = $this->fieldFactory($seed);
         }
 
-        return $this->_addIntoCollection($name, $field, 'fields');
+        return $this->_addIntoCollection($fieldName, $field, 'fields');
     }
 
     /**
@@ -539,28 +620,30 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function removeField(string $name)
+    public function removeField(string $fieldName)
     {
-        $this->getField($name); // better exception if field does not exist
+        $this->assertIsModel();
 
-        $this->_removeFromCollection($name, 'fields');
+        $this->getField($fieldName); // better exception if field does not exist
+
+        $this->_removeFromCollection($fieldName, 'fields');
 
         return $this;
     }
 
-    public function hasField(string $name): bool
+    public function hasField(string $fieldName): bool
     {
-        return $this->_hasInCollection($name, 'fields');
+        return $this->_hasInCollection($fieldName, 'fields');
     }
 
-    public function getField(string $name): Model\Field
+    public function getField(string $fieldName): Model\Field
     {
         try {
-            return $this->_getFromCollection($name, 'fields');
+            return $this->_getFromCollection($fieldName, 'fields');
         } catch (\Phlex\Core\Exception $e) {
             throw (new Exception('Field is not defined in model', 0, $e))
                 ->addMoreInfo('model', $this)
-                ->addMoreInfo('field', $name);
+                ->addMoreInfo('field', $fieldName);
         }
     }
 
@@ -606,14 +689,14 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    private function checkOnlyFieldsField(string $field)
+    private function checkOnlyFieldsField(string $fieldName)
     {
-        $this->getField($field); // test if field exists
+        $this->getField($fieldName); // test if field exists
 
         if ($this->only_fields) {
-            if (!in_array($field, $this->only_fields, true) && !$this->getField($field)->system) {
+            if (!in_array($fieldName, $this->only_fields, true) && !$this->getField($fieldName)->system) {
                 throw (new Exception('Attempt to use field outside of those set by onlyFields'))
-                    ->addMoreInfo('field', $field)
+                    ->addMoreInfo('field', $fieldName)
                     ->addMoreInfo('only_fields', $this->only_fields);
             }
         }
@@ -627,11 +710,14 @@ class Model implements \IteratorAggregate
     /**
      * Will return true if specified field is dirty.
      */
-    public function isDirty(string $field): bool
+    public function isDirty(string $fieldName): bool
     {
-        $this->checkOnlyFieldsField($field);
+        $this->assertIsEntity();
 
-        if (array_key_exists($field, $this->dirty)) {
+        $this->checkOnlyFieldsField($fieldName);
+
+        $dirtyRef = &$this->getDirtyRef();
+        if (array_key_exists($fieldName, $dirtyRef)) {
             return true;
         }
 
@@ -702,6 +788,8 @@ class Model implements \IteratorAggregate
      */
     public function set(string $fieldName, $value)
     {
+        $this->assertIsEntity();
+
         $this->checkOnlyFieldsField($fieldName);
 
         $field = $this->getField($fieldName);
@@ -717,9 +805,11 @@ class Model implements \IteratorAggregate
         }
 
         // do nothing when value has not changed
-        $currentValue = array_key_exists($fieldName, $this->data)
-            ? $this->data[$fieldName]
-            : (array_key_exists($fieldName, $this->dirty) ? $this->dirty[$fieldName] : $field->default);
+        $dataRef = &$this->getDataRef();
+        $dirtyRef = &$this->getDirtyRef();
+        $currentValue = array_key_exists($fieldName, $dataRef)
+            ? $dataRef[$fieldName]
+            : (array_key_exists($fieldName, $dirtyRef) ? $dirtyRef[$fieldName] : $field->default);
         if (!$value instanceof Sql\Expressionable && $field->compare($value, $currentValue)) {
             return $this;
         }
@@ -755,18 +845,19 @@ class Model implements \IteratorAggregate
             } elseif (!array_key_exists($value, $field->values)) {
                 throw (new Exception('This is not one of the allowed values for the field'))
                     ->addMoreInfo('field', $fieldName)
+                    ->addMoreInfo('field', $fieldName)
                     ->addMoreInfo('model', $this)
                     ->addMoreInfo('value', $value)
                     ->addMoreInfo('values', $field->values);
             }
         }
 
-        if (array_key_exists($fieldName, $this->dirty) && $field->compare($this->dirty[$fieldName], $value)) {
-            unset($this->dirty[$fieldName]);
-        } elseif (!array_key_exists($fieldName, $this->dirty)) {
-            $this->dirty[$fieldName] = array_key_exists($fieldName, $this->data) ? $this->data[$fieldName] : $field->default;
+        if (array_key_exists($fieldName, $dirtyRef) && $field->compare($dirtyRef[$fieldName], $value)) {
+            unset($dirtyRef[$fieldName]);
+        } elseif (!array_key_exists($fieldName, $dirtyRef)) {
+            $dirtyRef[$fieldName] = array_key_exists($fieldName, $dataRef) ? $dataRef[$fieldName] : $field->default;
         }
-        $this->data[$fieldName] = $value;
+        $dataRef[$fieldName] = $value;
 
         return $this;
     }
@@ -776,14 +867,14 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function setNull(string $field)
+    public function setNull(string $fieldName)
     {
         // set temporary hook to disable any normalization (null validation)
         $hookIndex = $this->onHookShort(self::HOOK_NORMALIZE, static function () {
             throw new \Phlex\Core\HookBreaker(false);
         }, [], PHP_INT_MIN);
         try {
-            return $this->set($field, null);
+            return $this->set($fieldName, null);
         } finally {
             $this->removeHook(self::HOOK_NORMALIZE, $hookIndex, true);
         }
@@ -798,8 +889,8 @@ class Model implements \IteratorAggregate
      */
     public function setMulti(array $fields)
     {
-        foreach ($fields as $field => $value) {
-            $this->set($field, $value);
+        foreach ($fields as $fieldName => $value) {
+            $this->set($fieldName, $value);
         }
 
         return $this;
@@ -811,25 +902,28 @@ class Model implements \IteratorAggregate
      *
      * @return mixed
      */
-    public function get(string $field = null)
+    public function get(string $fieldName = null)
     {
-        if ($field === null) {
+        $this->assertIsEntity();
+
+        if ($fieldName === null) {
             // Collect list of eligible fields
             $data = [];
-            foreach ($this->only_fields ?: array_keys($this->getFields()) as $field) {
-                $data[$field] = $this->get($field);
+            foreach ($this->only_fields ?: array_keys($this->getFields()) as $fieldName) {
+                $data[$fieldName] = $this->get($fieldName);
             }
 
             return $data;
         }
 
-        $this->checkOnlyFieldsField($field);
+        $this->checkOnlyFieldsField($fieldName);
 
-        if (array_key_exists($field, $this->data)) {
-            return $this->data[$field];
+        $dataRef = &$this->getDataRef();
+        if (array_key_exists($fieldName, $dataRef)) {
+            return $dataRef[$fieldName];
         }
 
-        return $this->getField($field)->default;
+        return $this->getField($fieldName)->default;
     }
 
     /**
@@ -857,10 +951,7 @@ class Model implements \IteratorAggregate
             $this->set($this->primaryKey, $value);
         }
 
-        // set entity ID to the first set ID
-        if ($this->entityId === null) {
-            $this->entityId = $this->getId();
-        }
+        $this->initEntityIdAndAssertUnchanged();
 
         return $this;
     }
@@ -905,19 +996,21 @@ class Model implements \IteratorAggregate
     /**
      * @param mixed $value
      */
-    public function compare(string $name, $value): bool
+    public function compare(string $fieldName, $value): bool
     {
-        return $this->getField($name)->compare($value);
+        return $this->getField($fieldName)->compare($value);
     }
 
     /**
      * Does field exist?
      */
-    public function _isset(string $name): bool
+    public function _isset(string $fieldName): bool
     {
-        $this->checkOnlyFieldsField($name);
+        $this->checkOnlyFieldsField($fieldName);
 
-        return array_key_exists($name, $this->dirty);
+        $dirtyRef = &$this->getDirtyRef();
+
+        return array_key_exists($fieldName, $dirtyRef);
     }
 
     /**
@@ -925,13 +1018,15 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function _unset(string $name)
+    public function _unset(string $fieldName)
     {
-        $this->checkOnlyFieldsField($name);
+        $this->checkOnlyFieldsField($fieldName);
 
-        if (array_key_exists($name, $this->dirty)) {
-            $this->data[$name] = $this->dirty[$name];
-            unset($this->dirty[$name]);
+        $dataRef = &$this->getDataRef();
+        $dirtyRef = &$this->getDirtyRef();
+        if (array_key_exists($fieldName, $dirtyRef)) {
+            $dataRef[$fieldName] = $dirtyRef[$fieldName];
+            unset($dirtyRef[$fieldName]);
         }
 
         return $this;
@@ -989,7 +1084,13 @@ class Model implements \IteratorAggregate
      */
     public function scope(): Model\Scope\RootScope
     {
-        return $this->scope->setModel($this);
+        $this->assertIsModel();
+
+        if ($this->scope->getModel() === null) {
+            $this->scope->setModel($this);
+        }
+
+        return $this->scope;
     }
 
     /**
@@ -1037,6 +1138,8 @@ class Model implements \IteratorAggregate
      */
     public function setOrder($field, string $direction = 'asc')
     {
+        $this->assertIsModel();
+
         // fields passed as array
         if (is_array($field)) {
             if (func_num_args() > 1) {
@@ -1083,6 +1186,8 @@ class Model implements \IteratorAggregate
      */
     public function setLimit(int $count = null, int $offset = 0)
     {
+        $this->assertIsModel();
+
         $this->limit = [$count, $offset];
 
         return $this;
@@ -1091,9 +1196,9 @@ class Model implements \IteratorAggregate
     /**
      * Is model loaded?
      */
-    public function loaded(): bool
+    public function isLoaded(): bool
     {
-        return $this->primaryKey && $this->getId() !== null && $this->entityId !== null;
+        return $this->isEntity() && $this->primaryKey && $this->getId() !== null && $this->_entityId !== null;
     }
 
     /**
@@ -1103,12 +1208,16 @@ class Model implements \IteratorAggregate
      */
     public function unload()
     {
+        $this->assertIsEntity();
+
         $this->hook(self::HOOK_BEFORE_UNLOAD);
-        $this->data = [];
-        if ($this->primaryKey) {
+        $dataRef = &$this->getDataRef();
+        $dirtyRef = &$this->getDirtyRef();
+        $dataRef = [];
+        if ($this->id_field) {
             $this->setId(null);
         }
-        $this->dirty = [];
+        $dirtyRef = [];
         $this->hook(self::HOOK_AFTER_UNLOAD);
 
         return $this;
@@ -1124,12 +1233,14 @@ class Model implements \IteratorAggregate
      */
     public function tryLoad($id)
     {
+        $this->assertIsModel();
+
         try {
             return $this->load($id);
         } catch (Model\RecordNotFoundException $e) {
         }
 
-        return $this;
+        return $this->createEntity();
     }
 
     /**
@@ -1155,7 +1266,7 @@ class Model implements \IteratorAggregate
         } catch (Model\RecordNotFoundException $e) {
         }
 
-        return $this;
+        return $this->createEntity();
     }
 
     /**
@@ -1163,42 +1274,48 @@ class Model implements \IteratorAggregate
      *
      * @param mixed $id
      *
-     * @return $this
+     * @return static
      */
     public function load($id = null)
     {
-        $this->checkPersistence('getRow');
+        $this->assertIsModel();
 
-        if ($this->loaded()) {
-            $this->unload();
+        $entity = $this->createEntity();
+
+        return $entity->loadData($id);
+    }
+
+    private function loadData($id)
+    {
+        $this->assertIsEntity();
+        if ($this->isLoaded()) {
+            throw new Exception('Entity must be unloaded');
         }
+
+        $this->checkPersistence();
 
         if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
             return $this;
         }
 
-        $this->data = $this->persistence->getRow($this, $id);
+        $dataRef = &$this->getDataRef();
+        $dataRef = $this->persistence->getRow($this->getModel(), $id);
 
-        if ($this->data) {
+        if ($dataRef === null) {
+            $dataRef = [];
+            $this->unload();
+        } else {
             if ($this->primaryKey) {
-                if (isset($this->data[$this->primaryKey])) {
-                    $this->setId($this->data[$this->primaryKey]);
-                }
+                $this->setId($this->getId());
             }
 
+            /** @var static|false $ret */
             $ret = $this->hook(self::HOOK_AFTER_LOAD);
             if ($ret === false) {
-                return $this->unload();
+                $this->unload();
             } elseif (is_object($ret)) {
                 return $ret; // @phpstan-ignore-line
             }
-        } else {
-            $this->unload();
-        }
-
-        if ($this->primaryKey && !$this->loaded()) {
-            throw (new Model\RecordNotFoundException())
-                ->setRecordParameters($this, $id);
         }
 
         return $this;
@@ -1267,9 +1384,8 @@ class Model implements \IteratorAggregate
     public function reload()
     {
         $id = $this->getId();
-        $this->unload();
 
-        return $this->load($id);
+        return $this->unload()->loadData($id);
     }
 
     /**
@@ -1287,28 +1403,13 @@ class Model implements \IteratorAggregate
         }
 
         $duplicate = clone $this;
-        $duplicate->dirty = $this->data;
-        $duplicate->entityId = null;
+        $duplicate->_entityId = null;
+        $dataRef = &$this->getDataRef();
+        $duplicateDirtyRef = &$duplicate->getDirtyRef();
+        $duplicateDirtyRef = $dataRef;
         $duplicate->setId(null);
 
         return $duplicate;
-    }
-
-    /**
-     * Saves the current record by using a different
-     * model class. This is similar to:.
-     *
-     * $m2 = $m->newInstance($class);
-     * $m2->load($m->getId());
-     * $m2->set($m->get());
-     * $m2->save();
-     *
-     * but will assume that both models are compatible,
-     * therefore will not perform any loading.
-     */
-    public function saveAs(string $class, array $options = []): self
-    {
-        return $this->asModel($class, $options)->save();
     }
 
     /**
@@ -1393,9 +1494,13 @@ class Model implements \IteratorAggregate
     {
         $class = $class ?? static::class;
 
+        /** @var self $model */
         $model = new $class($persistence, ['table' => $this->table]);
+        if ($this->isEntity()) { // TODO should this method work with entity at all?
+            $model = $model->createEntity();
+        }
 
-        if ($this->primaryKey) {
+        if ($this->primaryKey && $id !== null) {
             $model->setId($id === true ? $this->getId() : $id);
         }
 
@@ -1406,11 +1511,17 @@ class Model implements \IteratorAggregate
             }
         }
 
-        $model->data = $this->data;
-        $model->dirty = $this->dirty;
+        if ($this->isEntity()) {
+            $modelDataRef = &$model->getDataRef();
+            $modelDirtyRef = &$model->getDirtyRef();
+            $modelDataRef = &$this->getDataRef();
+            $modelDirtyRef = &$this->getDirtyRef();
+        }
         $model->limit = $this->limit;
         $model->order = $this->order;
-        $model->scope = (clone $this->scope)->setModel($model);
+        if (!$this->isEntity()) {
+            $model->scope = (clone $this->scope)->setModel($model);
+        }
 
         return $model;
     }
@@ -1418,7 +1529,7 @@ class Model implements \IteratorAggregate
     /**
      * Check if model has persistence with specified method.
      */
-    public function checkPersistence(string $method = null)
+    public function checkPersistence(string $method = null): void
     {
         if (!$this->persistence) {
             throw new Exception('Model is not associated with any persistence');
@@ -1429,13 +1540,14 @@ class Model implements \IteratorAggregate
         }
     }
 
+    /** @var array */
+    public $_dirty_after_reload = [];
+
     /**
      * Save record.
      *
      * @return $this
      */
-    public $_dirty_after_reload = [];
-
     public function save(array $data = [])
     {
         $this->checkPersistence();
@@ -1447,10 +1559,12 @@ class Model implements \IteratorAggregate
         $this->setMulti($data);
 
         return $this->atomic(function () {
+            $dirtyRef = &$this->getDirtyRef();
+
             if (($errors = $this->validate('save')) !== []) {
                 throw new Model\Field\ValidationException($errors, $this);
             }
-            $is_update = $this->loaded();
+            $is_update = $this->isLoaded();
             if ($this->hook(self::HOOK_BEFORE_SAVE, [$is_update]) === false) {
                 return $this;
             }
@@ -1458,7 +1572,7 @@ class Model implements \IteratorAggregate
             if ($is_update) {
                 $data = [];
                 $dirty_join = false;
-                foreach ($this->dirty as $name => $ignore) {
+                foreach ($dirtyRef as $name => $ignore) {
                     if (!$this->hasField($name)) {
                         continue;
                     }
@@ -1522,23 +1636,23 @@ class Model implements \IteratorAggregate
                 if (!$this->primaryKey) {
                     $this->hook(self::HOOK_AFTER_INSERT, [null]);
 
-                    $this->dirty = [];
+                    $dirtyRef = [];
                 } else {
                     $this->setId($id);
                     $this->hook(self::HOOK_AFTER_INSERT, [$this->getId()]);
 
                     if ($this->reload_after_save !== false) {
-                        $d = $this->dirty;
-                        $this->dirty = [];
+                        $d = $dirtyRef;
+                        $dirtyRef = [];
                         $this->reload();
-                        $this->_dirty_after_reload = $this->dirty;
-                        $this->dirty = $d;
+                        $this->_dirty_after_reload = $dirtyRef;
+                        $dirtyRef = $d;
                     }
                 }
             }
 
-            if ($this->loaded()) {
-                $this->dirty = $this->_dirty_after_reload;
+            if ($this->isLoaded()) {
+                $dirtyRef = $this->_dirty_after_reload;
             }
 
             $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
@@ -1556,8 +1670,7 @@ class Model implements \IteratorAggregate
      */
     public function insert(array $row)
     {
-        $model = clone $this;
-        $model->entityId = null;
+        $model = ($this->isEntity() ? $this->getModel() : $this)->createEntity();
 
         $model->unload();
 
@@ -1591,7 +1704,7 @@ class Model implements \IteratorAggregate
 
         // store id value
         if ($this->primaryKey) {
-            $model->data[$model->primaryKey] = $model->getId();
+            $model->getDataRef()[$model->primaryKey] = $model->getId();
         }
 
         // if there was referenced data, then import it
@@ -1630,6 +1743,8 @@ class Model implements \IteratorAggregate
      */
     public function export(array $fieldNames = null, $keyFieldName = null, $typecast_data = true): array
     {
+        $this->assertIsModel();
+
         $this->checkPersistence('export');
 
         // @todo: why only persisting fields?
@@ -1677,9 +1792,11 @@ class Model implements \IteratorAggregate
     public function getIterator(): \Traversable
     {
         foreach ($this->toQuery() as $data) {
-            $thisCloned = clone $this;
+            $thisCloned = $this->createEntity();
 
-            $thisCloned->data = $this->persistence->typecastLoadRow($this, $data);
+            $dataRef = &$thisCloned->getDataRef();
+            $dataRef = $this->persistence->typecastLoadRow($this, $data);
+
             if ($this->primaryKey) {
                 $thisCloned->setId($data[$this->primaryKey] ?? null);
             }
@@ -1709,8 +1826,6 @@ class Model implements \IteratorAggregate
                 yield $ret; // @phpstan-ignore-line
             }
         }
-
-        $this->unload();
     }
 
     /**
@@ -1733,37 +1848,35 @@ class Model implements \IteratorAggregate
      *
      * @param mixed $id
      *
-     * @return $this
+     * @return static
      */
     public function delete($id = null)
     {
+        if ($id !== null) {
+            $this->assertIsModel();
+
+            $this->load($id)->delete();
+
+            return $this;
+        }
+
+        $this->assertIsEntity();
+
         if ($this->read_only) {
             throw new Exception('Model is read-only and cannot be deleted');
-        }
-
-        if ($this->compare($this->primaryKey, $id)) {
-            $id = null;
-        }
-
-        return $this->atomic(function () use ($id) {
-            if ($id) {
-                $c = clone $this;
-                $c->load($id)->delete();
-
-                return $this;
-            } elseif ($this->loaded()) {
-                if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->getId()]) === false) {
-                    return $this;
-                }
-                $this->persistence->delete($this, $this->getId());
-                $this->hook(self::HOOK_AFTER_DELETE, [$this->getId()]);
-                $this->unload();
-
-                return $this;
-            }
-
+        } elseif (!$this->isLoaded()) {
             throw new Exception('No active record is set, unable to delete.');
+        }
+
+        $this->atomic(function () {
+            if ($this->hook(self::HOOK_BEFORE_DELETE, [$this->getId()]) === false) {
+                return;
+            }
+            $this->persistence->delete($this, $this->getId());
+            $this->hook(self::HOOK_AFTER_DELETE, [$this->getId()]);
         });
+
+        return $this->unload();
     }
 
     /**
@@ -1778,9 +1891,11 @@ class Model implements \IteratorAggregate
         try {
             return $this->persistence->atomic($fx);
         } catch (\Exception $e) {
-            if ($this->hook(self::HOOK_ROLLBACK, [$this, $e]) !== false) {
-                throw $e;
+            if ($this->hook(self::HOOK_ROLLBACK, [$e]) === false) {
+                return false;
             }
+
+            throw $e;
         }
     }
 
@@ -1801,7 +1916,7 @@ class Model implements \IteratorAggregate
      *
      * @return Model\Field\Callback
      */
-    public function addExpression(string $name, $expression)
+    public function addExpression(string $fieldName, $expression)
     {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];
@@ -1813,7 +1928,7 @@ class Model implements \IteratorAggregate
         /** @var Model\Field\Callback */
         $field = Model\Field::fromSeed($this->_default_seed_addExpression, $expression);
 
-        $this->addField($name, $field);
+        $this->addField($fieldName, $field);
 
         return $field;
     }
@@ -1825,7 +1940,7 @@ class Model implements \IteratorAggregate
      *
      * @return Model\Field\Callback
      */
-    public function addCalculatedField(string $name, $expression)
+    public function addCalculatedField(string $fieldName, $expression)
     {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];
@@ -1836,7 +1951,7 @@ class Model implements \IteratorAggregate
 
         $field = new Model\Field\Callback($expression);
 
-        $this->addField($name, $field);
+        $this->addField($fieldName, $field);
 
         return $field;
     }
@@ -1846,8 +1961,17 @@ class Model implements \IteratorAggregate
      */
     public function __debugInfo(): array
     {
+        if ($this->isEntity()) {
+            return [
+                'entityId' => $this->primaryKey && $this->hasField($this->primaryKey)
+                    ? (($this->_entityId !== null ? $this->_entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null'))
+                    : 'no id field',
+                'model' => $this->getModel()->__debugInfo(),
+            ];
+        }
+
         return [
-            'id' => $this->primaryKey && $this->hasField('id') ? $this->getId() : 'no id field',
+            'table' => $this->table,
             'scope' => $this->scope()->toWords(),
         ];
     }

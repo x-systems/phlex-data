@@ -34,6 +34,7 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
         $m->addField('surname');
 
+        $m = $m->createEntity();
         $m->set('name', 5);
         $this->assertSame(5, $m->get('name'));
 
@@ -56,6 +57,8 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model();
         $m->addField('name');
         $m->data = ['name' => 5];
+
+        $m = $m->createEntity();
         $m->set('name', 5);
         $this->assertSame([], $m->dirty);
 
@@ -107,6 +110,7 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $f = $m->addField('name', ['default' => 'John']);
         $this->assertSame('John', $f->default);
 
+        $m = $m->createEntity();
         $this->assertSame('John', $m->get('name'));
 
         $m->set('name', null);
@@ -159,6 +163,7 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
 
         $m->allFields();
 
+        $m = $m->createEntity();
         $m->set('name', 5);
         $this->assertSame(5, $m->get('name'));
     }
@@ -170,6 +175,8 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
     {
         $m = new Model();
         $m->addField('name');
+
+        $m = $m->createEntity();
         $m->set('name', 'foo');
         $this->assertSame('foo', $m->get('name'));
 
@@ -212,7 +219,7 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
     {
         $p = new Persistence\Array_();
         $c = new Client($p);
-        $this->assertEquals(10, $c->get('order'));
+        $this->assertEquals(10, $c->createEntity()->get('order'));
     }
 
     public function testNormalize()
@@ -221,6 +228,8 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name', ['type' => 'string']);
         $m->addField('age', ['type' => 'int']);
         $m->addField('data');
+
+        $m = $m->createEntity();
 
         $m->set('name', '');
         $this->assertSame('', $m->get('name'));
@@ -237,6 +246,8 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new User();
 
         $m->addField('salary', ['default' => 1000]);
+
+        $m = $m->createEntity();
         $this->assertSame(1000, $m->get('salary'));
         $this->assertFalse($m->_isset('salary'));
 

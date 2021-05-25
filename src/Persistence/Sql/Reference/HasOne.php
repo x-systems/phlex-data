@@ -147,16 +147,20 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         // if ourFieldName is the primaryKey and is being used in the reference
         // we should persist the relation in condtition
         // example - $model->load(1)->ref('refLink')->import($rows);
-        if ($ourModel->loaded() && !$theirModel->loaded()) {
-            if ($ourModel->primaryKey === $this->getOurFieldName()) {
-                return $theirModel->addCondition($theirFieldName, $this->getOurFieldValue());
+        if ($ourModel->isLoaded() && !$theirModel->isLoaded()) {
+            if ($ourField->isPrimaryKey()) {
+                return $theirModel->getModel()
+                    ->addCondition($theirFieldName, $this->getOurFieldValue());
             }
         }
 
         // handles the deep traversal using an expression
         $ourFieldExpression = $ourModel->toQuery()->field($ourField);
 
-        return $theirModel->addCondition($theirFieldName, $ourFieldExpression);
+        $theirModel->getModel(true)
+            ->addCondition($theirFieldName, $ourFieldExpression);
+
+        return $theirModel;
     }
 
     /**

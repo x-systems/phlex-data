@@ -49,7 +49,7 @@ class ModelSoftDeleteTest extends Sql\TestCase
         $this->assertSame([1, 2, 3], array_column($users->export(['id']), 'id'));
         $this->assertSame('Soft Delete Status is equal to \'Any value\'', $users->scope()->toWords());
 
-        $users->save([
+        $users->createEntity()->save([
             'name' => 'Jane',
             'surname' => 'Stevens',
         ]);

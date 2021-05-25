@@ -155,15 +155,12 @@ class Query extends Persistence\Query
             throw new Exception('Field query requires field name');
         }
 
-        // get first record
-        if ($row = $this->getPersistence()->query($this->model)->select([$fieldName])->getRow()) {
-            if ($alias && array_key_exists($fieldName, $row)) {
-                $row[$alias] = $row[$fieldName];
-                unset($row[$fieldName]);
-            }
+        $rows = [];
+        foreach ($this->getPersistence()->query($this->model)->select([$fieldName])->getRows() as $id => $row) {
+            $rows[$id] = [$alias ?? $fieldName => $row[$fieldName]];
         }
 
-        $this->iterator = new \ArrayIterator([[$row]]);
+        $this->iterator = new \ArrayIterator($rows);
     }
 
     protected function doExecute(): Result
@@ -329,6 +326,14 @@ class Query extends Persistence\Query
 
     protected function evaluateIf($v1, $operator, $v2): bool
     {
+        if ($v2 instanceof self) {
+            $v2 = $v2->getRows();
+        }
+
+        if ($v2 instanceof \Traversable) {
+            throw new \Exception('Unexpected v2 type');
+        }
+
         switch (strtoupper((string) $operator)) {
             case Condition::OPERATOR_EQUALS:
                 $result = is_array($v2) ? $this->evaluateIf($v1, Condition::OPERATOR_IN, $v2) : $v1 === $v2;
@@ -365,7 +370,14 @@ class Query extends Persistence\Query
 
             break;
             case Condition::OPERATOR_IN:
-                $result = is_array($v2) ? in_array($v1, $v2, true) : $this->evaluateIf($v1, '=', $v2);
+                $result = false;
+                foreach ($v2 as $v2Item) { // TODO flatten rows, this looses column names!
+                    if ($this->evaluateIf($v1, '=', $v2Item)) {
+                        $result = true;
+
+                        break;
+                    }
+                }
 
             break;
             case Condition::OPERATOR_NOT_IN:

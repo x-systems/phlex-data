@@ -170,7 +170,9 @@ class Reference
             $theirModel = Factory::factory($theirModelSeed, $defaults);
         }
 
-        return $this->addToPersistence($theirModel, $defaults);
+        $this->addToPersistence($theirModel, $defaults);
+
+        return $theirModel;
     }
 
     protected function getOurField(): Model\Field
@@ -183,6 +185,9 @@ class Reference
         return $this->ourFieldName ?: $this->getOurModel()->primaryKey;
     }
 
+    /**
+     * @return mixed
+     */
     protected function getOurFieldValue()
     {
         return $this->getOurField()->get();
@@ -204,10 +209,7 @@ class Reference
         }
     }
 
-    /**
-     * Adds model to persistence.
-     */
-    protected function addToPersistence(Model $theirModel, array $defaults = []): Model
+    protected function addToPersistence(Model $theirModel, array $defaults = []): void
     {
         if (!$theirModel->persistence && $persistence = $this->getDefaultPersistence($theirModel)) {
             $persistence->add($theirModel, $defaults);
@@ -217,8 +219,6 @@ class Reference
         if ($this->caption !== null) {
             $theirModel->caption = $this->caption;
         }
-
-        return $theirModel;
     }
 
     /**
@@ -263,6 +263,8 @@ class Reference
 
     /**
      * List of properties to show in var_dump.
+     *
+     * @var array<int|string, string>
      */
     protected $__debug_fields = ['link', 'model', 'ourFieldName', 'theirFieldName'];
 

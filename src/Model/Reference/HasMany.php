@@ -40,7 +40,7 @@ class HasMany extends Model\Reference
     {
         $ourModel = $this->getOurModel();
 
-        if ($ourModel->loaded()) {
+        if ($ourModel->isLoaded()) {
             return $this->ourFieldName
                 ? $ourModel->get($this->ourFieldName)
                 : $ourModel->getId();

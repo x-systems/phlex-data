@@ -47,7 +47,7 @@ class SerializeTest extends Sql\TestCase
         );
     }
 
-    public function testSerializeErrorJson()
+    public function testSerializeErrorJson(): void
     {
         $m = new Model($this->db, ['table' => 'job']);
 
@@ -57,7 +57,7 @@ class SerializeTest extends Sql\TestCase
         $this->db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
     }
 
-    public function testSerializeErrorJson2()
+    public function testSerializeErrorJson2(): void
     {
         $m = new Model($this->db, ['table' => 'job']);
 
@@ -77,7 +77,7 @@ class SerializeTest extends Sql\TestCase
      */
 
     /*
-    public function testSerializeErrorSerialize()
+    public function testSerializeErrorSerialize(): void
     {
         $db = new Persistence\Sql($this->db->connection);
         $m = new Model($this->db, 'job');

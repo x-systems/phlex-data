@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data;
 
 use Phlex\Core\Factory;
+use Phlex\Data\Model\RecordNotFoundException;
 
 abstract class Persistence
 {
@@ -128,7 +129,7 @@ abstract class Persistence
         $rawData = $query->getRow();
 
         if ($rawData === null) {
-            return null;
+            throw new RecordNotFoundException();
         }
 
         return $this->typecastLoadRow($model, $rawData);

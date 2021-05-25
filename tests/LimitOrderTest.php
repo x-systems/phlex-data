@@ -9,7 +9,7 @@ use Phlex\Data\Model;
 
 class LimitOrderTest extends Sql\TestCase
 {
-    public function testBasic()
+    public function testBasic(): void
     {
         $this->setDb([
             'invoice' => [
@@ -22,6 +22,7 @@ class LimitOrderTest extends Sql\TestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
         $i->getPrimaryKeyField()->system = false;
+        $i->primaryKey = null;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);
@@ -32,7 +33,7 @@ class LimitOrderTest extends Sql\TestCase
         ], $i->export());
     }
 
-    public function testReverse()
+    public function testReverse(): void
     {
         $this->setDb([
             'invoice' => [
@@ -45,6 +46,7 @@ class LimitOrderTest extends Sql\TestCase
         $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $ii->addExpression('total_gross', '[total_net]+[total_vat]');
         $ii->getPrimaryKeyField()->system = false;
+        $ii->primaryKey = null;
 
         $i = clone $ii;
         $i->setOrder(['total_net' => 'desc', 'total_gross' => 'desc']);
@@ -83,7 +85,7 @@ class LimitOrderTest extends Sql\TestCase
         ], $i->export());
     }
 
-    public function testArrayParameters()
+    public function testArrayParameters(): void
     {
         $this->setDb([
             'invoice' => [
@@ -95,8 +97,9 @@ class LimitOrderTest extends Sql\TestCase
 
         $ii = (new Model($this->db, ['table' => 'invoice']))->addFields(['net', 'vat']);
         $ii->getPrimaryKeyField()->system = false;
+        $ii->primaryKey = null;
 
-        // pass parameters as array elements [field,order]
+        // pass parameters as array elements [field, order]
         $i = clone $ii;
         $i->setOrder([['net', 'desc'], ['vat']]);
         $i->onlyFields(['net', 'vat']);
@@ -127,7 +130,7 @@ class LimitOrderTest extends Sql\TestCase
         ], $i->export());
     }
 
-    public function testOrderByExpressions()
+    public function testOrderByExpressions(): void
     {
         $this->setDb([
             'invoice' => [
@@ -141,6 +144,7 @@ class LimitOrderTest extends Sql\TestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['code', 'net', 'vat']);
         $i->addExpression('gross', '[net]+[vat]');
         $i->getPrimaryKeyField()->system = false;
+        $i->primaryKey = null;
 
         $i->setOrder('gross');
         $i->onlyFields(['gross']);
@@ -194,7 +198,7 @@ class LimitOrderTest extends Sql\TestCase
     /**
      * Unsupported order parameter.
      */
-    public function testExceptionUnsupportedOrderParam()
+    public function testExceptionUnsupportedOrderParam(): void
     {
         $this->setDb([
             'invoice' => [
@@ -208,7 +212,7 @@ class LimitOrderTest extends Sql\TestCase
         $i->export(); // executes query and throws exception because of DateTime object
     }
 
-    public function testLimit()
+    public function testLimit(): void
     {
         $this->setDb([
             'invoice' => [
@@ -221,6 +225,7 @@ class LimitOrderTest extends Sql\TestCase
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
         $i->addExpression('total_gross', '[total_net]+[total_vat]');
         $i->getPrimaryKeyField()->system = false;
+        $i->primaryKey = null;
 
         $i->setOrder('total_net');
         $i->onlyFields(['total_net']);

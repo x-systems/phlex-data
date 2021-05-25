@@ -48,7 +48,9 @@ abstract class Query implements \IteratorAggregate
     {
         $this->model = $model;
 
-        $this->scope = clone $this->model->scope();
+        $model = $model->isEntity() ? $model->getModel() : $model;
+
+        $this->scope = clone $model->scope();
 
         $this->order = $model->order;
 
@@ -172,7 +174,7 @@ abstract class Query implements \IteratorAggregate
         $this->initOrder();
         $this->initField(...func_get_args());
 
-        if ($this->model && $this->model->loaded()) {
+        if ($this->model && $this->model->isLoaded()) {
             $this->whereId($this->model->getId());
         }
 

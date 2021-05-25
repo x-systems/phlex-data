@@ -18,7 +18,7 @@ class ConditionTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addCondition('last_name', 'Smith');
     }
 
-    public function testBasicDiscrimination()
+    public function testBasicDiscrimination(): void
     {
         $m = new Model();
         $m->addField('name');
@@ -28,14 +28,14 @@ class ConditionTest extends \Phlex\Core\PHPUnit\TestCase
 
         $m->addCondition('gender', 'M');
 
-        $this->assertSame(1, count($m->scope()->getNestedConditions()));
+        $this->assertCount(1, $m->scope()->getNestedConditions());
 
         $m->addCondition('gender', 'F');
 
-        $this->assertSame(2, count($m->scope()->getNestedConditions()));
+        $this->assertCount(2, $m->scope()->getNestedConditions());
     }
 
-    public function testEditableAfterCondition()
+    public function testEditableAfterCondition(): void
     {
         $m = new Model();
         $m->addField('name');
@@ -47,7 +47,7 @@ class ConditionTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertFalse($m->getField('gender')->isEditable());
     }
 
-    public function testEditableHasOne()
+    public function testEditableHasOne(): void
     {
         $gender = new Model();
         $gender->addField('name');

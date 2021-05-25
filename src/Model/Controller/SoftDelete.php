@@ -90,7 +90,7 @@ class SoftDelete
 
     public static function deactivate(Model $model)
     {
-        if (!$model->loaded()) {
+        if (!$model->isLoaded()) {
             throw (new Exception('Model must be loaded before deactivating'))
                 ->addMoreInfo('model', $model);
         }
@@ -109,7 +109,7 @@ class SoftDelete
 
     public static function reactivate(Model $model)
     {
-        if (!$model->loaded()) {
+        if (!$model->isLoaded()) {
             throw (new Exception('Model must be loaded before reactivating'))
                 ->addMoreInfo('model', $model);
         }

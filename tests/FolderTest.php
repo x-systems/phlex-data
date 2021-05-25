@@ -28,7 +28,7 @@ class Folder extends Model
 
 class FolderTest extends Sql\TestCase
 {
-    public function testRate()
+    public function testRate(): void
     {
         $this->setDb([
             'folder' => [
@@ -44,7 +44,7 @@ class FolderTest extends Sql\TestCase
         ]);
 
         $f = new Folder($this->db);
-        $f->load(4);
+        $f = $f->load(4);
 
         $this->assertEquals([
             'id' => 4,

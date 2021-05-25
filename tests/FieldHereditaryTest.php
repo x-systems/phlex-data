@@ -9,7 +9,7 @@ use Phlex\Data\Persistence;
 
 class FieldHereditaryTest extends Sql\TestCase
 {
-    public function testDirty1()
+    public function testDirty1(): void
     {
         $p = new Persistence\Static_(['hello', 'world']);
 
@@ -19,7 +19,7 @@ class FieldHereditaryTest extends Sql\TestCase
             return strtoupper($m->get('name'));
         });
 
-        $m->load(1);
+        $m = $m->load(1);
         $this->assertSame('world', $m->get('name'));
         $this->assertSame('WORLD', $m->get('caps'));
     }

@@ -64,7 +64,7 @@ class ContainsManyTest extends Sql\TestCase
     /**
      * Test caption of referenced model.
      */
-    public function testModelCaption()
+    public function testModelCaption(): void
     {
         $i = new Invoice($this->db);
 
@@ -77,10 +77,10 @@ class ContainsManyTest extends Sql\TestCase
     /**
      * Test containsMany.
      */
-    public function testContainsMany()
+    public function testContainsMany(): void
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // now let's add some lines
         $l = $i->lines;
@@ -169,15 +169,13 @@ class ContainsManyTest extends Sql\TestCase
         // and what about calculated field?
         $i->reload(); // we need to reload invoice for changes in lines to be recalculated
         $this->assertSame(10 * 2 * (1 + 21 / 100) + 40 * 1 * (1 + 21 / 100) + 50 * 3 * (1 + 15 / 100), $i->total_gross); // =245.10
-
-        //var_dump($i->export(), $i->export(null,null,false));
     }
 
     /**
      * Model should be loaded before traversing to containsMany relation.
      */
     /* Imants: it looks that this is not actually required - disabling
-    public function testEx1()
+    public function testEx1(): void
     {
         $i = new Invoice($this->db);
         $this->expectException(Exception::class);
@@ -188,10 +186,10 @@ class ContainsManyTest extends Sql\TestCase
     /**
      * Nested containsMany tests.
      */
-    public function testNestedContainsMany()
+    public function testNestedContainsMany(): void
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // now let's add some lines
         $l = $i->lines;
@@ -217,17 +215,17 @@ class ContainsManyTest extends Sql\TestCase
         }
 
         // add some discounts
-        (clone $l)->load(1)->discounts->insert([
+        $l->load(1)->discounts->insert([
             $l->discounts->fieldName()->id => 1,
             $l->discounts->fieldName()->percent => 5,
             $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-15'),
         ]);
-        (clone $l)->load(1)->discounts->insert([
+        $l->load(1)->discounts->insert([
             $l->discounts->fieldName()->id => 2,
             $l->discounts->fieldName()->percent => 10,
             $l->discounts->fieldName()->valid_till => new \DateTime('2019-07-30'),
         ]);
-        (clone $l)->load(2)->discounts->insert([
+        $l->load(2)->discounts->insert([
             $l->discounts->fieldName()->id => 1,
             $l->discounts->fieldName()->percent => 20,
             $l->discounts->fieldName()->valid_till => new \DateTime('2019-12-31'),
@@ -257,7 +255,7 @@ class ContainsManyTest extends Sql\TestCase
         $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without typecasting
-        $exp_lines = $i->setOrder($i->fieldName()->id)->export(null, null, false)[0][$i->fieldName()->lines];
+        $exp_lines = $i->getModel()->setOrder($i->fieldName()->id)->export(null, null, false)[0][$i->fieldName()->lines];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 

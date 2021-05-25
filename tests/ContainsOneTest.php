@@ -61,7 +61,7 @@ class ContainsOneTest extends Sql\TestCase
     /**
      * Test caption of referenced model.
      */
-    public function testModelCaption()
+    public function testModelCaption(): void
     {
         $a = (new Invoice($this->db))->addr;
 
@@ -74,14 +74,14 @@ class ContainsOneTest extends Sql\TestCase
     /**
      * Test containsOne.
      */
-    public function testContainsOne()
+    public function testContainsOne(): void
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // check do we have address set
         $a = $i->addr;
-        $this->assertFalse($a->loaded());
+        $this->assertFalse($a->isLoaded());
 
         // now store some address
         $a->setMulti($row = [
@@ -126,7 +126,7 @@ class ContainsOneTest extends Sql\TestCase
         $this->assertSame('United Kingdom', $c->name);
 
         // let's test how it all looks in persistence without typecasting
-        $exp_addr = $i->setOrder('id')->export(null, null, false)[0][$i->fieldName()->addr];
+        $exp_addr = $i->getModel()->setOrder('id')->export(null, null, false)[0][$i->fieldName()->addr];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
@@ -151,12 +151,12 @@ class ContainsOneTest extends Sql\TestCase
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
         $this->assertNull($i->addr->get($i->addr->fieldName()->door_code));
-        $this->assertFalse($i->addr->door_code->loaded());
+        $this->assertFalse($i->addr->door_code->isLoaded());
 
         // and now delete address
         $i->addr->delete();
         $this->assertNull($i->get($i->fieldName()->addr));
-        $this->assertFalse($i->addr->loaded());
+        $this->assertFalse($i->addr->isLoaded());
 
         //var_dump($i->export(), $i->export(null, null, false));
     }
@@ -164,10 +164,10 @@ class ContainsOneTest extends Sql\TestCase
     /**
      * How containsOne performs when not all values are stored or there are more values in DB than fields in model.
      */
-    public function testContainsOneWhenChangeModelFields()
+    public function testContainsOneWhenChangeModelFields(): void
     {
         $i = new Invoice($this->db);
-        $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
 
         // with address
         $a = $i->addr;
@@ -205,7 +205,7 @@ class ContainsOneTest extends Sql\TestCase
      * Imants: it looks that this is not actually required - disabling.
      */
     /*
-    public function testEx1()
+    public function testEx1(): void
     {
         $i = new Invoice($this->db);
         $this->expectException(Exception::class);

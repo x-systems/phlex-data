@@ -82,7 +82,7 @@ class RandomTest extends Sql\TestCase
         $this->assertEquals(2, $m->getCount());
     }
 
-    public function testTitleImport()
+    public function testTitleImport(): void
     {
         $this->setDb([
             'user' => [
@@ -107,7 +107,7 @@ class RandomTest extends Sql\TestCase
         ], $this->getDb());
     }
 
-    public function testAddFields()
+    public function testAddFields(): void
     {
         $this->setDb([
             'user' => [
@@ -130,7 +130,7 @@ class RandomTest extends Sql\TestCase
         ], $this->getDb());
     }
 
-    public function testAddFields2()
+    public function testAddFields2(): void
     {
         $this->setDb([
             'user' => [
@@ -155,7 +155,7 @@ class RandomTest extends Sql\TestCase
             ['id' => 2, 'name' => 'anonymous', 'last_name' => null, 'login' => 'unknown', 'salary' => 100, 'tax' => 20, 'vat' => 15],
         ], $m->export());
 
-        $m->load(2);
+        $m = $m->load(2);
         $this->assertTrue(is_float($m->get('salary')));
         $this->assertTrue(is_float($m->get('tax')));
         $this->assertTrue(is_float($m->get('vat')));
@@ -179,7 +179,7 @@ class RandomTest extends Sql\TestCase
         );
     }
 
-    public function testSameTable2()
+    public function testSameTable2(): void
     {
         $this->setDb([
             'item' => [
@@ -202,7 +202,7 @@ class RandomTest extends Sql\TestCase
         );
     }
 
-    public function testSameTable3()
+    public function testSameTable3(): void
     {
         $this->setDb([
             'item' => [
@@ -228,7 +228,7 @@ class RandomTest extends Sql\TestCase
         $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
     }
 
-    public function testUpdateCondition()
+    public function testUpdateCondition(): void
     {
         $this->setDb([
             'item' => [
@@ -240,7 +240,7 @@ class RandomTest extends Sql\TestCase
 
         $m = new Model($this->db, ['table' => 'item']);
         $m->addField('name');
-        $m->load(2);
+        $m = $m->load(2);
 
         $m->onHook(Persistence\Query::HOOK_AFTER_UPDATE, static function ($m, $update, $st) {
             // we can use afterUpdate to make sure that record was updated
@@ -275,7 +275,7 @@ class RandomTest extends Sql\TestCase
         $this->assertEquals($dbData, $this->getDb());
     }
 
-    public function testHookBreakers()
+    public function testHookBreakers(): void
     {
         $this->setDb([
             'item' => [
@@ -288,25 +288,27 @@ class RandomTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name');
 
-        $m->onHook(Model::HOOK_BEFORE_SAVE, static function ($m) {
+        $m->onHook(Model::HOOK_BEFORE_SAVE, static function (Model $m) {
             $m->breakHook(false);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_LOAD, static function ($m, $id) {
-            $m->data = ['name' => 'rec #' . $id];
+        $m->onHook(Model::HOOK_BEFORE_LOAD, static function (Model $m, int $id) {
             $m->setId($id);
+            $m->set('name', 'rec #' . $id);
             $m->breakHook(false);
         });
 
-        $m->onHook(Model::HOOK_BEFORE_DELETE, static function ($m, $id) {
+        $m->onHook(Model::HOOK_BEFORE_DELETE, static function (Model $m, int $id) {
             $m->unload();
             $m->breakHook(false);
         });
 
+        $m = $m->createEntity();
         $m->set('name', 'john');
         $m->save();
 
-        $this->assertSame('rec #3', $m->load(3)->get('name'));
+        $m = $m->getModel()->load(3);
+        $this->assertSame('rec #3', $m->get('name'));
 
         $m->delete();
     }
@@ -341,7 +343,7 @@ class RandomTest extends Sql\TestCase
 //         $this->assertSame('y2', $m->get('x2'));
 //     }
 
-    public function testModelCaption()
+    public function testModelCaption(): void
     {
         $m = new Model($this->db, ['table' => 'user']);
 
@@ -353,7 +355,7 @@ class RandomTest extends Sql\TestCase
         $this->assertSame('test', $m->getCaption());
     }
 
-    public function testGetTitle()
+    public function testGetTitle(): void
     {
         $this->setDb([
             'item' => [
@@ -364,38 +366,42 @@ class RandomTest extends Sql\TestCase
 
         $m = new Model_Item($this->db, ['table' => 'item']);
 
-        // default title_field = name
-        $this->assertNull($m->getTitle()); // not loaded model returns null
         $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
 
-        $m->load(2);
-        $this->assertSame('Sue', $m->getTitle()); // loaded returns title_field value
-        $this->assertSame([1 => 'John', 2 => 'Sue'], $m->getTitles()); // all titles
+        $mm = $m->createEntity();
+
+        // default title_field = name
+        $this->assertNull($mm->getTitle()); // not loaded model returns null
+
+        $mm = $m->load(2);
+        $this->assertSame('Sue', $mm->getTitle()); // loaded returns title_field value
 
         // set custom title_field
-        $m->title_field = 'parent_item_id';
-        $this->assertEquals(1, $m->getTitle()); // returns parent_item_id value
+        $mm->title_field = 'parent_item_id';
+        $this->assertEquals(1, $mm->getTitle()); // returns parent_item_id value
 
         // set custom title_field as title_field from linked model
-        $m->title_field = 'parent_item';
-        $this->assertSame('John', $m->getTitle()); // returns parent record title_field
+        $mm->title_field = 'parent_item';
+        $this->assertSame('John', $mm->getTitle()); // returns parent record title_field
 
         // no title_field set - return id value
-        $m->title_field = null; // @phpstan-ignore-line
-        $this->assertEquals(2, $m->getTitle()); // loaded returns id value
+        $mm->title_field = null; // @phpstan-ignore-line
+        $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field
         $m->addExpression('my_name', '[id]');
         $m->title_field = 'my_name';
-        $m->load(2);
-        $this->assertEquals(2, $m->getTitle()); // loaded returns id value
-        $this->assertEquals([1 => 1, 2 => 2], $m->getTitles()); // all titles (my_name)
+        $mm = $m->load(2);
+        $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
+
+        $this->expectException(Exception::class);
+        $mm->getTitles();
     }
 
     /**
      * Test export.
      */
-    public function testExport()
+    public function testExport(): void
     {
         $this->setDb([
             'user' => [
@@ -470,21 +476,7 @@ class RandomTest extends Sql\TestCase
         ], $m2->export(['code', 'name'], 'code'));
     }
 
-    public function testNewInstance()
-    {
-        // model without persistence
-        $m = new Model(null, ['table' => 'order']);
-        $a = $m->newInstance();
-        $this->assertFalse(isset($a->persistence));
-
-        // model with persistence
-        $db = new Persistence\Array_();
-        $m = new Model($db, ['table' => 'order']);
-        $a = $m->newInstance();
-        $this->assertTrue(isset($a->persistence));
-    }
-
-    public function testDuplicateSaveNew()
+    public function testDuplicateSaveNew(): void
     {
         $this->setDb([
             'rate' => [
@@ -504,14 +496,14 @@ class RandomTest extends Sql\TestCase
         ], $m->export());
     }
 
-    public function testDuplicateWithIdArgumentException()
+    public function testDuplicateWithIdArgumentException(): void
     {
         $m = new Model_Rate();
         $this->expectException(Exception::class);
         $m->duplicate(2)->save();
     }
 
-    public function testTableNameDots()
+    public function testTableNameDots(): void
     {
         $d = new Model($this->db, ['table' => 'db2.doc']);
         $d->addField('name');

@@ -26,7 +26,7 @@ class Scope extends Scope\AbstractScope
     /**
      * Create a Scope from array of condition objects or condition arrays.
      *
-     * @param array<int, Scope\AbstractScope|string|Expressionable|array<mixed>> $nestedConditions
+     * @param array<int, Scope\AbstractScope|string|Sql\Expressionable|array<mixed>> $nestedConditions
      */
     public function __construct(array $nestedConditions = [], string $junction = self::JUNCTION_AND)
     {

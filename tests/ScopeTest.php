@@ -140,7 +140,7 @@ class ScopeTest extends Sql\TestCase
         $this->assertEquals('Country Id is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
-            $condition = new Condition('name', $user->expr('[surname]'));
+            $condition = new Condition('name', $user->expr('[surname]')); // @phpstan-ignore-line
 
             $this->assertEquals('Name is equal to expression \'"user"."surname"\'', $condition->toWords($user));
         }
@@ -157,7 +157,7 @@ class ScopeTest extends Sql\TestCase
 
         $this->assertEquals('Country Id is not equal to 2 (\'Latvia\')', $condition->toWords($user));
 
-        $condition = new Condition($user->getField('surname'), $user->getField('name'));
+        $condition = new Condition($user->getField('surname'), $user->getField('name')); // @phpstan-ignore-line
 
         $this->assertEquals('Surname is equal to User Name', $condition->toWords($user));
 
@@ -174,11 +174,11 @@ class ScopeTest extends Sql\TestCase
 
         $condition = new Condition('country_id', 2);
 
-        $originalReferenceModelData = $user->getField('country_id')->getReference()->getOwner()->data;
+        $originalReferenceModelData = $user->getField('country_id')->getReference()->getOwner()->getDataRef();
 
         $this->assertEquals('Country Id is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
-        $this->assertSame($originalReferenceModelData, $user->getField('country_id')->getReference()->getOwner()->data);
+        $this->assertSame($originalReferenceModelData, $user->getField('country_id')->getReference()->getOwner()->getDataRef());
     }
 
     public function testConditionUnsupportedToWords(): void

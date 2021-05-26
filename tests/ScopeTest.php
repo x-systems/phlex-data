@@ -168,19 +168,6 @@ class ScopeTest extends Sql\TestCase
         $this->assertEquals('Country that has reference Users where number of records is greater than 0', $country->scope()->toWords());
     }
 
-    public function testContitionToWordsImmutableReference(): void
-    {
-        $user = new SUser($this->db);
-
-        $condition = new Condition('country_id', 2);
-
-        $originalReferenceModelData = $user->getField('country_id')->getReference()->getOwner()->getDataRef();
-
-        $this->assertEquals('Country Id is equal to 2 (\'Latvia\')', $condition->toWords($user));
-
-        $this->assertSame($originalReferenceModelData, $user->getField('country_id')->getReference()->getOwner()->getDataRef());
-    }
-
     public function testConditionUnsupportedToWords(): void
     {
         $condition = new Condition('name', 'abc');

@@ -174,7 +174,7 @@ abstract class Persistence
         $data = $this->typecastSaveRow($model, $data);
 
         $model->onHook(Persistence\Query::HOOK_AFTER_UPDATE, function (Model $model, Persistence\Query $query, $result) use ($data) {
-            if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->dirty[$model->primaryKey]) {
+            if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->getDirtyRef()[$model->primaryKey]) {
                 // ID was changed
                 $model->id = $data[$model->primaryKey];
             }
@@ -182,13 +182,14 @@ abstract class Persistence
 
         $result = $this->query($model)->whereId($id)->update($data)->execute();
 
-        //@todo $result->rowCount() is specific to PDO, must be done specific to Query
+        // @todo $result->rowCount() is specific to PDO, must be done specific to Query
         // if any rows were updated in database, and we had expressions, reload
         if ($model->reload_after_save === true /* && (!$result || iterator_count($result)) */) {
-            $dirty = $model->dirty;
+            $dirty = $model->getDirtyRef();
             $model->reload();
-            $model->_dirty_after_reload = $model->dirty;
-            $model->dirty = $dirty;
+            $dirtyRef = &$model->getDirtyRef();
+            $model->_dirty_after_reload = $dirtyRef;
+            $dirtyRef = $dirty;
         }
 
         return $result;

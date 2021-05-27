@@ -78,6 +78,8 @@ class Model implements \IteratorAggregate
     /** @const string Executed when self::onlyFields() method is called. */
     public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
 
+    public const HOOK_SET_OPTION = self::class . '@afterSetOption';
+
     /** @const string */
     public const FIELD_FILTER_SYSTEM = 'system';
     /** @const string */

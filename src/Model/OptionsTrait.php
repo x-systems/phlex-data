@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
+use Phlex\Core\HookTrait;
+
 /**
  * Provides native Model methods for manipulating related component options.
  */
 trait OptionsTrait
 {
+    use HookTrait;
+
     /**
      * Holds various options for related components - Persistence, Controllers, sub-components, etc.
      *
@@ -24,9 +28,9 @@ trait OptionsTrait
      *
      * @return mixed
      */
-    public function getOption(string $key)
+    public function getOption(string $key, $default = null)
     {
-        return $this->option[$key] ?? null;
+        return array_key_exists($key, $this->options) ? $this->options[$key] : $default;
     }
 
     /**
@@ -38,7 +42,11 @@ trait OptionsTrait
      */
     public function setOption(string $key, $value = true) //:static
     {
-        $this->option[$key] = $value;
+        $this->options[$key] = $value;
+
+        if (defined('self::HOOK_SET_OPTION')) {
+            $this->hook(self::HOOK_SET_OPTION, [$key]);
+        }
 
         return $this;
     }
@@ -50,7 +58,20 @@ trait OptionsTrait
      */
     public function unsetOption(string $key) //:static
     {
-        unset($this->option[$key]);
+        unset($this->options[$key]);
+
+        if (defined('self::HOOK_SET_OPTION')) {
+            $this->hook(self::HOOK_SET_OPTION, [$key]);
+        }
+
+        return $this;
+    }
+
+    public function setOptions(array $options) //:static
+    {
+        foreach ($options as $key => $value) {
+            $this->setOption($key, $value);
+        }
 
         return $this;
     }

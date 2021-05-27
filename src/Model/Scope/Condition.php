@@ -181,6 +181,20 @@ class Condition extends AbstractScope
         $operator = $this->operator;
         $value = $this->value;
 
+        if (is_a($value, Placeholder::class, true)) {
+            if (!is_object($value)) {
+                $value = new $value();
+            }
+
+            $condition = clone $this;
+
+            $value = $value->getValue($condition);
+
+            if ($condition->isEmpty()) {
+                return [];
+            }
+        }
+
         $model = $this->getModel();
         if ($model !== null) {
             if (is_string($field)) {
@@ -347,6 +361,14 @@ class Condition extends AbstractScope
             }
 
             return implode(' or ', $ret);
+        }
+
+        if (is_a($value, Placeholder::class, true)) {
+            if (!is_object($value)) {
+                $value = new $value();
+            }
+
+            $value = $value->getCaption(clone $this);
         }
 
         if (is_object($value)) {

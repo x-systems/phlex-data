@@ -51,7 +51,7 @@ class SoftDelete
             return;
         }
 
-        $model->addField($this->useFieldName, ['type' => 'boolean', 'caption' => 'Soft Delete Status', 'default' => true]);
+        $model->addField($this->useFieldName, ['type' => 'boolean', 'caption' => 'Soft Delete Status', 'system' => true, 'default' => true]);
 
         $caption = function ($condition) {
             $active = $condition->getModel()->getOption(self::OPTION_RETRIEVE, $this->defaultRetrieveMode);
@@ -77,6 +77,8 @@ class SoftDelete
 
         $model->addMethod('deactivate', \Closure::fromCallable([self::class, 'deactivate']));
         $model->addMethod('reactivate', \Closure::fromCallable([self::class, 'reactivate']));
+        $model->addMethod('isActive', \Closure::fromCallable([self::class, 'isActive']));
+        $model->addMethod('ignoringSoftDeleteFlag', \Closure::fromCallable([self::class, 'ignoringSoftDeleteFlag']));
 
         $model->onHook(Model::HOOK_SET_OPTION, \Closure::fromCallable([self::class, 'onModelOptionChange']));
     }
@@ -100,7 +102,7 @@ class SoftDelete
             return $model;
         }
 
-        $model->saveAndUnload([$model->getElement(self::TRACKABLE_ID)->useFieldName => false]);
+        $model->save([$model->getElement(self::TRACKABLE_ID)->useFieldName => false]);
 
         $model->hook(self::HOOK_AFTER_DEACTIVATE, [$id]);
 
@@ -118,10 +120,26 @@ class SoftDelete
             return $model;
         }
 
-        $model->saveAndUnload([$model->getElement(self::TRACKABLE_ID)->useFieldName => true]);
+        $model->save([$model->getElement(self::TRACKABLE_ID)->useFieldName => true]);
 
         $model->hook(self::HOOK_AFTER_REACTIVATE, [$model->getId()]);
 
         return $model;
+    }
+
+    public static function isActive(Model $model): bool
+    {
+        $model->assertIsEntity();
+
+        return (bool) $model->get($model->getElement(self::TRACKABLE_ID)->useFieldName);
+    }
+
+    public static function ignoringSoftDeleteFlag(Model $model, \Closure $fx)
+    {
+        $model = clone $model;
+
+        $model->setOption(self::OPTION_RETRIEVE, self::RETRIEVE_ALL);
+
+        return $fx($model);
     }
 }

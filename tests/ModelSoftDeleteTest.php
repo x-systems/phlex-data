@@ -44,16 +44,16 @@ class ModelSoftDeleteTest extends Sql\TestCase
         $john = $users->load(1)->deactivate();
         $this->assertFalse($john->isActive());
         $this->assertTrue($users->load(3)->isActive());
-        $this->assertSame([3], array_column($users->export(['id']), 'id'));
+        $this->assertSame([3], self::getEntiityIds($users));
 
         $users->setOption(Model\Controller\SoftDelete::OPTION_RETRIEVE, Model\Controller\SoftDelete::RETRIEVE_INACTIVE);
 
-        $this->assertSame([1, 2], array_column($users->export(['id']), 'id'));
+        $this->assertSame([1, 2], self::getEntiityIds($users));
         $this->assertSame('Soft Delete Status is equal to \'Deactivated\'', $users->scope()->toWords());
 
         $users->setOption(Model\Controller\SoftDelete::OPTION_RETRIEVE, Model\Controller\SoftDelete::RETRIEVE_ALL);
 
-        $this->assertSame([1, 2, 3], array_column($users->export(['id']), 'id'));
+        $this->assertSame([1, 2, 3], self::getEntiityIds($users));
         $this->assertSame('Soft Delete Status is equal to \'Any value\'', $users->scope()->toWords());
 
         $jane = $users->createEntity()->save([
@@ -65,8 +65,16 @@ class ModelSoftDeleteTest extends Sql\TestCase
 
         $users->setOption(Model\Controller\SoftDelete::OPTION_RETRIEVE, Model\Controller\SoftDelete::RETRIEVE_ACTIVE);
 
-        $this->assertSame([3, 4], array_column($users->export(['id']), 'id'));
+        $this->assertSame([3, 4], self::getEntiityIds($users));
         $this->assertSame('Soft Delete Status is equal to \'Active\'', $users->scope()->toWords());
+    }
+
+    protected static function getEntiityIds($model): array
+    {
+        $ids = array_column($model->export(['id']), 'id');
+        sort($ids);
+
+        return $ids;
     }
 
     public function testInactiveRecordNotFound()

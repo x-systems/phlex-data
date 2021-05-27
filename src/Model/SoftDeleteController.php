@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Model\Controller;
+namespace Phlex\Data\Model;
 
 use Phlex\Core\DiContainerTrait;
 use Phlex\Core\InitializerTrait;
@@ -11,9 +11,9 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 
 /**
- * @method \Phlex\Data\Model getOwner()
+ * @method Model getOwner()
  */
-class SoftDelete
+class SoftDeleteController
 {
     use DiContainerTrait;
     use InitializerTrait;

@@ -20,7 +20,7 @@ class SD_User extends \Phlex\Data\Tests\Model\User
     {
         parent::doInitialize();
 
-        $this->add(new Model\Controller\SoftDelete());
+        $this->add(new Model\SoftDeleteController());
     }
 }
 
@@ -46,12 +46,12 @@ class ModelSoftDeleteTest extends Sql\TestCase
         $this->assertTrue($users->load(3)->isActive());
         $this->assertSame([3], self::getEntiityIds($users));
 
-        $users->setOption(Model\Controller\SoftDelete::OPTION_RETRIEVE, Model\Controller\SoftDelete::RETRIEVE_INACTIVE);
+        $users->setOption(Model\SoftDeleteController::OPTION_RETRIEVE, Model\SoftDeleteController::RETRIEVE_INACTIVE);
 
         $this->assertSame([1, 2], self::getEntiityIds($users));
         $this->assertSame('Soft Delete Status is equal to \'Deactivated\'', $users->scope()->toWords());
 
-        $users->setOption(Model\Controller\SoftDelete::OPTION_RETRIEVE, Model\Controller\SoftDelete::RETRIEVE_ALL);
+        $users->setOption(Model\SoftDeleteController::OPTION_RETRIEVE, Model\SoftDeleteController::RETRIEVE_ALL);
 
         $this->assertSame([1, 2, 3], self::getEntiityIds($users));
         $this->assertSame('Soft Delete Status is equal to \'Any value\'', $users->scope()->toWords());
@@ -63,7 +63,7 @@ class ModelSoftDeleteTest extends Sql\TestCase
 
         $this->assertTrue($jane->isActive());
 
-        $users->setOption(Model\Controller\SoftDelete::OPTION_RETRIEVE, Model\Controller\SoftDelete::RETRIEVE_ACTIVE);
+        $users->setOption(Model\SoftDeleteController::OPTION_RETRIEVE, Model\SoftDeleteController::RETRIEVE_ACTIVE);
 
         $this->assertSame([3, 4], self::getEntiityIds($users));
         $this->assertSame('Soft Delete Status is equal to \'Active\'', $users->scope()->toWords());

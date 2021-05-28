@@ -134,7 +134,7 @@ class ExpressionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'surname', 'cached_name']);
 
-        $m->addExpression('full_name', Expression::concat(Expression::asIdentifier('name'), ' ', Expression::asIdentifier('surname')));
+        $m->addExpression('full_name', new Expression\Concat(Expression::asIdentifier('name'), ' ', Expression::asIdentifier('surname')));
 
         $m->addCondition($m->expr('[full_name] != [cached_name]'));
 

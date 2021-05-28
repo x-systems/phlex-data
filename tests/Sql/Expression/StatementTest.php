@@ -1029,64 +1029,59 @@ class StatementTest extends PHPUnit\TestCase
 
     public function testConcat()
     {
-        $q = new Sql\Platform\Sqlite\Statement();
+        $p = $this->mockPersistence(Sql\Platform\Sqlite::class);
         $this->assertSame(
             'select "abc" || \' \' || "cde"',
-            $q->field(Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
+            $p->statement()->field(new Sql\Expression\Concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
         );
 
-        $q = new Sql\Platform\Sqlite\Statement();
         $this->assertSame(
             'select group_concat("abc", \'|\')',
-            $q->field(Sql\Expression::groupConcat('abc', '|'))->getDebugQuery()
+            $p->statement()->field(new Sql\Expression\GroupConcat('abc', '|'))->getDebugQuery()
         );
 
-        $q = new Sql\Platform\Mysql\Statement();
+        $p = $this->mockPersistence(Sql\Platform\Mysql::class);
         $this->assertSame(
             'select concat("abc",\' \',"cde")',
-            $q->field(Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
+            $p->statement()->field(new Sql\Expression\Concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
         );
 
-        $q = new Sql\Platform\Mysql\Statement();
         $this->assertSame(
             'select group_concat("abc" separator \'|\')',
-            $q->field(Sql\Expression::groupConcat('abc', '|'))->getDebugQuery()
+            $p->statement()->field(new Sql\Expression\GroupConcat('abc', '|'))->getDebugQuery()
         );
 
-        $q = new Sql\Platform\Postgresql\Statement();
+        $p = $this->mockPersistence(Sql\Platform\Postgresql::class);
         $this->assertSame(
             'select "abc" || \' \' || "cde"',
-            $q->field(Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
+            $p->statement()->field(new Sql\Expression\Concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
         );
 
-        $q = new Sql\Platform\Postgresql\Statement();
         $this->assertSame(
             'select string_agg("abc", \'|\')',
-            $q->field(Sql\Expression::groupConcat('abc', '|'))->getDebugQuery()
+            $p->statement()->field(new Sql\Expression\GroupConcat('abc', '|'))->getDebugQuery()
         );
 
-        $q = new Sql\Platform\Oracle\Statement();
+        $p = $this->mockPersistence(Sql\Platform\Oracle::class);
         $this->assertSame(
             'select "abc" || \' \' || "cde" from "DUAL"',
-            $q->field(Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
+            $p->statement()->field(new Sql\Expression\Concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
         );
 
-        $q = new Sql\Platform\Oracle\Statement();
         $this->assertSame(
             'select listagg("abc", \'|\') within group (order by "abc") from "DUAL"',
-            $q->field(Sql\Expression::groupConcat('abc', '|'))->getDebugQuery()
+            $p->statement()->field(new Sql\Expression\GroupConcat('abc', '|'))->getDebugQuery()
         );
 
-        $q = new Sql\Platform\Mssql\Statement();
+        $p = $this->mockPersistence(Sql\Platform\Mssql::class);
         $this->assertSame(
             'select [abc] || ? || [cde]',
-            $q->field(Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
+            $p->statement()->field(new Sql\Expression\Concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde')))->getDebugQuery()
         );
 
-        $q = new Sql\Platform\Mssql\Statement();
         $this->assertSame(
             'select string_agg([abc], ?)',
-            $q->field(Sql\Expression::groupConcat('abc', '|'))->getDebugQuery()
+            $p->statement()->field(new Sql\Expression\GroupConcat('abc', '|'))->getDebugQuery()
         );
     }
 

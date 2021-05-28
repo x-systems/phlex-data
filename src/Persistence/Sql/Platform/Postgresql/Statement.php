@@ -20,9 +20,4 @@ class Statement extends Sql\Statement
                 (int) $this->args['limit']['shift'];
         }
     }
-
-    protected function _render_group_concat()
-    {
-        return new Sql\Expression('string_agg({field}, [delimiter])', $this->args['custom']);
-    }
 }

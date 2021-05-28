@@ -18,7 +18,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     /** @const string keep input as is */
     protected const ESCAPE_NONE = 'none';
 
-    /** @var string */
+    /** @var string|array<int|string, string> */
     protected $template;
 
     /**
@@ -53,6 +53,13 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
 
     /** @var bool Flag to indicate if result from expression can be a subset of rows. */
     protected $selectsMultipleRows = false;
+
+    /**
+     * Map of Persistence specific render methods for expression tags.
+     *
+     * @var array<int|string, array>
+     */
+    protected static $tagRenderMethods = [];
 
     /**
      * Specifying options to constructors will override default
@@ -196,7 +203,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
 
     public function getIdentifierQuoteCharacter()
     {
-        if ($this->persistence && $this->persistence->connection) { // @phpstan-ignore-line
+        if ($this->persistence && $this->persistence->connection) {
             return $this->persistence->connection->getDatabasePlatform()->getIdentifierQuoteCharacter();
         }
 
@@ -318,14 +325,18 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         $expression = $expressionable->toSqlExpression();
         $expression->identifierQuoteCharacter = $this->getIdentifierQuoteCharacter();
 
-        if ($expression->template === null) {
-            throw new Exception('Template is not defined for Expression');
-        }
-
         $template = $expression->template;
-        if (substr($template, 0, 1) === '@') {
+        if (is_array($template)) {
+            $templateOption = $this->persistence ? get_class($this->persistence) : 0;
+
+            $template = $expression->template[$templateOption] ?? null;
+        } elseif (is_string($template) && substr($template, 0, 1) === '@') {
             $name = substr($template, 1);
             $template = $this->{'template_' . $name} ?? $expression->{'template_' . $name} ?? $template;
+        }
+
+        if ($template === null) {
+            throw new Exception('Template is not defined for Expression');
         }
 
         $namelessCount = 0;
@@ -358,7 +369,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
                     // use rendering only with named tags
                 }
 
-                $fx = '_render_' . $identifier;
+                $fx = $expression->getRenderMethod($identifier, $this->persistence ? get_class($this->persistence) : null);
 
                 // [foo] will attempt to call $this->_render_foo() or $expression->_render_foo()
 
@@ -461,6 +472,15 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         return $persistence->execute($this);
     }
 
+    public static function getRenderMethod($tag, $persistenceClass = null)
+    {
+        if ($persistenceClass && isset(static::$tagRenderMethods[$persistenceClass][$tag])) {
+            return static::$tagRenderMethods[$persistenceClass][$tag];
+        }
+
+        return '_render_' . $tag;
+    }
+
     /**
      * Decode the identifier and escaping required from a template.
      *
@@ -520,41 +540,6 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     public function case($operand = null): Expression\Case_
     {
         return new Expression\Case_($operand);
-    }
-
-    /**
-     * Returns an expression for concatenating.
-     *
-     * Sql\Expression::concat(Sql\Expression::asIdentifier('abc'), ' ', Sql\Expression::asIdentifier('cde'))
-     */
-    public static function concat(...$args)
-    {
-        return new self('[concat]', $args);
-    }
-
-    /**
-     * Returns an expression for a function, which can be used as part of the GROUP
-     * query which would concatenate all matching fields.
-     *
-     * MySQL, SQLite - group_concat
-     * PostgreSQL - string_agg
-     * Oracle - listagg
-     *
-     * @param mixed $field
-     */
-    public static function groupConcat($field, string $delimiter = ',')
-    {
-        return new self('[group_concat]', compact('field', 'delimiter'));
-    }
-    
-    public static function jsonContains($field, $value, $path = '$')
-    {
-        return new self('[json_contains]', compact('field', 'value', 'path'));
-    }
-
-    protected function _render_concat()
-    {
-        return 'concat ' . implode('', $this->args['custom']);
     }
 
     /**

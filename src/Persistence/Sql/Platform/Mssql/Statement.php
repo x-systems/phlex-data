@@ -30,11 +30,6 @@ class Statement extends Sql\Statement
         }
     }
 
-    protected function _render_group_concat()
-    {
-        return new Sql\Expression('string_agg({field}, [delimiter])', $this->args['custom']);
-    }
-
     public function getIdentifierQuoteCharacter()
     {
         return $this->identifierQuoteCharacter;

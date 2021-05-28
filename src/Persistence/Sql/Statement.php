@@ -964,16 +964,6 @@ class Statement extends Expression
         return $this;
     }
 
-    protected function _render_concat()
-    {
-        return Expression::asParameterList($this->args['custom'], ' || ');
-    }
-
-    protected function _render_group_concat()
-    {
-        return new Expression('group_concat({field}, [delimiter])', $this->args['custom']);
-    }
-
     /**
      * Sets value in args array. Doesn't allow duplicate aliases.
      *

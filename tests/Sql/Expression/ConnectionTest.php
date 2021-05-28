@@ -10,34 +10,18 @@ use Phlex\Data\Persistence;
 
 class DummyConnection extends Persistence\Sql
 {
-    public function groupConcat($field, string $delimiter = ','): Persistence\Sql\Expression
-    {
-        return new Persistence\Sql\Expression('dummy');
-    }
 }
 
 class DummyConnection2 extends Persistence\Sql
 {
-    public function groupConcat($field, string $delimiter = ','): Persistence\Sql\Expression
-    {
-        return new Persistence\Sql\Expression('dummy');
-    }
 }
 
 class DummyConnection3 extends Persistence\Sql
 {
-    public function groupConcat($field, string $delimiter = ','): Persistence\Sql\Expression
-    {
-        return new Persistence\Sql\Expression('dummy');
-    }
 }
 
 class DummyConnection4 extends Persistence\Sql
 {
-    public function groupConcat($field, string $delimiter = ','): Persistence\Sql\Expression
-    {
-        return new Persistence\Sql\Expression('dummy');
-    }
 }
 
 class ConnectionTest extends PHPUnit\TestCase

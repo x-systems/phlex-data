@@ -546,6 +546,11 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
     {
         return new self('[group_concat]', compact('field', 'delimiter'));
     }
+    
+    public static function jsonContains($field, $value, $path = '$')
+    {
+        return new self('[json_contains]', compact('field', 'value', 'path'));
+    }
 
     protected function _render_concat()
     {

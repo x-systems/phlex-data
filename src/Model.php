@@ -818,41 +818,41 @@ class Model implements \IteratorAggregate
 
         $field->assertSetAccess();
 
-        // enum property support
-        if (isset($field->enum) && $field->enum && get_class($field->getPersistenceValueType()) !== Model\Field\Type\Boolean::class) {
-            if ($value === '') {
-                $value = null;
-            }
-            if ($value !== null && !in_array($value, $field->enum, true)) {
-                throw (new Exception('This is not one of the allowed values for the field'))
-                    ->addMoreInfo('fieldName', $fieldName)
-                    ->addMoreInfo('model', $this)
-                    ->addMoreInfo('value', $value)
-                    ->addMoreInfo('enum', $field->enum);
-            }
-        }
+//         // enum property support
+//         if (isset($field->enum) && $field->enum && get_class($field->getPersistenceValueType()) !== Model\Field\Type\Boolean::class) {
+//             if ($value === '') {
+//                 $value = null;
+//             }
+//             if ($value !== null && !in_array($value, $field->enum, true)) {
+//                 throw (new Exception('This is not one of the allowed values for the field'))
+//                     ->addMoreInfo('fieldName', $fieldName)
+//                     ->addMoreInfo('model', $this)
+//                     ->addMoreInfo('value', $value)
+//                     ->addMoreInfo('enum', $field->enum);
+//             }
+//         }
 
-        // values property support
-        if ($field->values) {
-            if ($value === '') {
-                $value = null;
-            } elseif ($value === null) {
-                // all is good
-            } elseif (!is_string($value) && !is_int($value)) {
-                throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
-                    ->addMoreInfo('field', $fieldName)
-                    ->addMoreInfo('model', $this)
-                    ->addMoreInfo('value', $value)
-                    ->addMoreInfo('values', $field->values);
-            } elseif (!array_key_exists($value, $field->values)) {
-                throw (new Exception('This is not one of the allowed values for the field'))
-                    ->addMoreInfo('field', $fieldName)
-                    ->addMoreInfo('field', $fieldName)
-                    ->addMoreInfo('model', $this)
-                    ->addMoreInfo('value', $value)
-                    ->addMoreInfo('values', $field->values);
-            }
-        }
+//         // values property support
+//         if ($field->values) {
+//             if ($value === '') {
+//                 $value = null;
+//             } elseif ($value === null) {
+//                 // all is good
+//             } elseif (!is_string($value) && !is_int($value)) {
+//                 throw (new Exception('Field can be only one of pre-defined value, so only "string" and "int" keys are supported'))
+//                     ->addMoreInfo('field', $fieldName)
+//                     ->addMoreInfo('model', $this)
+//                     ->addMoreInfo('value', $value)
+//                     ->addMoreInfo('values', $field->values);
+//             } elseif (!array_key_exists($value, $field->values)) {
+//                 throw (new Exception('This is not one of the allowed values for the field'))
+//                     ->addMoreInfo('field', $fieldName)
+//                     ->addMoreInfo('field', $fieldName)
+//                     ->addMoreInfo('model', $this)
+//                     ->addMoreInfo('value', $value)
+//                     ->addMoreInfo('values', $field->values);
+//             }
+//         }
 
         if (array_key_exists($fieldName, $dirtyRef) && $field->compare($dirtyRef[$fieldName], $value)) {
             unset($dirtyRef[$fieldName]);

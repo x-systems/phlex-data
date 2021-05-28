@@ -15,6 +15,6 @@ class Person extends Model
         parent::doInitialize();
         $this->addField('name');
         $this->addField('surname');
-        $this->addField('gender', ['enum' => ['M', 'F']]);
+        $this->addField('gender', ['type' => ['enum', 'values' => ['M', 'F']]]);
     }
 }

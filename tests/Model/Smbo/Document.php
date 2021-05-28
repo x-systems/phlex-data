@@ -18,7 +18,7 @@ class Document extends Model
         $this->hasOne('contact_from_id', ['model' => [Contact::class]]);
         $this->hasOne('contact_to_id', ['model' => [Contact::class]]);
 
-        $this->addField('doc_type', ['enum' => ['invoice', 'payment']]);
+        $this->addField('doc_type', ['type' => ['enum', 'values' => ['invoice', 'payment']]]);
 
         $this->addField('amount', ['type' => 'money']);
     }

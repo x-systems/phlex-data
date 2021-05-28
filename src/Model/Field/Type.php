@@ -28,8 +28,10 @@ abstract class Type
         'datetime' => [Type\DateTime::class],
         'date' => [Type\Date::class],
         'time' => [Type\Time::class],
-        'array' => [Type\Array_::class],
+        'selectable' => [Type\Selectable::class],
+        'array' => [Type\Selectable::class],
         'object' => [Type\Object_::class],
+        'enum' => [Type\Enum::class],
     ];
 
     /**

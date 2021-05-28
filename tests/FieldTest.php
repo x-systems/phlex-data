@@ -230,7 +230,7 @@ class FieldTest extends Sql\TestCase
     public function testEnum1(): void
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => ['foo', 'bar']]);
+        $m->addField('foo', ['type' => ['enum', 'values' => ['foo', 'bar']]]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 'xx');
@@ -239,7 +239,7 @@ class FieldTest extends Sql\TestCase
     public function testEnum2(): void
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => [1, 'bar']]);
+        $m->addField('foo', ['type' => ['enum', 'values' => [1, 'bar']]]);
         $m = $m->createEntity();
         $m->set('foo', 1);
 
@@ -252,7 +252,7 @@ class FieldTest extends Sql\TestCase
     public function testEnum3(): void
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => [1, 'bar']]);
+        $m->addField('foo', ['type' => ['enum', 'values' => [1, 'bar']]]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', true);
@@ -264,7 +264,7 @@ class FieldTest extends Sql\TestCase
         // This test has no purpose but it stands testament
         // to a weird behaviours of PHP
         $m = new Model();
-        $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
+        $m->addField('foo', ['type' => ['enum', 'values' => [1, 'bar']], 'default' => 1]);
         $m = $m->createEntity();
         $m->set('foo', null);
 
@@ -274,7 +274,7 @@ class FieldTest extends Sql\TestCase
     public function testValues1(): void
     {
         $m = new Model();
-        $m->addField('foo', ['values' => ['foo', 'bar']]);
+        $m->addField('foo', ['type' => ['enum', 'values' => ['foo', 'bar']]]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 4);
@@ -283,11 +283,11 @@ class FieldTest extends Sql\TestCase
     public function testValues2(): void
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [3 => 'bar']]);
+        $m->addField('foo', ['type' => ['selectable', 'values' => [3 => 'bar']]]);
         $m = $m->createEntity();
         $m->set('foo', 3);
 
-        $this->assertSame(3, $m->get('foo'));
+        $this->assertSame([3], $m->get('foo'));
 
         $m->set('foo', null);
         $this->assertNull($m->get('foo'));
@@ -296,7 +296,7 @@ class FieldTest extends Sql\TestCase
     public function testValues3(): void
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [1 => 'bar']]);
+        $m->addField('foo', ['type' => ['selectable', 'values' => [1 => 'bar']]]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', true);
@@ -305,7 +305,7 @@ class FieldTest extends Sql\TestCase
     public function testValues3a(): void
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [1 => 'bar']]);
+        $m->addField('foo', ['type' => ['selectable', 'values' => [1 => 'bar']]]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 'bar');
@@ -317,10 +317,10 @@ class FieldTest extends Sql\TestCase
         // This test has no purpose but it stands testament
         // to a weird behaviours of PHP
         $m = new Model();
-        $m->addField('foo', ['values' => ['1a' => 'bar']]);
+        $m->addField('foo', ['type' => ['selectable', 'values' => ['1a' => 'bar']]]);
         $m = $m->createEntity();
         $m->set('foo', '1a');
-        $this->assertSame('1a', $m->get('foo'));
+        $this->assertSame(['1a'], $m->get('foo'));
     }
 
     public function testPersist(): void

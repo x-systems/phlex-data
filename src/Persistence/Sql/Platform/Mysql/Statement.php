@@ -19,4 +19,9 @@ class Statement extends Sql\Statement
     {
         return new Sql\Expression('group_concat({field} separator [delimiter])', $this->args['custom']);
     }
+    
+    protected function _render_json_contains()
+    {
+        return new Sql\Expression('json_contains({field}, [value], [path])', $this->args['custom']);
+    }
 }

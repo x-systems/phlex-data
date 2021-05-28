@@ -7,10 +7,7 @@ namespace Phlex\Data\Model\Reference;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-/**
- * Reference\HasOne class.
- */
-class HasOne extends Model\Reference
+class ListsMany extends Model\Reference
 {
     use Model\JoinLinkTrait;
 
@@ -171,12 +168,12 @@ class HasOne extends Model\Reference
                 'ui' => $this->ui,
                 'mandatory' => $this->mandatory,
                 'required' => $this->required,
-//                 'typecast' => $this->typecast,
+                'typecast' => $this->typecast,
                 'serialize' => $this->serialize,
-//                 'persist_format' => $this->persist_format,
-//                 'persist_timezone' => $this->persist_timezone,
-//                 'dateTimeClass' => $this->dateTimeClass,
-//                 'dateTimeZoneClass' => $this->dateTimeZoneClass,
+                'persist_format' => $this->persist_format,
+                'persist_timezone' => $this->persist_timezone,
+                'dateTimeClass' => $this->dateTimeClass,
+                'dateTimeZoneClass' => $this->dateTimeZoneClass,
             ]);
         }
     }

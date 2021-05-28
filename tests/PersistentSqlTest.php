@@ -16,7 +16,7 @@ class PersistentSqlTest extends Sql\TestCase
 
         $this->assertSame([
             Model\Field\Type\Object_::class => [Persistence\Sql\Platform\Oracle\Codec\Object_::class],
-            Model\Field\Type\Array_::class => [Persistence\Sql\Platform\Oracle\Codec\Array_::class],
+            Model\Field\Type\Selectable::class => [Persistence\Sql\Platform\Oracle\Codec\Selectable::class],
             0 => [Persistence\Sql\Codec\String_::class],
             Model\Field\Type\Boolean::class => [Persistence\Sql\Codec\Boolean::class],
             Model\Field\Type\Date::class => [Persistence\Sql\Codec\Date::class],
@@ -34,7 +34,7 @@ class PersistentSqlTest extends Sql\TestCase
 
         $this->assertSame([
             Model\Field\Type\Object_::class => ['fake_class'],
-            Model\Field\Type\Array_::class => [Persistence\Sql\Platform\Oracle\Codec\Array_::class],
+            Model\Field\Type\Selectable::class => [Persistence\Sql\Platform\Oracle\Codec\Selectable::class],
             0 => [Persistence\Sql\Codec\String_::class],
             Model\Field\Type\Boolean::class => [Persistence\Sql\Codec\Boolean::class],
             Model\Field\Type\Date::class => [Persistence\Sql\Codec\Date::class],
@@ -50,7 +50,7 @@ class PersistentSqlTest extends Sql\TestCase
 
         $field = $model->addField('array', ['type' => 'array']);
 
-        $this->assertSame(Persistence\Sql\Platform\Oracle\Codec\Array_::class, get_class($field->getPersistenceCodec()));
+        $this->assertSame(Persistence\Sql\Platform\Oracle\Codec\Selectable::class, get_class($field->getPersistenceCodec()));
     }
 
     public function testLoadArray()

@@ -6,7 +6,7 @@ namespace Phlex\Data\Persistence\Sql\Platform\Oracle\Codec;
 
 use Phlex\Data\Persistence\Sql;
 
-class Array_ extends Sql\Codec\Array_
+class Selectable extends Sql\Codec\Selectable
 {
     protected function doDecode($value)
     {

@@ -41,11 +41,6 @@ abstract class AbstractStatement extends Sql\Statement
         return $this->args['sequence'];
     }
 
-    protected function _render_group_concat()
-    {
-        return new Sql\Expression('listagg({field}, [delimiter]) within group (order by {field})', $this->args['custom']);
-    }
-
     public function exists()
     {
         return (new static())->mode('select')->field(

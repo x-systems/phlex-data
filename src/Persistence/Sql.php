@@ -18,7 +18,7 @@ abstract class Sql extends Persistence
     /**
      * Connection object.
      *
-     * @var DBAL\Connection
+     * @var DBAL\Connection|null
      */
     public $connection;
 
@@ -210,12 +210,10 @@ abstract class Sql extends Persistence
      */
     public function disconnect(): void
     {
-        $this->connection = null; // @phpstan-ignore-line
+        $this->connection = null;
     }
 
     /**
-     * Constructor.
-     *
      * @param DBAL\Connection|string $connection
      * @param string                 $user
      * @param string                 $password
@@ -285,8 +283,10 @@ abstract class Sql extends Persistence
     {
         return Factory::factory($this->_default_seed_statement, array_merge($defaults, [
             'persistence' => $this,
+        ], $this->connection ? [
             'identifierQuoteCharacter' => $this->connection->getDatabasePlatform()->getIdentifierQuoteCharacter(),
-        ]));
+        ] : []
+        ));
     }
 
     public function add(Model $model, array $defaults = []): Model

@@ -487,6 +487,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
      * [xxx] = param
      * {xxx} = escape
      * {{xxx}} = escapeSoft
+     * {[xxx]} = escapeNone
      */
     protected static function decodeIdentifier(string $identifierTemplate): array
     {
@@ -499,6 +500,8 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
             if (substr($identifierTemplate, 1, 1) === '{') {
                 $escaping = self::ESCAPE_IDENTIFIER_SOFT;
                 $identifier = substr($identifier, 1, -1);
+            } elseif (substr($identifierTemplate, 1, 1) === '[') {
+                $escaping = self::ESCAPE_NONE;
             } else {
                 $escaping = self::ESCAPE_IDENTIFIER;
             }

@@ -13,29 +13,39 @@ class Selectable extends \Phlex\Data\Model\Field\Type
      * @var array|null
      */
     public $values;
-    
+
+    protected $labels;
+
     public $allowMultipleSelection = false;
 
     protected function doNormalize($value)
     {
-//         if (is_string($value)) {
-//             try {
-//                 $value = json_decode($value, true);
-//             } catch (\Exception $e) {               
-//             }
-//         }
-
-        if ($this->values !== null) {
-            $value = (array) $value;
-            
-            if (array_udiff($value, array_keys($this->values), function($v1, $v2) {
-                return $v1 === $v2 ? 0 : 1;
-            })) {
-                throw new ValidationException('Must be one of the associated values');
-            }
+        if (!$this->values) {
+            throw new ValidationException('Field has no associated values');
         }
 
-        return $value;
+        if (!$this->allowMultipleSelection && is_array($value)) {
+            throw new ValidationException('Field accepts only single value');
+        }
+
+        $value = (array) $value;
+
+        if (array_udiff($value, $this->values, function ($v1, $v2) {
+            return $v1 === $v2 ? 0 : 1;
+        })) {
+            throw new ValidationException('Must be one of the associated values');
+        }
+
+        return $this->allowMultipleSelection ? $value : reset($value);
+    }
+
+    public function setValuesWithLabels(array $values)
+    {
+        $this->values = array_keys($values);
+
+        $this->labels = $values;
+
+        return $this;
     }
 
     public function toString($value): ?string

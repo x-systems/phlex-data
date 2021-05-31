@@ -109,42 +109,6 @@ class HasOne extends Model\Reference
     public $serialize;
 
     /**
-     * Persisting format for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.
-     *
-     * @var string
-     */
-    public $persist_format;
-
-    /**
-     * Persisting timezone for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, 'IST', 'UTC', 'Europe/Riga' etc.
-     *
-     * @var string
-     */
-    public $persist_timezone = 'UTC';
-
-    /**
-     * DateTime class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTime', 'Carbon' etc.
-     *
-     * @var string
-     */
-    public $dateTimeClass = \DateTime::class;
-
-    /**
-     * Timezone class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTimeZone', 'Carbon' etc.
-     *
-     * @var string
-     */
-    public $dateTimeZoneClass = \DateTimeZone::class;
-
-    /**
      * Reference\HasOne will also add a field corresponding
      * to 'ourFieldName' unless it exists of course.
      */
@@ -171,12 +135,7 @@ class HasOne extends Model\Reference
                 'ui' => $this->ui,
                 'mandatory' => $this->mandatory,
                 'required' => $this->required,
-//                 'typecast' => $this->typecast,
                 'serialize' => $this->serialize,
-//                 'persist_format' => $this->persist_format,
-//                 'persist_timezone' => $this->persist_timezone,
-//                 'dateTimeClass' => $this->dateTimeClass,
-//                 'dateTimeZoneClass' => $this->dateTimeZoneClass,
             ]);
         }
     }

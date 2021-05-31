@@ -45,21 +45,6 @@ class Field
      */
     public $default;
 
-//     /**
-//      * For several types enum can provide list of available options. ['blue', 'red'].
-//      *
-//      * @var array|null
-//      */
-//     public $enum;
-
-//     /**
-//      * For fields that can be selected, values can represent interpretation of the values,
-//      * for instance ['F'=>'Female', 'M'=>'Male'];.
-//      *
-//      * @var array|null
-//      */
-//     public $values;
-
     /**
      * If value of this field is defined by a model, this property
      * will contain reference link.
@@ -118,15 +103,6 @@ class Field
      */
     public $required = false;
 
-//     /**
-//      * Should we use typecasting when saving/loading data to/from persistence.
-//      *
-//      * Value can be array [$typecast_save_callback, $typecast_load_callback].
-//      *
-//      * @var bool|array|null
-//      */
-//     public $typecast;
-
     /**
      * Should we use serialization when saving/loading data to/from persistence.
      *
@@ -135,42 +111,6 @@ class Field
      * @var bool|array|string|null
      */
     public $serialize;
-
-//     /**
-//      * Persisting format for type = 'date', 'datetime', 'time' fields.
-//      *
-//      * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.
-//      *
-//      * @var string
-//      */
-//     public $persist_format;
-
-//     /**
-//      * Persisting timezone for type = 'date', 'datetime', 'time' fields.
-//      *
-//      * For example, 'IST', 'UTC', 'Europe/Riga' etc.
-//      *
-//      * @var string
-//      */
-//     public $persist_timezone = 'UTC';
-
-//     /**
-//      * DateTime class used for type = 'data', 'datetime', 'time' fields.
-//      *
-//      * For example, 'DateTime', 'Carbon\Carbon' etc.
-//      *
-//      * @var string
-//      */
-//     public $dateTimeClass = \DateTime::class;
-
-//     /**
-//      * Timezone class used for type = 'data', 'datetime', 'time' fields.
-//      *
-//      * For example, 'DateTimeZone', 'Carbon\CarbonTimeZone' etc.
-//      *
-//      * @var string
-//      */
-//     public $dateTimeZoneClass = \DateTimeZone::class;
 
     // }}}
 

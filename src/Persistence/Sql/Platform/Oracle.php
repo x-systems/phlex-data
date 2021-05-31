@@ -17,7 +17,7 @@ class Oracle extends Persistence\Sql
 
     protected static $defaultCodecs = [
         Model\Field\Type\Object_::class => [Oracle\Codec\Object_::class],
-        Model\Field\Type\Selectable::class => [Oracle\Codec\Selectable::class],
+        Model\Field\Type\Array_::class => [Oracle\Codec\Array_::class],
     ];
 
     public function __construct($connection, $user = null, $password = null, $options = [])

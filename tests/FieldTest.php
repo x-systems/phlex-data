@@ -230,7 +230,7 @@ class FieldTest extends Sql\TestCase
     public function testEnum1(): void
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => ['foo', 'bar']]);
+        $m->addField('foo', ['type' => ['enum', 'values' => ['foo', 'bar']]]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 'xx');
@@ -239,7 +239,7 @@ class FieldTest extends Sql\TestCase
     public function testEnum2(): void
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => [1, 'bar']]);
+        $m->addField('foo', ['type' => ['enum', 'values' => [1, 'bar']]]);
         $m = $m->createEntity();
         $m->set('foo', 1);
 
@@ -252,7 +252,7 @@ class FieldTest extends Sql\TestCase
     public function testEnum3(): void
     {
         $m = new Model();
-        $m->addField('foo', ['enum' => [1, 'bar']]);
+        $m->addField('foo', ['type' => ['enum', 'values' => [1, 'bar']]]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', true);
@@ -264,63 +264,63 @@ class FieldTest extends Sql\TestCase
         // This test has no purpose but it stands testament
         // to a weird behaviours of PHP
         $m = new Model();
-        $m->addField('foo', ['enum' => [1, 'bar'], 'default' => 1]);
+        $m->addField('foo', ['type' => ['enum', 'values' => [1, 'bar']], 'default' => 1]);
         $m = $m->createEntity();
         $m->set('foo', null);
 
         $this->assertNull($m->get('foo'));
     }
 
-    public function testValues1(): void
+    public function testList1(): void
     {
         $m = new Model();
-        $m->addField('foo', ['values' => ['foo', 'bar']]);
+        $m->addField('foo', ['type' => ['enum', 'values' => ['foo', 'bar']]]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 4);
     }
 
-    public function testValues2(): void
+    public function testList2(): void
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [3 => 'bar']]);
+        $m->addField('foo', ['type' => ['list', 'valuesWithLabels' => [3 => 'bar']]]);
         $m = $m->createEntity();
         $m->set('foo', 3);
 
-        $this->assertSame(3, $m->get('foo'));
+        $this->assertSame([3], $m->get('foo'));
 
         $m->set('foo', null);
         $this->assertNull($m->get('foo'));
     }
 
-    public function testValues3(): void
+    public function testList3(): void
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [1 => 'bar']]);
+        $m->addField('foo', ['type' => ['list', 'valuesWithLabels' => [1 => 'bar']]]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', true);
     }
 
-    public function testValues3a(): void
+    public function testList3a(): void
     {
         $m = new Model();
-        $m->addField('foo', ['values' => [1 => 'bar']]);
+        $m->addField('foo', ['type' => ['list', 'valuesWithLabels' => [1 => 'bar']]]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 'bar');
     }
 
-    public function testValues4(): void
+    public function testList4(): void
     {
         // PHP type control is really crappy...
         // This test has no purpose but it stands testament
         // to a weird behaviours of PHP
         $m = new Model();
-        $m->addField('foo', ['values' => ['1a' => 'bar']]);
+        $m->addField('foo', ['type' => ['list', 'valuesWithLabels' => ['1a' => 'bar']]]);
         $m = $m->createEntity();
         $m->set('foo', '1a');
-        $this->assertSame('1a', $m->get('foo'));
+        $this->assertSame(['1a'], $m->get('foo'));
     }
 
     public function testPersist(): void
@@ -738,7 +738,7 @@ class FieldTest extends Sql\TestCase
     public function testNormalizeException12(): void
     {
         $m = new Model(null, ['strict_types' => true]);
-        $m->addField('foo', ['type' => 'array']);
+        $m->addField('foo', ['type' => ['list', 'values' => ['a', 'b']]]);
         $m = $m->createEntity();
         $this->expectException(Model\Field\ValidationException::class);
         $m->set('foo', 'ABC');

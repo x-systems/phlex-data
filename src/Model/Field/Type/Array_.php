@@ -6,14 +6,6 @@ namespace Phlex\Data\Model\Field\Type;
 
 class Array_ extends \Phlex\Data\Model\Field\Type
 {
-    /**
-     * For fields that can be selected, values can represent interpretation of the values,
-     * for instance ['F'=>'Female', 'M'=>'Male'];.
-     *
-     * @var array|null
-     */
-    public $values;
-
     protected function doNormalize($value)
     {
         if (is_string($value)) {
@@ -26,10 +18,6 @@ class Array_ extends \Phlex\Data\Model\Field\Type
 
         if (!is_array($value)) {
             throw new ValidationException('Must be an array');
-        }
-
-        if ($this->values !== null && array_diff($value, array_keys($this->values))) {
-            throw new ValidationException('Must be one of the associated values');
         }
 
         return $value;

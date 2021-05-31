@@ -84,7 +84,7 @@ class DcInvoiceLine extends Model
 
         $this->addField('name');
 
-        $this->addField('type', ['enum' => ['invoice', 'quote']]);
+        $this->addField('type', ['type' => ['enum', 'values' => ['invoice', 'quote']]]);
         $this->addCondition('type', '=', 'invoice');
 
         $this->addField('qty', ['type' => 'integer', 'mandatory' => true]);
@@ -108,7 +108,7 @@ class DcQuoteLine extends Model
 
         $this->addField('name');
 
-        $this->addField('type', ['enum' => ['invoice', 'quote']]);
+        $this->addField('type', ['type' => ['enum', 'values' => ['invoice', 'quote']]]);
         $this->addCondition('type', '=', 'quote');
 
         $this->addField('qty', ['type' => 'integer']);

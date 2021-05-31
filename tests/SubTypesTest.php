@@ -80,7 +80,7 @@ class StGenericTransaction extends Model
         parent::doInitialize();
 
         $this->hasOne('account_id', ['model' => [StAccount::class]]);
-        $this->addField('type', ['enum' => ['Ob', 'Deposit', 'Withdrawal', 'TransferOut', 'TransferIn']]);
+        $this->addField('type', ['type' => ['enum', 'values' => ['Ob', 'Deposit', 'Withdrawal', 'TransferOut', 'TransferIn']]]);
 
         if ($this->type) {
             $this->addCondition('type', $this->type);

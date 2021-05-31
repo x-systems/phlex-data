@@ -23,7 +23,7 @@ class ConditionTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model();
         $m->addField('name');
 
-        $m->addField('gender', ['enum' => ['M', 'F']]);
+        $m->addField('gender', ['type' => ['enum', 'values' => ['M', 'F']]]);
         $m->addField('foo');
 
         $m->addCondition('gender', 'M');

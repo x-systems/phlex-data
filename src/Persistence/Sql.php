@@ -73,6 +73,7 @@ abstract class Sql extends Persistence
 
     protected static $defaultCodecs = [
         [Sql\Codec\String_::class],
+        Model\Field\Type\Selectable::class => [Sql\Codec\Selectable::class],
         Model\Field\Type\Array_::class => [Sql\Codec\Array_::class],
         Model\Field\Type\Boolean::class => [Sql\Codec\Boolean::class],
         Model\Field\Type\Date::class => [Sql\Codec\Date::class],

@@ -15,38 +15,38 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
      *
      * Returns Expression in case you want to do something else with it.
      *
-     * @param string|Model\Field|array $ourFieldName or [$field, ..defaults]
+     * @param string|Model\Field|array $ourKey or [$field, ..defaults]
      */
-    public function addField($ourFieldName, string $theirFieldName = null): Persistence\Sql\Field\Expression
+    public function addField($ourKey, string $theirKey = null): Persistence\Sql\Field\Expression
     {
-        if (is_array($ourFieldName)) {
-            $defaults = $ourFieldName;
+        if (is_array($ourKey)) {
+            $defaults = $ourKey;
             if (!isset($defaults[0])) {
                 throw (new Exception('Field name must be specified'))
-                    ->addMoreInfo('field', $ourFieldName);
+                    ->addMoreInfo('field', $ourKey);
             }
-            $ourFieldName = $defaults[0];
+            $ourKey = $defaults[0];
             unset($defaults[0]);
         } else {
             $defaults = [];
         }
 
-        if ($theirFieldName === null) {
-            $theirFieldName = $ourFieldName;
+        if ($theirKey === null) {
+            $theirKey = $ourKey;
         }
 
         $ourModel = $this->getOurModel();
 
-        // if caption is not defined in $defaults -> get it directly from the linked model field $theirFieldName
-        $defaults['caption'] = $defaults['caption'] ?? $ourModel->refModel($this->link)->getField($theirFieldName)->getCaption();
+        // if caption is not defined in $defaults -> get it directly from the linked model field $theirKey
+        $defaults['caption'] = $defaults['caption'] ?? $ourModel->refModel($this->link)->getField($theirKey)->getCaption();
 
         /** @var Persistence\Sql\Field\Expression $fieldExpression */
-        $fieldExpression = $ourModel->addExpression($ourFieldName, array_merge(
+        $fieldExpression = $ourModel->addExpression($ourKey, array_merge(
             [
-                function (Model $ourModel) use ($theirFieldName) {
+                function (Model $ourModel) use ($theirKey) {
                     // remove order if we just select one field from hasOne model
                     // that is mandatory for Oracle
-                    return $ourModel->refLink($this->link)->toQuery()->field($theirFieldName)->reset('order');
+                    return $ourModel->refLink($this->link)->toQuery()->field($theirKey)->reset('order');
                 },
             ],
             $defaults,
@@ -59,15 +59,15 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         ));
 
         // Will try to execute last
-        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($ourFieldName, $theirFieldName) {
-            // if title field is changed, but reference ID field (ourFieldName)
+        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($ourKey, $theirKey) {
+            // if title field is changed, but reference ID field (ourKey)
             // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($ourFieldName) && !$ourModel->isDirty($this->ourFieldName)) {
+            if ($ourModel->isDirty($ourKey) && !$ourModel->isDirty($this->ourKey)) {
                 $theirModel = $this->createTheirModel();
 
-                $theirModel->addCondition($theirFieldName, $ourModel->get($ourFieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->toQuery()->field($theirModel->primaryKey));
-                $ourModel->_unset($ourFieldName);
+                $theirModel->addCondition($theirKey, $ourModel->get($ourKey));
+                $ourModel->set($this->getOurKey(), $theirModel->toQuery()->field($theirModel->primaryKey));
+                $ourModel->_unset($ourKey);
             }
         }, [], 21);
 
@@ -90,24 +90,24 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
      */
     public function addFields(array $fields = [], array $defaults = [])
     {
-        foreach ($fields as $ourFieldName => $ourFieldDefaults) {
+        foreach ($fields as $ourKey => $ourFieldDefaults) {
             $ourFieldDefaults = array_merge($defaults, (array) $ourFieldDefaults);
 
             if (!isset($ourFieldDefaults[0])) {
                 throw (new Exception('Incorrect definition for addFields. Field name must be specified'))
-                    ->addMoreInfo('ourFieldName', $ourFieldName)
+                    ->addMoreInfo('ourKey', $ourKey)
                     ->addMoreInfo('ourFieldDefaults', $ourFieldDefaults);
             }
 
-            $theirFieldName = $ourFieldDefaults[0];
+            $theirKey = $ourFieldDefaults[0];
 
-            if (is_int($ourFieldName)) {
-                $ourFieldName = $theirFieldName;
+            if (is_int($ourKey)) {
+                $ourKey = $theirKey;
             }
 
-            $ourFieldDefaults[0] = $ourFieldName;
+            $ourFieldDefaults[0] = $ourKey;
 
-            $this->addField($ourFieldDefaults, $theirFieldName);
+            $this->addField($ourFieldDefaults, $theirKey);
         }
 
         return $this;
@@ -121,7 +121,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         $theirModel = $this->createTheirModel($defaults);
 
         $theirModel->addCondition(
-            $this->theirFieldName ?: $theirModel->primaryKey,
+            $this->theirKey ?: $theirModel->primaryKey,
             $this->referenceOurValue()
         );
 
@@ -140,17 +140,17 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
             return $theirModel;
         }
 
-        $theirFieldName = $this->theirFieldName ?: $theirModel->primaryKey;
+        $theirKey = $this->theirKey ?: $theirModel->primaryKey;
         $ourField = $this->getOurField();
 
         // At this point the reference
-        // if ourFieldName is the primaryKey and is being used in the reference
+        // if ourKey is the primaryKey and is being used in the reference
         // we should persist the relation in condtition
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->isLoaded() && !$theirModel->isLoaded()) {
             if ($ourField->isPrimaryKey()) {
                 return $theirModel->getModel()
-                    ->addCondition($theirFieldName, $this->getOurFieldValue());
+                    ->addCondition($theirKey, $this->getOurFieldValue());
             }
         }
 
@@ -158,7 +158,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         $ourFieldExpression = $ourModel->toQuery()->field($ourField);
 
         $theirModel->getModel(true)
-            ->addCondition($theirFieldName, $ourFieldExpression);
+            ->addCondition($theirKey, $ourFieldExpression);
 
         return $theirModel;
     }
@@ -176,20 +176,20 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
     {
         $ourModel = $this->getOurModel();
 
-        $fieldName = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->primaryKey, '~') . '|id)$~', '', $this->link);
+        $key = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->primaryKey, '~') . '|id)$~', '', $this->link);
 
-        if ($ourModel->hasField($fieldName)) {
+        if ($ourModel->hasField($key)) {
             throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))
-                ->addMoreInfo('field', $fieldName);
+                ->addMoreInfo('field', $key);
         }
 
         /** @var Persistence\Sql\Field\Expression $fieldExpression */
-        $fieldExpression = $ourModel->addExpression($fieldName, array_replace_recursive(
+        $fieldExpression = $ourModel->addExpression($key, array_replace_recursive(
             [
                 function (Model $ourModel) {
                     $theirModel = $ourModel->refLink($this->link);
 
-                    return $theirModel->toQuery()->field($theirModel->title_field)->reset('order');
+                    return $theirModel->toQuery()->field($theirModel->titleKey)->reset('order');
                 },
                 'type' => null,
                 'ui' => ['editable' => false, 'visible' => true],
@@ -204,14 +204,14 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         ));
 
         // Will try to execute last
-        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($fieldName) {
+        $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($key) {
             // if title field is changed, but reference ID field (our_field)
             // is not changed, then update reference ID field value
-            if ($ourModel->isDirty($fieldName) && !$ourModel->isDirty($this->ourFieldName)) {
+            if ($ourModel->isDirty($key) && !$ourModel->isDirty($this->ourKey)) {
                 $theirModel = $this->createTheirModel();
 
-                $theirModel->addCondition($theirModel->title_field, $ourModel->get($fieldName));
-                $ourModel->set($this->getOurFieldName(), $theirModel->toQuery()->field($theirModel->primaryKey));
+                $theirModel->addCondition($theirModel->titleKey, $ourModel->get($key));
+                $ourModel->set($this->getOurKey(), $theirModel->toQuery()->field($theirModel->primaryKey));
             }
         }, [], 20);
 

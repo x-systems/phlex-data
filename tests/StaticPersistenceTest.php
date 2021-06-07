@@ -19,7 +19,7 @@ class StaticPersistenceTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame('world', $m->get('name'));
 
         // custom title field and try loading from same static twice
-        $m = new Model($p); //, ['title_field' => 'foo']);
+        $m = new Model($p); //, ['titleKey' => 'foo']);
         $m = $m->load(1);
         $this->assertSame('world', $m->get('name')); // still 'name' here not 'foo'
     }
@@ -85,22 +85,22 @@ class StaticPersistenceTest extends \Phlex\Core\PHPUnit\TestCase
 
         $p = new Persistence\Static_([['foo' => 'hello', 'bar' => 'world']]);
         $m = new StaticPersistenceModel($p);
-        $this->assertSame('foo', $m->title_field);
+        $this->assertSame('foo', $m->titleKey);
     }
 
     public function testTitleOrName(): void
     {
         $p = new Persistence\Static_([['foo' => 'hello', 'bar' => 'world']]);
         $m = new Model($p);
-        $this->assertSame('foo', $m->title_field);
+        $this->assertSame('foo', $m->titleKey);
 
         $p = new Persistence\Static_([['foo' => 'hello', 'name' => 'x']]);
         $m = new Model($p);
-        $this->assertSame('name', $m->title_field);
+        $this->assertSame('name', $m->titleKey);
 
         $p = new Persistence\Static_([['foo' => 'hello', 'title' => 'x']]);
         $m = new Model($p);
-        $this->assertSame('title', $m->title_field);
+        $this->assertSame('title', $m->titleKey);
     }
 
     public function testFieldTypes(): void
@@ -134,7 +134,7 @@ class StaticPersistenceTest extends \Phlex\Core\PHPUnit\TestCase
 
 class StaticPersistenceModel extends Model
 {
-    public $title_field = 'foo';
+    public $titleKey = 'foo';
 
     protected function doInitialize(): void
     {

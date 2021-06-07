@@ -19,6 +19,6 @@ class Country extends Model
     {
         parent::doInitialize();
 
-        $this->addField($this->fieldName()->name);
+        $this->addField($this->key()->name);
     }
 }

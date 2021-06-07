@@ -167,7 +167,7 @@ abstract class Query implements \IteratorAggregate
 
     abstract protected function initAggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): void;
 
-    public function field($fieldName, string $alias = null): self
+    public function field($key, string $alias = null): self
     {
         $this->initWhere();
         $this->initLimit();
@@ -183,7 +183,7 @@ abstract class Query implements \IteratorAggregate
         return $this;
     }
 
-    abstract protected function initField($fieldName, string $alias = null): void;
+    abstract protected function initField($key, string $alias = null): void;
 
     /**
      * @return static
@@ -224,7 +224,7 @@ abstract class Query implements \IteratorAggregate
     /**
      * Add condition to the query scope (leaves model scope intact).
      */
-    public function where($fieldName, $operator = null, $value = null): self
+    public function where($key, $operator = null, $value = null): self
     {
         $this->scope->addCondition(...func_get_args());
 

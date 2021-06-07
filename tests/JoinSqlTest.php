@@ -556,11 +556,11 @@ class JoinSqlTest extends Sql\TestCase
             'id' => 1, 'name' => 'John', 'contact_id' => 10, 'phone_id' => 20, 'number' => '+123',
         ], $m_u2->get());
 
-        // hasMany token model (uses default ourFieldName, theirFieldName)
+        // hasMany token model (uses default ourKey, theirKey)
         $m_t = new Model($this->db, ['table' => 'token']);
         $m_t->addField('user_id');
         $m_t->addField('token');
-        $ref_many = $j->hasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default ourFieldName, theirFieldName)
+        $ref_many = $j->hasMany('Token', ['model' => $m_t]); // hasMany on JOIN (use default ourKey, theirKey)
 
         $m_u2 = $m_u->load(1);
         $this->assertEquals([
@@ -568,11 +568,11 @@ class JoinSqlTest extends Sql\TestCase
             ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
         ], $m_u2->ref('Token')->export());
 
-        // hasMany email model (uses custom ourFieldName, theirFieldName)
+        // hasMany email model (uses custom ourKey, theirKey)
         $m_e = new Model($this->db, ['table' => 'email']);
         $m_e->addField('contact_id');
         $m_e->addField('address');
-        $ref_many = $j->hasMany('Email', ['model' => $m_e, 'ourFieldName' => 'contact_id', 'theirFieldName' => 'contact_id']); // hasMany on JOIN (use custom ourFieldName, theirFieldName)
+        $ref_many = $j->hasMany('Email', ['model' => $m_e, 'ourKey' => 'contact_id', 'theirKey' => 'contact_id']); // hasMany on JOIN (use custom ourKey, theirKey)
 
         $m_u2 = $m_u->load(1);
         $this->assertEquals([
@@ -652,7 +652,7 @@ class JoinSqlTest extends Sql\TestCase
         $this->assertEquals(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
     }
 
-    public function testJoinActualFieldNamesAndPrefix(): void
+    public function testJoinActualKeysAndPrefix(): void
     {
         if ($this->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->getDatabasePlatform() instanceof SQLServer2012Platform || $this->getDatabasePlatform() instanceof OraclePlatform) {
             $this->markTestIncomplete('TODO - NULL PK not unset in INSERT');

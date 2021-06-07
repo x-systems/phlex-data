@@ -13,22 +13,22 @@ use Phlex\Data\Persistence;
  */
 class HasMany extends Model\Reference
 {
-    public function getTheirFieldName(): string
+    public function getTheirKey(): string
     {
-        if ($this->theirFieldName) {
-            return $this->theirFieldName;
+        if ($this->theirKey) {
+            return $this->theirKey;
         }
 
         // this is pure guess, verify if such field exist, otherwise throw
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel();
-        $theirFieldName = $ourModel->table . '_' . $ourModel->primaryKey;
-        if (!$this->createTheirModel()->hasField($theirFieldName)) {
+        $theirKey = $ourModel->table . '_' . $ourModel->primaryKey;
+        if (!$this->createTheirModel()->hasField($theirKey)) {
             throw (new Exception('Their model does not contain fallback field'))
-                ->addMoreInfo('their_fallback_field', $theirFieldName);
+                ->addMoreInfo('their_fallback_field', $theirKey);
         }
 
-        return $theirFieldName;
+        return $theirKey;
     }
 
     /**
@@ -41,13 +41,13 @@ class HasMany extends Model\Reference
         $ourModel = $this->getOurModel();
 
         if ($ourModel->isLoaded()) {
-            return $this->ourFieldName
-                ? $ourModel->get($this->ourFieldName)
+            return $this->ourKey
+                ? $ourModel->get($this->ourKey)
                 : $ourModel->getId();
         }
 
         // create expression based on existing conditions
-        return $ourModel->toQuery()->field($this->getOurFieldName());
+        return $ourModel->toQuery()->field($this->getOurKey());
     }
 
     /**
@@ -66,7 +66,7 @@ class HasMany extends Model\Reference
     public function ref(array $defaults = []): Model
     {
         return $this->createTheirModel($defaults)->addCondition(
-            $this->getTheirFieldName(),
+            $this->getTheirKey(),
             $this->getOurValue()
         );
     }
@@ -77,7 +77,7 @@ class HasMany extends Model\Reference
     public function refLink(array $defaults = []): Model
     {
         $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
-            $this->getTheirFieldName(),
+            $this->getTheirKey(),
             $this->referenceOurValue()
         );
 
@@ -88,18 +88,18 @@ class HasMany extends Model\Reference
      * Adds field as expression to our model.
      * Used in aggregate strategy.
      */
-    public function addField(string $fieldName, array $defaults = []): Model\Field
+    public function addField(string $key, array $defaults = []): Model\Field
     {
         if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
             throw (new Exception('Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()'))
-                ->addMoreInfo('field', $fieldName)
+                ->addMoreInfo('field', $key)
                 ->addMoreInfo('defaults', $defaults);
         }
 
         $defaults['aggregate_relation'] = $this;
 
         $alias = $defaults['field'] ?? null;
-        $field = $alias ?? $fieldName;
+        $field = $alias ?? $key;
 
         if (isset($defaults['concat'])) {
             $defaults['aggregate'] = new Persistence\Sql\Expression\GroupConcat($field, $defaults['concat']);
@@ -135,7 +135,7 @@ class HasMany extends Model\Reference
             };
         }
 
-        return $this->getOurModel()->addExpression($fieldName, array_merge([$fx], $defaults));
+        return $this->getOurModel()->addExpression($key, array_merge([$fx], $defaults));
     }
 
     /**
@@ -148,9 +148,9 @@ class HasMany extends Model\Reference
     public function addFields(array $fields = [])
     {
         foreach ($fields as $defaults) {
-            $fieldName = $defaults[0];
+            $key = $defaults[0];
             unset($defaults[0]);
-            $this->addField($fieldName, $defaults);
+            $this->addField($key, $defaults);
         }
 
         return $this;

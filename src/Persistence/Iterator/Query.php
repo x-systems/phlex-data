@@ -149,15 +149,15 @@ class Query extends Persistence\Query
         $this->iterator = new \ArrayIterator([[$this->iterator->valid() ? 1 : 0]]);
     }
 
-    protected function initField($fieldName, string $alias = null): void
+    protected function initField($key, string $alias = null): void
     {
-        if (!$fieldName) {
+        if (!$key) {
             throw new Exception('Field query requires field name');
         }
 
         $rows = [];
-        foreach ($this->getPersistence()->query($this->model)->select([$fieldName])->getRows() as $id => $row) {
-            $rows[$id] = [$alias ?? $fieldName => $row[$fieldName]];
+        foreach ($this->getPersistence()->query($this->model)->select([$key])->getRows() as $id => $row) {
+            $rows[$id] = [$alias ?? $key => $row[$key]];
         }
 
         $this->iterator = new \ArrayIterator($rows);

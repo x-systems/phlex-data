@@ -94,7 +94,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['currency', 'name']);
 
-        $u->hasMany('cur', ['model' => $c, 'ourFieldName' => 'currency', 'theirFieldName' => 'currency']);
+        $u->hasMany('cur', ['model' => $c, 'ourKey' => 'currency', 'theirKey' => 'currency']);
 
         $cc = $u->load(1)->ref('cur');
         $cc = $cc->tryLoadAny();
@@ -110,7 +110,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['code', 'name']);
 
-        $u->hasMany('cur', ['model' => $c, 'ourFieldName' => 'currency_code', 'theirFieldName' => 'code']);
+        $u->hasMany('cur', ['model' => $c, 'ourKey' => 'currency_code', 'theirKey' => 'code']);
 
         $this->assertSameSql(
             'select "id","code","name" from "currency" where "code" = "user"."currency_code"',
@@ -373,7 +373,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $company = (new Model($this->db, ['table' => 'company']))->addFields(['name']);
 
-        $user->hasOne('Company', ['model' => $company, 'ourFieldName' => 'company_id', 'theirFieldName' => 'id']);
+        $user->hasOne('Company', ['model' => $company, 'ourKey' => 'company_id', 'theirKey' => 'id']);
 
         $order = new Model($this->db, ['table' => 'order']);
         $order->addField('company_id');
@@ -473,7 +473,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $s->addFields(['name']);
         $s->hasOne('player_id', ['model' => $p]);
 
-        $p->hasOne('Stadium', ['model' => $s, 'ourFieldName' => 'id', 'theirFieldName' => 'player_id']);
+        $p->hasOne('Stadium', ['model' => $s, 'ourKey' => 'id', 'theirKey' => 'player_id']);
 
         $p = $p->load(2);
         $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
@@ -484,7 +484,7 @@ class ReferenceSqlTest extends Sql\TestCase
     public function testModelProperty(): void
     {
         $user = new Model($this->db, ['table' => 'user']);
-        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'theirFieldName' => 'id']);
+        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'theirKey' => 'id']);
         $o = $user->ref('Orders');
         $this->assertSame('order', $o->table);
     }
@@ -545,12 +545,12 @@ class ReferenceSqlTest extends Sql\TestCase
         // restore DB
         $this->setDb($dbData);
 
-        // with default title_field='name'
+        // with default titleKey='name'
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
-        // change order user by changing title_field value
+        // change order user by changing titleKey value
         $o = $o->load(1);
         $o->set('user', 'Peter');
         $this->assertEquals(1, $o->get('user_id'));
@@ -562,12 +562,12 @@ class ReferenceSqlTest extends Sql\TestCase
         // restore DB
         $this->setDb($dbData);
 
-        // with custom title_field='last_name'
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        // with custom titleKey='last_name'
+        $u = (new Model($this->db, ['table' => 'user', 'titleKey' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('user_id', ['model' => $u])->addTitle();
 
-        // change order user by changing title_field value
+        // change order user by changing titleKey value
         $o = $o->load(1);
         $o->set('user', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
@@ -579,10 +579,10 @@ class ReferenceSqlTest extends Sql\TestCase
         // restore DB
         $this->setDb($dbData);
 
-        // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        // with custom titleKey='last_name' and custom link name
+        $u = (new Model($this->db, ['table' => 'user', 'titleKey' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'ourFieldName' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['model' => $u, 'ourKey' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o = $o->load(1);
@@ -596,10 +596,10 @@ class ReferenceSqlTest extends Sql\TestCase
         // restore DB
         $this->setDb($dbData);
 
-        // with custom title_field='last_name' and custom link name
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        // with custom titleKey='last_name' and custom link name
+        $u = (new Model($this->db, ['table' => 'user', 'titleKey' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'ourFieldName' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['model' => $u, 'ourKey' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o = $o->load(1);
@@ -631,7 +631,7 @@ class ReferenceSqlTest extends Sql\TestCase
                 3 => ['id' => 3, 'user_id' => 1],
             ],
         ]);
-        $u = (new Model($this->db, ['table' => 'user', 'title_field' => 'last_name']))->addFields(['name', 'last_name']);
+        $u = (new Model($this->db, ['table' => 'user', 'titleKey' => 'last_name']))->addFields(['name', 'last_name']);
 
         // Test : Now the caption is null and is generated from field name
         $this->assertSame('Last Name', $u->getField('last_name')->getCaption());
@@ -642,7 +642,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $this->assertSame('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $order_user_ref = $o->hasOne('my_user', ['model' => $u, 'ourFieldName' => 'user_id']);
+        $order_user_ref = $o->hasOne('my_user', ['model' => $u, 'ourKey' => 'user_id']);
         $order_user_ref->addField('user_last_name', 'last_name');
 
         $referenced_caption = $o->getField('user_last_name')->getCaption();

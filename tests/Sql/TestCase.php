@@ -137,8 +137,8 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
             if ($first_row) {
                 $model = new Model($this->db, ['table' => $tableName]);
 
-                foreach ($first_row as $fieldName => $row) {
-                    if ($fieldName === 'id') {
+                foreach ($first_row as $key => $row) {
+                    if ($key === 'id') {
                         continue;
                     }
 
@@ -152,7 +152,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                         $fieldType = 'string';
                     }
 
-                    $model->addField($fieldName, ['type' => $fieldType]);
+                    $model->addField($key, ['type' => $fieldType]);
                 }
 
                 $model->migrate();

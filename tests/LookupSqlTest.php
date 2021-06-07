@@ -91,7 +91,7 @@ class LFriend extends Model
 {
     public $skip_reverse = false;
     public $table = 'friend';
-    public $title_field = 'friend_name';
+    public $titleKey = 'friend_name';
 
     protected function doInitialize(): void
     {

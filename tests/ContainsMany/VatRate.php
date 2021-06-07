@@ -20,7 +20,7 @@ class VatRate extends Model
     {
         parent::doInitialize();
 
-        $this->addField($this->fieldName()->name);
-        $this->addField($this->fieldName()->rate, ['type' => 'integer']);
+        $this->addField($this->key()->name);
+        $this->addField($this->key()->rate, ['type' => 'integer']);
     }
 }

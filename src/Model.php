@@ -239,7 +239,7 @@ class Model implements \IteratorAggregate
      *
      * @var string
      */
-    public $title_field = 'name';
+    public $titleKey = 'name';
 
     /**
      * Caption of the model. Can be used in UI components, for example.
@@ -561,7 +561,7 @@ class Model implements \IteratorAggregate
      *
      * @param array|object $seed
      */
-    public function addField(string $fieldName, $seed = []): Model\Field
+    public function addField(string $key, $seed = []): Model\Field
     {
         if (is_object($seed)) {
             $field = $seed;
@@ -569,7 +569,7 @@ class Model implements \IteratorAggregate
             $field = $this->fieldFactory($seed);
         }
 
-        return $this->_addIntoCollection($fieldName, $field, 'fields');
+        return $this->_addIntoCollection($key, $field, 'fields');
     }
 
     /**
@@ -622,30 +622,30 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function removeField(string $fieldName)
+    public function removeField(string $key)
     {
         $this->assertIsModel();
 
-        $this->getField($fieldName); // better exception if field does not exist
+        $this->getField($key); // better exception if field does not exist
 
-        $this->_removeFromCollection($fieldName, 'fields');
+        $this->_removeFromCollection($key, 'fields');
 
         return $this;
     }
 
-    public function hasField(string $fieldName): bool
+    public function hasField(string $key): bool
     {
-        return $this->_hasInCollection($fieldName, 'fields');
+        return $this->_hasInCollection($key, 'fields');
     }
 
-    public function getField(string $fieldName): Model\Field
+    public function getField(string $key): Model\Field
     {
         try {
-            return $this->_getFromCollection($fieldName, 'fields');
+            return $this->_getFromCollection($key, 'fields');
         } catch (\Phlex\Core\Exception $e) {
             throw (new Exception('Field is not defined in model', 0, $e))
                 ->addMoreInfo('model', $this)
-                ->addMoreInfo('field', $fieldName);
+                ->addMoreInfo('field', $key);
         }
     }
 
@@ -691,35 +691,35 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    private function checkOnlyFieldsField(string $fieldName)
+    private function checkOnlyFieldsField(string $key)
     {
-        $this->getField($fieldName); // test if field exists
+        $this->getField($key); // test if field exists
 
         if ($this->only_fields) {
-            if (!in_array($fieldName, $this->only_fields, true) && !$this->getField($fieldName)->system) {
+            if (!in_array($key, $this->only_fields, true) && !$this->getField($key)->system) {
                 throw (new Exception('Attempt to use field outside of those set by onlyFields'))
-                    ->addMoreInfo('field', $fieldName)
+                    ->addMoreInfo('field', $key)
                     ->addMoreInfo('only_fields', $this->only_fields);
             }
         }
     }
 
-    public function isOnlyFieldsField(string $fieldName): bool
+    public function isOnlyFieldsField(string $key): bool
     {
-        return !$this->only_fields || in_array($fieldName, $this->only_fields, true);
+        return !$this->only_fields || in_array($key, $this->only_fields, true);
     }
 
     /**
      * Will return true if specified field is dirty.
      */
-    public function isDirty(string $fieldName): bool
+    public function isDirty(string $key): bool
     {
         $this->assertIsEntity();
 
-        $this->checkOnlyFieldsField($fieldName);
+        $this->checkOnlyFieldsField($key);
 
         $dirtyRef = &$this->getDirtyRef();
-        if (array_key_exists($fieldName, $dirtyRef)) {
+        if (array_key_exists($key, $dirtyRef)) {
             return true;
         }
 
@@ -788,19 +788,19 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function set(string $fieldName, $value)
+    public function set(string $key, $value)
     {
         $this->assertIsEntity();
 
-        $this->checkOnlyFieldsField($fieldName);
+        $this->checkOnlyFieldsField($key);
 
-        $field = $this->getField($fieldName);
+        $field = $this->getField($key);
 
         try {
             $value = $field->normalize($value);
         } catch (Exception $e) {
             throw $e
-                ->addMoreInfo('fieldName', $fieldName)
+                ->addMoreInfo('key', $key)
                 ->addMoreInfo('value', $value)
                 ->addMoreInfo('field', $field);
         }
@@ -808,21 +808,21 @@ class Model implements \IteratorAggregate
         // do nothing when value has not changed
         $dataRef = &$this->getDataRef();
         $dirtyRef = &$this->getDirtyRef();
-        $currentValue = array_key_exists($fieldName, $dataRef)
-            ? $dataRef[$fieldName]
-            : (array_key_exists($fieldName, $dirtyRef) ? $dirtyRef[$fieldName] : $field->default);
+        $currentValue = array_key_exists($key, $dataRef)
+            ? $dataRef[$key]
+            : (array_key_exists($key, $dirtyRef) ? $dirtyRef[$key] : $field->default);
         if (!$value instanceof Sql\Expressionable && $field->compare($value, $currentValue)) {
             return $this;
         }
 
         $field->assertSetAccess();
 
-        if (array_key_exists($fieldName, $dirtyRef) && $field->compare($dirtyRef[$fieldName], $value)) {
-            unset($dirtyRef[$fieldName]);
-        } elseif (!array_key_exists($fieldName, $dirtyRef)) {
-            $dirtyRef[$fieldName] = array_key_exists($fieldName, $dataRef) ? $dataRef[$fieldName] : $field->default;
+        if (array_key_exists($key, $dirtyRef) && $field->compare($dirtyRef[$key], $value)) {
+            unset($dirtyRef[$key]);
+        } elseif (!array_key_exists($key, $dirtyRef)) {
+            $dirtyRef[$key] = array_key_exists($key, $dataRef) ? $dataRef[$key] : $field->default;
         }
-        $dataRef[$fieldName] = $value;
+        $dataRef[$key] = $value;
 
         return $this;
     }
@@ -832,14 +832,14 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function setNull(string $fieldName)
+    public function setNull(string $key)
     {
         // set temporary hook to disable any normalization (null validation)
         $hookIndex = $this->onHookShort(self::HOOK_NORMALIZE, static function () {
             throw new \Phlex\Core\HookBreaker(false);
         }, [], PHP_INT_MIN);
         try {
-            return $this->set($fieldName, null);
+            return $this->set($key, null);
         } finally {
             $this->removeHook(self::HOOK_NORMALIZE, $hookIndex, true);
         }
@@ -854,8 +854,8 @@ class Model implements \IteratorAggregate
      */
     public function setMulti(array $fields)
     {
-        foreach ($fields as $fieldName => $value) {
-            $this->set($fieldName, $value);
+        foreach ($fields as $key => $value) {
+            $this->set($key, $value);
         }
 
         return $this;
@@ -867,28 +867,28 @@ class Model implements \IteratorAggregate
      *
      * @return mixed
      */
-    public function get(string $fieldName = null)
+    public function get(string $key = null)
     {
         $this->assertIsEntity();
 
-        if ($fieldName === null) {
+        if ($key === null) {
             // Collect list of eligible fields
             $data = [];
-            foreach ($this->only_fields ?: array_keys($this->getFields()) as $fieldName) {
-                $data[$fieldName] = $this->get($fieldName);
+            foreach ($this->only_fields ?: array_keys($this->getFields()) as $key) {
+                $data[$key] = $this->get($key);
             }
 
             return $data;
         }
 
-        $this->checkOnlyFieldsField($fieldName);
+        $this->checkOnlyFieldsField($key);
 
         $dataRef = &$this->getDataRef();
-        if (array_key_exists($fieldName, $dataRef)) {
-            return $dataRef[$fieldName];
+        if (array_key_exists($key, $dataRef)) {
+            return $dataRef[$key];
         }
 
-        return $this->getField($fieldName)->default;
+        return $this->getField($key)->default;
     }
 
     /**
@@ -933,14 +933,14 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Return value of $model->get($model->title_field). If not set, returns id value.
+     * Return value of $model->get($model->titleKey). If not set, returns id value.
      *
      * @return mixed
      */
     public function getTitle()
     {
-        if ($this->title_field && $this->hasField($this->title_field)) {
-            return $this->getField($this->title_field)->get();
+        if ($this->titleKey && $this->hasField($this->titleKey)) {
+            return $this->getField($this->titleKey)->get();
         }
 
         return $this->getId();
@@ -951,7 +951,7 @@ class Model implements \IteratorAggregate
      */
     public function getTitles(): array
     {
-        $field = $this->title_field && $this->hasField($this->title_field) ? $this->title_field : $this->primaryKey;
+        $field = $this->titleKey && $this->hasField($this->titleKey) ? $this->titleKey : $this->primaryKey;
 
         return array_map(function ($row) use ($field) {
             return $row[$field];
@@ -961,21 +961,21 @@ class Model implements \IteratorAggregate
     /**
      * @param mixed $value
      */
-    public function compare(string $fieldName, $value): bool
+    public function compare(string $key, $value): bool
     {
-        return $this->getField($fieldName)->compare($value);
+        return $this->getField($key)->compare($value);
     }
 
     /**
      * Does field exist?
      */
-    public function _isset(string $fieldName): bool
+    public function _isset(string $key): bool
     {
-        $this->checkOnlyFieldsField($fieldName);
+        $this->checkOnlyFieldsField($key);
 
         $dirtyRef = &$this->getDirtyRef();
 
-        return array_key_exists($fieldName, $dirtyRef);
+        return array_key_exists($key, $dirtyRef);
     }
 
     /**
@@ -983,15 +983,15 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function _unset(string $fieldName)
+    public function _unset(string $key)
     {
-        $this->checkOnlyFieldsField($fieldName);
+        $this->checkOnlyFieldsField($key);
 
         $dataRef = &$this->getDataRef();
         $dirtyRef = &$this->getDirtyRef();
-        if (array_key_exists($fieldName, $dirtyRef)) {
-            $dataRef[$fieldName] = $dirtyRef[$fieldName];
-            unset($dirtyRef[$fieldName]);
+        if (array_key_exists($key, $dirtyRef)) {
+            $dataRef[$key] = $dirtyRef[$key];
+            unset($dirtyRef[$key]);
         }
 
         return $this;
@@ -1293,9 +1293,9 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function loadBy(string $fieldName, $value)
+    public function loadBy(string $key, $value)
     {
-        $field = $this->getField($fieldName);
+        $field = $this->getField($key);
 
         $scopeBak = $this->scope;
         $systemBak = $field->system;
@@ -1321,9 +1321,9 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function tryLoadBy(string $fieldName, $value)
+    public function tryLoadBy(string $key, $value)
     {
-        $field = $this->getField($fieldName);
+        $field = $this->getField($key);
 
         $scopeBak = $this->scope;
         $systemBak = $field->system;
@@ -1470,9 +1470,9 @@ class Model implements \IteratorAggregate
         }
 
         // include any fields defined inline
-        foreach ($this->fields as $fieldName => $field) {
-            if (!$model->hasField($fieldName)) {
-                $model->addField($fieldName, clone $field);
+        foreach ($this->fields as $key => $field) {
+            if (!$model->hasField($key)) {
+                $model->addField($key, clone $field);
             }
         }
 
@@ -1702,11 +1702,11 @@ class Model implements \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $fieldNames    Names of fields to export
-     * @param string     $keyFieldName  Optional name of field which value we will use as array key
+     * @param array|null $keys          Names of fields to export
+     * @param string     $keyKey        Optional name of field which value we will use as array key
      * @param bool       $typecast_data Should we typecast exported data
      */
-    public function export(array $fieldNames = null, $keyFieldName = null, $typecast_data = true): array
+    public function export(array $keys = null, $keyKey = null, $typecast_data = true): array
     {
         $this->assertIsModel();
 
@@ -1714,13 +1714,13 @@ class Model implements \IteratorAggregate
 
         // @todo: why only persisting fields?
         // prepare array with field names
-        if ($fieldNames === null) {
-            $fieldNames = array_keys($this->getFields(self::FIELD_FILTER_PERSIST));
+        if ($keys === null) {
+            $keys = array_keys($this->getFields(self::FIELD_FILTER_PERSIST));
         }
 
         // no key field - then just do export
-        if ($keyFieldName === null) {
-            return $this->persistence->export($this, $fieldNames, $typecast_data);
+        if ($keyKey === null) {
+            return $this->persistence->export($this, $keys, $typecast_data);
         }
 
         // do we have added key field in fields list?
@@ -1728,20 +1728,20 @@ class Model implements \IteratorAggregate
         $key_field_added = false;
 
         // add key_field to array if it's not there
-        if (!in_array($keyFieldName, $fieldNames, true)) {
-            $fieldNames[] = $keyFieldName;
+        if (!in_array($keyKey, $keys, true)) {
+            $keys[] = $keyKey;
             $key_field_added = true;
         }
 
         // export
-        $data = $this->persistence->export($this, $fieldNames, $typecast_data);
+        $data = $this->persistence->export($this, $keys, $typecast_data);
 
         // prepare resulting array
         $res = [];
         foreach ($data as $row) {
-            $key = $row[$keyFieldName];
+            $key = $row[$keyKey];
             if ($key_field_added) {
-                unset($row[$keyFieldName]);
+                unset($row[$keyKey]);
             }
             $res[$key] = $row;
         }
@@ -1881,7 +1881,7 @@ class Model implements \IteratorAggregate
      *
      * @return Model\Field\Callback
      */
-    public function addExpression(string $fieldName, $expression)
+    public function addExpression(string $key, $expression)
     {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];
@@ -1893,7 +1893,7 @@ class Model implements \IteratorAggregate
         /** @var Model\Field\Callback */
         $field = Model\Field::fromSeed($this->_default_seed_addExpression, $expression);
 
-        $this->addField($fieldName, $field);
+        $this->addField($key, $field);
 
         return $field;
     }
@@ -1905,7 +1905,7 @@ class Model implements \IteratorAggregate
      *
      * @return Model\Field\Callback
      */
-    public function addCalculatedField(string $fieldName, $expression)
+    public function addCalculatedField(string $key, $expression)
     {
         if (!is_array($expression)) {
             $expression = ['expr' => $expression];
@@ -1916,7 +1916,7 @@ class Model implements \IteratorAggregate
 
         $field = new Model\Field\Callback($expression);
 
-        $this->addField($fieldName, $field);
+        $this->addField($key, $field);
 
         return $field;
     }

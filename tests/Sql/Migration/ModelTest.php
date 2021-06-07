@@ -173,7 +173,7 @@ class TestUser extends \Phlex\Data\Model
         $this->addField('is_admin', ['type' => 'boolean']);
         $this->addField('notes', ['type' => 'text']);
 
-        $this->hasOne('role_id', ['model' => [TestRole::class], 'ourFieldName' => 'main_role_id', 'theirFieldName' => 'id']);
+        $this->hasOne('role_id', ['model' => [TestRole::class], 'ourKey' => 'main_role_id', 'theirKey' => 'id']);
     }
 }
 
@@ -186,6 +186,6 @@ class TestRole extends \Phlex\Data\Model
         parent::doInitialize();
 
         $this->addField('name');
-        $this->hasMany('Users', [TestUser::class, 'ourFieldName' => 'id', 'theirFieldName' => 'main_role_id']);
+        $this->hasMany('Users', [TestUser::class, 'ourKey' => 'id', 'theirKey' => 'main_role_id']);
     }
 }

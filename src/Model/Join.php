@@ -301,8 +301,8 @@ class Join
     public function hasMany(string $link, array $defaults = [])
     {
         $defaults = array_merge([
-            'ourFieldName' => $this->primaryKey,
-            'theirFieldName' => $this->getOwner()->table . '_' . $this->primaryKey,
+            'ourKey' => $this->primaryKey,
+            'theirKey' => $this->getOwner()->table . '_' . $this->primaryKey,
         ], $defaults);
 
         return $this->getOwner()->hasMany($link, $defaults);

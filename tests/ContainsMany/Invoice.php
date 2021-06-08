@@ -23,16 +23,16 @@ class Invoice extends Model
     {
         parent::doInitialize();
 
-        $this->title_field = $this->fieldName()->ref_no;
+        $this->titleKey = $this->key()->ref_no;
 
-        $this->addField($this->fieldName()->ref_no, ['required' => true]);
-        $this->addField($this->fieldName()->amount, ['type' => 'money']);
+        $this->addField($this->key()->ref_no, ['required' => true]);
+        $this->addField($this->key()->amount, ['type' => 'money']);
 
         // will contain many Lines
-        $this->containsMany($this->fieldName()->lines, ['model' => [Line::class], 'caption' => 'My Invoice Lines']);
+        $this->containsMany($this->key()->lines, ['model' => [Line::class], 'caption' => 'My Invoice Lines']);
 
         // total_gross - calculated by php callback not by SQL expression
-        $this->addCalculatedField($this->fieldName()->total_gross, function (self $m) {
+        $this->addCalculatedField($this->key()->total_gross, function (self $m) {
             $total = 0;
             foreach ($m->lines as $line) {
                 $total += $line->total_gross;
@@ -42,7 +42,7 @@ class Invoice extends Model
         });
 
         // discounts_total_sum - calculated by php callback not by SQL expression
-        $this->addCalculatedField($this->fieldName()->discounts_total_sum, function (self $m) {
+        $this->addCalculatedField($this->key()->discounts_total_sum, function (self $m) {
             $total = 0;
             foreach ($m->lines as $line) {
                 $total += $line->total_gross * $line->discounts_percent / 100;

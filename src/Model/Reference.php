@@ -58,7 +58,7 @@ class Reference
      *
      * @var string
      */
-    protected $ourFieldName;
+    protected $ourKey;
 
     /**
      * This is an optional property which can be used by your implementation
@@ -66,7 +66,7 @@ class Reference
      *
      * @var string
      */
-    protected $theirFieldName;
+    protected $theirKey;
 
     /**
      * Caption of the reeferenced model. Can be used in UI components, for example.
@@ -81,9 +81,9 @@ class Reference
         $this->link = $link;
     }
 
-    public function getTheirFieldName(): string
+    public function getTheirKey(): string
     {
-        return $this->theirFieldName ?? $this->model->primaryKey;
+        return $this->theirKey ?? $this->model->primaryKey;
     }
 
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
@@ -177,12 +177,12 @@ class Reference
 
     protected function getOurField(): Model\Field
     {
-        return $this->getOurModel()->getField($this->getOurFieldName());
+        return $this->getOurModel()->getField($this->getOurKey());
     }
 
-    protected function getOurFieldName(): string
+    protected function getOurKey(): string
     {
-        return $this->ourFieldName ?: $this->getOurModel()->primaryKey;
+        return $this->ourKey ?: $this->getOurModel()->primaryKey;
     }
 
     /**
@@ -266,7 +266,7 @@ class Reference
      *
      * @var array<int|string, string>
      */
-    protected $__debug_fields = ['link', 'model', 'ourFieldName', 'theirFieldName'];
+    protected $__debug_fields = ['link', 'model', 'ourKey', 'theirKey'];
 
     /**
      * Returns array with useful debug info for var_dump.

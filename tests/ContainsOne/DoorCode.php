@@ -18,7 +18,7 @@ class DoorCode extends Model
     {
         parent::doInitialize();
 
-        $this->addField($this->fieldName()->code);
-        $this->addField($this->fieldName()->valid_till, ['type' => 'datetime']);
+        $this->addField($this->key()->code);
+        $this->addField($this->key()->valid_till, ['type' => 'datetime']);
     }
 }

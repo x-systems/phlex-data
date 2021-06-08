@@ -143,20 +143,20 @@ class ListsMany extends Model\Reference
 
     /**
      * Reference\HasOne will also add a field corresponding
-     * to 'ourFieldName' unless it exists of course.
+     * to 'ourKey' unless it exists of course.
      */
     protected function doInitialize(): void
     {
         parent::doInitialize();
 
-        if (!$this->ourFieldName) {
-            $this->ourFieldName = $this->link;
+        if (!$this->ourKey) {
+            $this->ourKey = $this->link;
         }
 
         $ourModel = $this->getOurModel();
 
-        if (!$ourModel->hasField($this->ourFieldName)) {
-            $ourModel->addField($this->ourFieldName, [
+        if (!$ourModel->hasField($this->ourKey)) {
+            $ourModel->addField($this->ourKey, [
                 'type' => $this->type,
                 'referenceLink' => $this->link,
                 'system' => $this->system,
@@ -198,7 +198,7 @@ class ListsMany extends Model\Reference
     {
         $theirModel = $this->createTheirModel($defaults);
 
-        // add hook to set ourFieldName = null when record of referenced model is deleted
+        // add hook to set ourKey = null when record of referenced model is deleted
         $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) {
             $this->getOurField()->setNull();
         });
@@ -206,8 +206,8 @@ class ListsMany extends Model\Reference
         if ($this->getOurModel()->isEntity()) {
             if ($ourValue = $this->getOurFieldValue()) {
                 // if our model is loaded, then try to load referenced model
-                if ($this->theirFieldName) {
-                    $theirModel = $theirModel->tryLoadBy($this->theirFieldName, $ourValue);
+                if ($this->theirKey) {
+                    $theirModel = $theirModel->tryLoadBy($this->theirKey, $ourValue);
                 } else {
                     $theirModel = $theirModel->tryLoad($ourValue);
                 }
@@ -220,7 +220,7 @@ class ListsMany extends Model\Reference
         $theirModel->reload_after_save = false;
 
         $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) {
-            $theirValue = $this->theirFieldName ? $theirModel->get($this->theirFieldName) : $theirModel->getId();
+            $theirValue = $this->theirKey ? $theirModel->get($this->theirKey) : $theirModel->getId();
 
             if ($this->getOurFieldValue() !== $theirValue) {
                 $this->getOurField()->set($theirValue)->getOwner()->save();

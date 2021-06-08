@@ -61,7 +61,7 @@ class Model_Item3 extends Model
         $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
             ->withTitle();
 
-        $this->hasMany('Child', ['model' => $m, 'theirFieldName' => 'parent_item_id', 'table_alias' => 'child'])
+        $this->hasMany('Child', ['model' => $m, 'theirKey' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
     }
 }
@@ -370,27 +370,27 @@ class RandomTest extends Sql\TestCase
 
         $mm = $m->createEntity();
 
-        // default title_field = name
+        // default titleKey = name
         $this->assertNull($mm->getTitle()); // not loaded model returns null
 
         $mm = $m->load(2);
-        $this->assertSame('Sue', $mm->getTitle()); // loaded returns title_field value
+        $this->assertSame('Sue', $mm->getTitle()); // loaded returns titleKey value
 
-        // set custom title_field
-        $mm->title_field = 'parent_item_id';
+        // set custom titleKey
+        $mm->titleKey = 'parent_item_id';
         $this->assertEquals(1, $mm->getTitle()); // returns parent_item_id value
 
-        // set custom title_field as title_field from linked model
-        $mm->title_field = 'parent_item';
-        $this->assertSame('John', $mm->getTitle()); // returns parent record title_field
+        // set custom titleKey as titleKey from linked model
+        $mm->titleKey = 'parent_item';
+        $this->assertSame('John', $mm->getTitle()); // returns parent record titleKey
 
-        // no title_field set - return id value
-        $mm->title_field = null; // @phpstan-ignore-line
+        // no titleKey set - return id value
+        $mm->titleKey = null; // @phpstan-ignore-line
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 
         // expression as title field
         $m->addExpression('my_name', '[id]');
-        $m->title_field = 'my_name';
+        $m->titleKey = 'my_name';
         $mm = $m->load(2);
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
 

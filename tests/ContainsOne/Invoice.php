@@ -20,11 +20,11 @@ class Invoice extends Model
     {
         parent:: doInitialize();
 
-        $this->title_field = $this->fieldName()->ref_no;
+        $this->titleKey = $this->key()->ref_no;
 
-        $this->addField($this->fieldName()->ref_no, ['required' => true]);
+        $this->addField($this->key()->ref_no, ['required' => true]);
 
         // will contain one Address
-        $this->containsOne($this->fieldName()->addr, ['model' => [Address::class]]);
+        $this->containsOne($this->key()->addr, ['model' => [Address::class]]);
     }
 }

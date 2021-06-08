@@ -140,7 +140,7 @@ class Static_ extends Array_
     public function afterAdd(Model $model)
     {
         if ($this->titleForModel) {
-            $model->title_field = $this->titleForModel;
+            $model->titleKey = $this->titleForModel;
         }
 
         foreach ($this->fieldsForModel as $field => $def) {

@@ -34,26 +34,26 @@ class ContainsOneTest extends Sql\TestCase
         $m = new Country($this->db);
         $m->import([
             [
-                $m->fieldName()->id => 1,
-                $m->fieldName()->name => 'Latvia',
+                $m->key()->id => 1,
+                $m->key()->name => 'Latvia',
             ],
             [
-                $m->fieldName()->id => 2,
-                $m->fieldName()->name => 'United Kingdom',
+                $m->key()->id => 2,
+                $m->key()->name => 'United Kingdom',
             ],
         ]);
 
         $m = new Invoice($this->db);
         $m->import([
             [
-                $m->fieldName()->id => 1,
-                $m->fieldName()->ref_no => 'A1',
-                $m->fieldName()->addr => null,
+                $m->key()->id => 1,
+                $m->key()->ref_no => 'A1',
+                $m->key()->addr => null,
             ],
             [
-                $m->fieldName()->id => 2,
-                $m->fieldName()->ref_no => 'A2',
-                $m->fieldName()->addr => null,
+                $m->key()->id => 2,
+                $m->key()->ref_no => 'A2',
+                $m->key()->addr => null,
             ],
         ]);
     }
@@ -66,8 +66,8 @@ class ContainsOneTest extends Sql\TestCase
         $a = (new Invoice($this->db))->addr;
 
         // test caption of containsOne reference
-        $this->assertSame('Secret Code', $a->getField($a->fieldName()->door_code)->getCaption());
-        $this->assertSame('Secret Code', $a->refModel($a->fieldName()->door_code)->getCaption());
+        $this->assertSame('Secret Code', $a->getField($a->key()->door_code)->getCaption());
+        $this->assertSame('Secret Code', $a->refModel($a->key()->door_code)->getCaption());
         $this->assertSame('Secret Code', $a->door_code->getCaption());
     }
 
@@ -77,7 +77,7 @@ class ContainsOneTest extends Sql\TestCase
     public function testContainsOne(): void
     {
         $i = new Invoice($this->db);
-        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->key()->ref_no, 'A1');
 
         // check do we have address set
         $a = $i->addr;
@@ -85,12 +85,12 @@ class ContainsOneTest extends Sql\TestCase
 
         // now store some address
         $a->setMulti($row = [
-            $a->fieldName()->id => 1,
-            $a->fieldName()->country_id => 1,
-            $a->fieldName()->address => 'foo',
-            $a->fieldName()->built_date => new \DateTime('2019-01-01'),
-            $a->fieldName()->tags => ['foo', 'bar'],
-            $a->fieldName()->door_code => null,
+            $a->key()->id => 1,
+            $a->key()->country_id => 1,
+            $a->key()->address => 'foo',
+            $a->key()->built_date => new \DateTime('2019-01-01'),
+            $a->key()->tags => ['foo', 'bar'],
+            $a->key()->door_code => null,
         ]);
         $a->save();
 
@@ -100,33 +100,33 @@ class ContainsOneTest extends Sql\TestCase
         $this->assertEquals($row, $i->addr->get());
 
         // now try to change some field in address
-        $i->addr->set($i->addr->fieldName()->address, 'bar')->save();
+        $i->addr->set($i->addr->key()->address, 'bar')->save();
         $this->assertSame('bar', $i->addr->address);
 
         // now add nested containsOne - DoorCode
         $c = $i->addr->door_code;
         $c->setMulti($row = [
-            $c->fieldName()->id => 1,
-            $c->fieldName()->code => 'ABC',
-            $c->fieldName()->valid_till => new \DateTime('2019-07-01'),
+            $c->key()->id => 1,
+            $c->key()->code => 'ABC',
+            $c->key()->valid_till => new \DateTime('2019-07-01'),
         ]);
         $c->save();
         $this->assertEquals($row, $i->addr->door_code->get());
 
         // update DoorCode
         $i->reload();
-        $i->addr->door_code->save([$i->addr->door_code->fieldName()->code => 'DEF']);
-        $this->assertEquals(array_merge($row, [$i->addr->door_code->fieldName()->code => 'DEF']), $i->addr->door_code->get());
+        $i->addr->door_code->save([$i->addr->door_code->key()->code => 'DEF']);
+        $this->assertEquals(array_merge($row, [$i->addr->door_code->key()->code => 'DEF']), $i->addr->door_code->get());
 
         // try hasOne reference
         $c = $i->addr->country_id;
         $this->assertSame('Latvia', $c->name);
-        $i->addr->set($i->addr->fieldName()->country_id, 2)->save();
+        $i->addr->set($i->addr->key()->country_id, 2)->save();
         $c = $i->addr->country_id;
         $this->assertSame('United Kingdom', $c->name);
 
         // let's test how it all looks in persistence without typecasting
-        $exp_addr = $i->getModel()->setOrder('id')->export(null, null, false)[0][$i->fieldName()->addr];
+        $exp_addr = $i->getModel()->setOrder('id')->export(null, null, false)[0][$i->key()->addr];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
@@ -134,15 +134,15 @@ class ContainsOneTest extends Sql\TestCase
         };
         $this->assertSame(
             json_encode([
-                $i->addr->fieldName()->id => 1,
-                $i->addr->fieldName()->country_id => 2,
-                $i->addr->fieldName()->address => 'bar',
-                $i->addr->fieldName()->built_date => $formatDtForCompareFunc(new \DateTime('2019-01-01')),
-                $i->addr->fieldName()->tags => json_encode(['foo', 'bar']),
-                $i->addr->fieldName()->door_code => json_encode([
-                    $i->addr->door_code->fieldName()->id => 1,
-                    $i->addr->door_code->fieldName()->code => 'DEF',
-                    $i->addr->door_code->fieldName()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
+                $i->addr->key()->id => 1,
+                $i->addr->key()->country_id => 2,
+                $i->addr->key()->address => 'bar',
+                $i->addr->key()->built_date => $formatDtForCompareFunc(new \DateTime('2019-01-01')),
+                $i->addr->key()->tags => json_encode(['foo', 'bar']),
+                $i->addr->key()->door_code => json_encode([
+                    $i->addr->door_code->key()->id => 1,
+                    $i->addr->door_code->key()->code => 'DEF',
+                    $i->addr->door_code->key()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
                 ]),
             ]),
             $exp_addr
@@ -150,12 +150,12 @@ class ContainsOneTest extends Sql\TestCase
 
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
-        $this->assertNull($i->addr->get($i->addr->fieldName()->door_code));
+        $this->assertNull($i->addr->get($i->addr->key()->door_code));
         $this->assertFalse($i->addr->door_code->isLoaded());
 
         // and now delete address
         $i->addr->delete();
-        $this->assertNull($i->get($i->fieldName()->addr));
+        $this->assertNull($i->get($i->key()->addr));
         $this->assertFalse($i->addr->isLoaded());
 
         //var_dump($i->export(), $i->export(null, null, false));
@@ -167,17 +167,17 @@ class ContainsOneTest extends Sql\TestCase
     public function testContainsOneWhenChangeModelFields(): void
     {
         $i = new Invoice($this->db);
-        $i = $i->loadBy($i->fieldName()->ref_no, 'A1');
+        $i = $i->loadBy($i->key()->ref_no, 'A1');
 
         // with address
         $a = $i->addr;
         $a->setMulti($row = [
-            $a->fieldName()->id => 1,
-            $a->fieldName()->country_id => 1,
-            $a->fieldName()->address => 'foo',
-            $a->fieldName()->built_date => new \DateTime('2019-01-01'),
-            $a->fieldName()->tags => [],
-            $a->fieldName()->door_code => null,
+            $a->key()->id => 1,
+            $a->key()->country_id => 1,
+            $a->key()->address => 'foo',
+            $a->key()->built_date => new \DateTime('2019-01-01'),
+            $a->key()->tags => [],
+            $a->key()->door_code => null,
         ]);
         $a->save();
 

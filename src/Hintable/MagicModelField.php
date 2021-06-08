@@ -73,7 +73,7 @@ class MagicModelField extends MagicAbstract
     public function __get(string $name): string
     {
         if ($this->_atk__core__hintable_magic__type === self::TYPE_FIELD_NAME) {
-            return $this->_atk__data__hintable_magic__getModelPropDef($name)->fieldName;
+            return $this->_atk__data__hintable_magic__getModelPropDef($name)->key;
         }
 
         throw $this->_atk__core__hintable_magic__createNotSupportedException();

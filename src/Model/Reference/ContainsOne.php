@@ -45,18 +45,18 @@ class ContainsOne extends Model\Reference
 
     /**
      * Reference\ContainsOne will also add a field corresponding
-     * to 'ourFieldName' unless it exists of course.
+     * to 'ourKey' unless it exists of course.
      */
     protected function doInitialize(): void
     {
         parent::doInitialize();
 
-        if (!$this->ourFieldName) {
-            $this->ourFieldName = $this->link;
+        if (!$this->ourKey) {
+            $this->ourKey = $this->link;
         }
 
         $ourModel = $this->getOurModel();
-        $ourField = $this->getOurFieldName();
+        $ourField = $this->getOurKey();
 
         if (!$ourModel->hasElement($ourField)) {
             $ourModel->addField($ourField, [
@@ -96,7 +96,7 @@ class ContainsOne extends Model\Reference
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $this->onHookToTheirModel($theirModel, $spot, function ($theirModel) {
                 $this->getOurModel()->save([
-                    $this->getOurFieldName() => $theirModel->toQuery()->getRow() ?: null,
+                    $this->getOurKey() => $theirModel->toQuery()->getRow() ?: null,
                 ]);
             });
         }

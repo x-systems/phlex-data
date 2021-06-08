@@ -30,8 +30,8 @@ use Phlex\Data\Model;
  *   <code>$m->firstName = $n;</code>
  *
  * Usecase - get field name/definition:
- *   <code>$m->fieldName()->firstName;</code>
- *   <code>$m->getField($m->fieldName()->firstName);</code>
+ *   <code>$m->key()->firstName;</code>
+ *   <code>$m->getField($m->key()->firstName);</code>
  */
 trait HintableModelTrait
 {
@@ -126,7 +126,7 @@ trait HintableModelTrait
             $hProp = $hProps[$name];
             if ($hProp->refType === HintablePropertyDef::REF_TYPE_ONE) {
                 /** @var Model */
-                $model = $this->ref($hProp->fieldName);
+                $model = $this->ref($hProp->key);
 
                 // TODO ensure no more than one Model can load
 //                $model->onHookShort(Model::HOOK_BEFORE_LOAD, \Closure::bind(function () {
@@ -136,7 +136,7 @@ trait HintableModelTrait
                 return $model;
             } elseif ($hProp->refType === HintablePropertyDef::REF_TYPE_MANY) {
                 /** @var Model */
-                $model = $this->ref($hProp->fieldName);
+                $model = $this->ref($hProp->key);
 
                 // prevent to load directly (without an iterator)
                 \Closure::bind(function () use ($model) {
@@ -158,7 +158,7 @@ trait HintableModelTrait
                 return $model;
             }
 
-            $resNoRef = $this->get($hProp->fieldName);
+            $resNoRef = $this->get($hProp->key);
 
             return $resNoRef;
         }
@@ -177,7 +177,7 @@ trait HintableModelTrait
             // @TODO check visibility - also for __isset, __get, __unset
             // @TODO check value type
 
-            $this->set($hProps[$name]->fieldName, $value);
+            $this->set($hProps[$name]->key, $value);
 
             return;
         }
@@ -190,7 +190,7 @@ trait HintableModelTrait
     {
         $hProps = $this->getHintableProps();
         if (isset($hProps[$name])) {
-            $this->setNull($hProps[$name]->fieldName);
+            $this->setNull($hProps[$name]->key);
 
             return;
         }
@@ -210,14 +210,14 @@ trait HintableModelTrait
      * Returns a magic class that pretends to be instance of this class, but in reality
      * only non-static hinting methods are supported.
      */
-    public static function hinting()
+    public static function hint()
     {
-        // @TODO this object should not support any modifications, ie. unset everything and prevent any calls except fieldName() and cache this class,
+        // @TODO this object should not support any modifications, ie. unset everything and prevent any calls except key() and cache this class,
         // or better to allow to access
         return new class(static::class, '') extends MagicAbstract { // @phpstan-ignore-line
             public function __call(string $name, array $args)
             {
-                if (in_array($name, ['fieldName'], true)) {
+                if (in_array($name, ['key'], true)) {
                     $cl = (new \ReflectionClass($this->_atk__core__hintable_magic__class))->newInstanceWithoutConstructor();
 
                     return $cl->{$name}();
@@ -236,7 +236,7 @@ trait HintableModelTrait
      *
      * @phpstan-return MagicModelField<static, string>
      */
-    public function fieldName()
+    public function key()
     {
         $cl = MagicModelField::class;
 

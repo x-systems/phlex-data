@@ -18,7 +18,7 @@ class Discount extends Model
     {
         parent::doInitialize();
 
-        $this->addField($this->fieldName()->percent, ['type' => 'integer', 'required' => true]);
-        $this->addField($this->fieldName()->valid_till, ['type' => 'datetime']);
+        $this->addField($this->key()->percent, ['type' => 'integer', 'required' => true]);
+        $this->addField($this->key()->valid_till, ['type' => 'datetime']);
     }
 }

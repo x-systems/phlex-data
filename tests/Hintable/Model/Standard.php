@@ -25,17 +25,17 @@ class Standard extends Model
     {
         parent::doInitialize();
 
-        $this->addField($this->fieldName()->x, ['type' => 'string', 'required' => true]);
-        $this->addField($this->fieldName()->y, ['type' => 'string', 'required' => true]);
-        $this->addField($this->fieldName()->_name, ['type' => 'string', 'required' => true]);
+        $this->addField($this->key()->x, ['type' => 'string', 'required' => true]);
+        $this->addField($this->key()->y, ['type' => 'string', 'required' => true]);
+        $this->addField($this->key()->_name, ['type' => 'string', 'required' => true]);
 
-        $this->addField($this->fieldName()->dtImmutable, ['type' => 'datetime', 'required' => true]);
-        $this->addField($this->fieldName()->dtInterface, ['type' => 'datetime', 'required' => true]);
-        $this->addField($this->fieldName()->dtMulti, ['type' => 'datetime', 'required' => true]);
+        $this->addField($this->key()->dtImmutable, ['type' => 'datetime', 'required' => true]);
+        $this->addField($this->key()->dtInterface, ['type' => 'datetime', 'required' => true]);
+        $this->addField($this->key()->dtMulti, ['type' => 'datetime', 'required' => true]);
 
-        $this->addField($this->fieldName()->simpleOneId, ['type' => 'integer']);
-        $this->hasOne($this->fieldName()->simpleOne, ['model' => [Simple::class], 'ourFieldName' => $this->fieldName()->simpleOneId]);
+        $this->addField($this->key()->simpleOneId, ['type' => 'integer']);
+        $this->hasOne($this->key()->simpleOne, ['model' => [Simple::class], 'ourKey' => $this->key()->simpleOneId]);
 
-        $this->hasMany($this->fieldName()->simpleMany, ['model' => [Simple::class], 'theirFieldName' => Simple::hinting()->fieldName()->refId]);
+        $this->hasMany($this->key()->simpleMany, ['model' => [Simple::class], 'theirKey' => Simple::hint()->key()->refId]);
     }
 }

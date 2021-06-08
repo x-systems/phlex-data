@@ -252,17 +252,17 @@ abstract class Persistence
     public function typecastSaveRow(Model $model, array $row): array
     {
         $result = [];
-        foreach ($row as $fieldName => $value) {
+        foreach ($row as $key => $value) {
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
-            if (!$model->hasField($fieldName)) {
-                $result[$fieldName] = $value;
+            if (!$model->hasField($key)) {
+                $result[$key] = $value;
 
                 continue;
             }
 
             // Look up field object
-            $field = $model->getField($fieldName);
+            $field = $model->getField($key);
 
             $result[$field->getPersistenceName()] = $field->encodePersistenceValue($value);
         }
@@ -281,19 +281,19 @@ abstract class Persistence
     public function typecastLoadRow(Model $model, array $row): array
     {
         $result = [];
-        foreach ($row as $fieldName => $value) {
+        foreach ($row as $key => $value) {
             // We have no knowledge of the field, it wasn't defined, so
             // we will leave it as-is.
-            if (!$model->hasField($fieldName)) {
-                $result[$fieldName] = $value;
+            if (!$model->hasField($key)) {
+                $result[$key] = $value;
 
                 continue;
             }
 
             // Look up field object
-            $field = $model->getField($fieldName);
+            $field = $model->getField($key);
 
-            $result[$fieldName] = $field->decodePersistenceValue($value);
+            $result[$key] = $field->decodePersistenceValue($value);
         }
 
         return $result;

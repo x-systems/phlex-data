@@ -79,33 +79,33 @@ class Query extends Persistence\Query implements Expressionable
         if (is_array($fields)) {
             // Set of fields is strictly defined for purposes of export,
             // so we will ignore even system fields.
-            foreach ($fields as $fieldName) {
-                $this->addField($this->model->getField($fieldName));
+            foreach ($fields as $key) {
+                $this->addField($this->model->getField($key));
             }
         } elseif ($this->model->only_fields) {
             $addedFields = [];
 
             // Add requested fields first
-            foreach ($this->model->only_fields as $fieldName) {
-                $field = $this->model->getField($fieldName);
+            foreach ($this->model->only_fields as $key) {
+                $field = $this->model->getField($key);
                 if (!$field->savesToPersistence()) {
                     continue;
                 }
                 $this->addField($field);
-                $addedFields[$fieldName] = true;
+                $addedFields[$key] = true;
             }
 
             // now add system fields, if they were not added
-            foreach ($this->model->getFields() as $fieldName => $field) {
+            foreach ($this->model->getFields() as $key => $field) {
                 if (!$field->loadsFromPersistence()) {
                     continue;
                 }
-                if ($field->system && !isset($addedFields[$fieldName])) {
+                if ($field->system && !isset($addedFields[$key])) {
                     $this->addField($field);
                 }
             }
         } else {
-            foreach ($this->model->getFields() as $fieldName => $field) {
+            foreach ($this->model->getFields() as $key => $field) {
                 if (!$field->loadsFromPersistence()) {
                     continue;
                 }
@@ -161,13 +161,13 @@ class Query extends Persistence\Query implements Expressionable
         $this->statement->reset('field')->field(new Expression($expr, [$field]), $alias);
     }
 
-    protected function initField($fieldName, string $alias = null): void
+    protected function initField($key, string $alias = null): void
     {
-        if (!$fieldName) {
+        if (!$key) {
             throw new Exception('Field query requires field name');
         }
 
-        $field = is_string($fieldName) ? $this->model->getField($fieldName) : $fieldName;
+        $field = is_string($key) ? $this->model->getField($key) : $key;
 
         if (!$alias && $field instanceof Field\Expression) {
             $alias = $field->short_name;

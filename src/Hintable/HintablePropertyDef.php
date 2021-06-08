@@ -32,7 +32,7 @@ class HintablePropertyDef
     /** @var string */
     public $name;
     /** @var string */
-    public $fieldName;
+    public $key;
     /** @var string[] */
     public $allowedTypes;
     /** @var int */
@@ -43,11 +43,11 @@ class HintablePropertyDef
     /**
      * @param string[] $allowedTypes
      */
-    public function __construct(string $className, string $name, string $fieldName, array $allowedTypes)
+    public function __construct(string $className, string $name, string $key, array $allowedTypes)
     {
         $this->className = $className;
         $this->name = $name;
-        $this->fieldName = $fieldName;
+        $this->key = $key;
         $this->allowedTypes = $allowedTypes;
     }
 
@@ -98,11 +98,11 @@ class HintablePropertyDef
         $refType = ['RefOne' => self::REF_TYPE_ONE, 'RefMany' => self::REF_TYPE_MANY][$matches[3]] ?? self::REF_TYPE_NONE;
         $opts = static::parseDocAtkFieldOptions($matches[4]);
 
-        $fieldName = null;
+        $key = null;
         $visibility = null;
         foreach ($opts as $k => $v) {
             if ($k === 'field_name') {
-                $fieldName = $v;
+                $key = $v;
             } elseif ($k === 'visibility') {
                 $visibility = $v;
             } else {
@@ -112,7 +112,7 @@ class HintablePropertyDef
             }
         }
 
-        $def = new static($className, $matches[2], $fieldName ?? $matches[2], $allowedTypes);
+        $def = new static($className, $matches[2], $key ?? $matches[2], $allowedTypes);
         $def->refType = $refType;
         $def->visibility = $visibility ?? self::VISIBILITY_PUBLIC;
 

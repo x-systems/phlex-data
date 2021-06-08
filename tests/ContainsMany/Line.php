@@ -23,20 +23,20 @@ class Line extends Model
     {
         parent::doInitialize();
 
-        $this->hasOne($this->fieldName()->vat_rate_id, ['model' => [VatRate::class]]);
+        $this->hasOne($this->key()->vat_rate_id, ['model' => [VatRate::class]]);
 
-        $this->addField($this->fieldName()->price, ['type' => 'money', 'required' => true]);
-        $this->addField($this->fieldName()->qty, ['type' => 'float', 'required' => true]);
-        $this->addField($this->fieldName()->add_date, ['type' => 'datetime']);
+        $this->addField($this->key()->price, ['type' => 'money', 'required' => true]);
+        $this->addField($this->key()->qty, ['type' => 'float', 'required' => true]);
+        $this->addField($this->key()->add_date, ['type' => 'datetime']);
 
-        $this->addExpression($this->fieldName()->total_gross, function (self $m) {
+        $this->addExpression($this->key()->total_gross, function (self $m) {
             return $m->price * $m->qty * (1 + $m->vat_rate_id->rate / 100);
         });
 
         // each line can have multiple discounts and calculate total of these discounts
-        $this->containsMany($this->fieldName()->discounts, ['model' => [Discount::class]]);
+        $this->containsMany($this->key()->discounts, ['model' => [Discount::class]]);
 
-        $this->addCalculatedField($this->fieldName()->discounts_percent, function ($m) {
+        $this->addCalculatedField($this->key()->discounts_percent, function ($m) {
             $total = 0;
             foreach ($m->discounts as $d) {
                 $total += $d->percent;

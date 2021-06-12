@@ -38,7 +38,7 @@ class ContainsMany extends ContainsOne
         foreach ([Model::HOOK_AFTER_SAVE, Model::HOOK_AFTER_DELETE] as $spot) {
             $this->onHookToTheirModel($theirModel, $spot, function (Model $theirModel) {
                 $this->getOurModel()->save([
-                    $this->getOurKey() => $theirModel->getModel()->export(null, null, false) ?: null,
+                    $this->getOurKey() => $theirModel->getEntitySet()->export(null, null, false) ?: null,
                 ]);
             });
         }

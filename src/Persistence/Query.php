@@ -48,7 +48,7 @@ abstract class Query implements \IteratorAggregate
     {
         $this->model = $model;
 
-        $model = $model->isEntity() ? $model->getModel() : $model;
+        $model = $model->isEntity() ? $model->getEntitySet() : $model;
 
         $this->scope = clone $model->scope();
 

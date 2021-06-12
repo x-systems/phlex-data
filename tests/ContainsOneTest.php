@@ -126,7 +126,7 @@ class ContainsOneTest extends Sql\TestCase
         $this->assertSame('United Kingdom', $c->name);
 
         // let's test how it all looks in persistence without typecasting
-        $exp_addr = $i->getModel()->setOrder('id')->export(null, null, false)[0][$i->key()->addr];
+        $exp_addr = $i->getEntitySet()->setOrder('id')->export(null, null, false)[0][$i->key()->addr];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 

@@ -93,6 +93,9 @@ class Model implements \IteratorAggregate
     /** @const string */
     public const FIELD_FILTER_ONLY_FIELDS = 'only fields';
 
+    /** @const string */
+    public const VALIDATE_INTENT_SAVE = 'save';
+
     /**
      * @var static|null not-null if and only if this instance is an entity
      */
@@ -518,7 +521,7 @@ class Model implements \IteratorAggregate
      * Always use
      *   return array_merge(parent::validate($intent), $errors);
      *
-     * @param string $intent by default only 'save' is used (from beforeSave) but you can use other intents yourself
+     * @param string $intent by default only Model::VALIDATE_INTENT_SAVE is used (from beforeSave) but you can use other intents yourself
      *
      * @return array [field => err_spec]
      */
@@ -1521,7 +1524,7 @@ class Model implements \IteratorAggregate
             $dirtyRef = &$this->getDirtyRef();
             $dirtyAfterReload = [];
 
-            if (($errors = $this->validate('save')) !== []) {
+            if (($errors = $this->validate(self::VALIDATE_INTENT_SAVE)) !== []) {
                 throw new Model\Field\ValidationException($errors, $this);
             }
             $isUpdate = $this->isLoaded();

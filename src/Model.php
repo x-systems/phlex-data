@@ -1505,9 +1505,6 @@ class Model implements \IteratorAggregate
         }
     }
 
-    /** @var array */
-    public $_dirty_after_reload = [];
-
     /**
      * Save record.
      *
@@ -1525,6 +1522,7 @@ class Model implements \IteratorAggregate
 
         return $this->atomic(function () {
             $dirtyRef = &$this->getDirtyRef();
+            $dirtyAfterReload = [];
 
             if (($errors = $this->validate('save')) !== []) {
                 throw new Model\Field\ValidationException($errors, $this);
@@ -1577,7 +1575,7 @@ class Model implements \IteratorAggregate
                     $dirty = $dirtyRef;
                     $this->reload();
                     $dirtyRef = &$this->getDirtyRef();
-                    $this->_dirty_after_reload = $dirtyRef;
+                    $dirtyAfterReload = $dirtyRef;
                     $dirtyRef = $dirty;
                 }
             } else {
@@ -1619,14 +1617,14 @@ class Model implements \IteratorAggregate
                         $d = $dirtyRef;
                         $dirtyRef = [];
                         $this->reload();
-                        $this->_dirty_after_reload = $dirtyRef;
+                        $dirtyAfterReload = $dirtyRef;
                         $dirtyRef = $d;
                     }
                 }
             }
 
             if ($this->isLoaded()) {
-                $dirtyRef = $this->_dirty_after_reload;
+                $dirtyRef = $dirtyAfterReload;
             }
 
             $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);

@@ -149,7 +149,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->isLoaded() && !$theirModel->isLoaded()) {
             if ($ourField->isPrimaryKey()) {
-                return $theirModel->getModel()
+                return $theirModel->getEntitySet()
                     ->addCondition($theirKey, $this->getOurFieldValue());
             }
         }
@@ -157,7 +157,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         // handles the deep traversal using an expression
         $ourFieldExpression = $ourModel->toQuery()->field($ourField);
 
-        $theirModel->getModel(true)
+        $theirModel->getEntitySet(true)
             ->addCondition($theirKey, $ourFieldExpression);
 
         return $theirModel;

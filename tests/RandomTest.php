@@ -307,7 +307,7 @@ class RandomTest extends Sql\TestCase
         $m->set('name', 'john');
         $m->save();
 
-        $m = $m->getModel()->load(3);
+        $m = $m->getEntitySet()->load(3);
         $this->assertSame('rec #3', $m->get('name'));
 
         $m->delete();

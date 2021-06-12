@@ -96,12 +96,12 @@ class Model implements \IteratorAggregate
     /**
      * @var static|null not-null if and only if this instance is an entity
      */
-    private $_model;
+    private $entitySet;
 
     /**
      * @var mixed once set, loading a different ID will result in an error
      */
-    private $_entityId;
+    private $entityId;
 
     /**
      * The class used by addField() method.
@@ -342,13 +342,13 @@ class Model implements \IteratorAggregate
 
     public function isEntity(): bool
     {
-        return $this->_model !== null;
+        return $this->entitySet !== null;
     }
 
-    public function assertIsModel(): void
+    public function assertIsEntitySet(): void
     {
         if ($this->isEntity()) {
-            throw new Exception('Expected model, but instance is an entity');
+            throw new Exception('Expected entity set, but instance is an entity');
         }
     }
 
@@ -362,15 +362,15 @@ class Model implements \IteratorAggregate
     /**
      * @return static
      */
-    public function getModel(bool $allowOnModel = false): self
+    public function getEntitySet(bool $allowOnEntitySet = false): self
     {
-        if ($allowOnModel && !$this->isEntity()) {
+        if ($allowOnEntitySet && !$this->isEntity()) {
             return $this;
         }
 
         $this->assertIsEntity();
 
-        return $this->_model;
+        return $this->entitySet;
     }
 
     /**
@@ -378,15 +378,15 @@ class Model implements \IteratorAggregate
      */
     public function createEntity(): self
     {
-        $this->assertIsModel();
+        $this->assertIsEntitySet();
 
-        $this->_model = $this;
+        $this->entitySet = $this;
         try {
             $model = clone $this;
         } finally {
-            $this->_model = null;
+            $this->entitySet = null;
         }
-        $model->_entityId = null;
+        $model->entityId = null;
         $model->scope = null; // @phpstan-ignore-line
 
         return $model;
@@ -468,14 +468,14 @@ class Model implements \IteratorAggregate
             return;
         }
 
-        if ($this->_entityId === null) {
+        if ($this->entityId === null) {
             // set entity ID to the first seen ID
-            $this->_entityId = $id;
-        } elseif (!$this->compare($this->primaryKey, $this->_entityId)) {
+            $this->entityId = $id;
+        } elseif (!$this->compare($this->primaryKey, $this->entityId)) {
             $this->unload(); // data for different ID were loaded, make sure to discard them
 
-            throw (new Exception('Model instance is an entity, ID can not be changed to a different one ' . $this->_entityId . ' ' . $id))
-                ->addMoreInfo('entityId', $this->_entityId)
+            throw (new Exception('Model instance is an entity, ID can not be changed to a different one ' . $this->entityId . ' ' . $id))
+                ->addMoreInfo('entityId', $this->entityId)
                 ->addMoreInfo('newId', $id);
         }
     }
@@ -624,7 +624,7 @@ class Model implements \IteratorAggregate
      */
     public function removeField(string $key)
     {
-        $this->assertIsModel();
+        $this->assertIsEntitySet();
 
         $this->getField($key); // better exception if field does not exist
 
@@ -1049,7 +1049,7 @@ class Model implements \IteratorAggregate
      */
     public function scope(): Model\Scope\RootScope
     {
-        $this->assertIsModel();
+        $this->assertIsEntitySet();
 
         if ($this->scope->getModel() === null) {
             $this->scope->setModel($this);
@@ -1103,7 +1103,7 @@ class Model implements \IteratorAggregate
      */
     public function setOrder($field, string $direction = 'asc')
     {
-        $this->assertIsModel();
+        $this->assertIsEntitySet();
 
         // fields passed as array
         if (is_array($field)) {
@@ -1151,7 +1151,7 @@ class Model implements \IteratorAggregate
      */
     public function setLimit(int $count = null, int $offset = 0)
     {
-        $this->assertIsModel();
+        $this->assertIsEntitySet();
 
         $this->limit = [$count, $offset];
 
@@ -1163,7 +1163,7 @@ class Model implements \IteratorAggregate
      */
     public function isLoaded(): bool
     {
-        return $this->isEntity() && $this->primaryKey && $this->getId() !== null && $this->_entityId !== null;
+        return $this->isEntity() && $this->primaryKey && $this->getId() !== null && $this->entityId !== null;
     }
 
     /**
@@ -1198,7 +1198,7 @@ class Model implements \IteratorAggregate
      */
     public function tryLoad($id)
     {
-        $this->assertIsModel();
+        $this->assertIsEntitySet();
 
         try {
             return $this->load($id);
@@ -1243,7 +1243,7 @@ class Model implements \IteratorAggregate
      */
     public function load($id = null)
     {
-        $this->assertIsModel();
+        $this->assertIsEntitySet();
 
         $entity = $this->createEntity();
 
@@ -1264,7 +1264,7 @@ class Model implements \IteratorAggregate
         }
 
         $dataRef = &$this->getDataRef();
-        $dataRef = $this->persistence->getRow($this->getModel(), $id);
+        $dataRef = $this->persistence->getRow($this->getEntitySet(), $id);
 
         if ($dataRef === null) {
             $dataRef = [];
@@ -1368,7 +1368,7 @@ class Model implements \IteratorAggregate
         }
 
         $duplicate = clone $this;
-        $duplicate->_entityId = null;
+        $duplicate->entityId = null;
         $dataRef = &$this->getDataRef();
         $duplicateDirtyRef = &$duplicate->getDirtyRef();
         $duplicateDirtyRef = $dataRef;
@@ -1635,7 +1635,7 @@ class Model implements \IteratorAggregate
      */
     public function insert(array $row)
     {
-        $model = ($this->isEntity() ? $this->getModel() : $this)->createEntity();
+        $model = ($this->isEntity() ? $this->getEntitySet() : $this)->createEntity();
 
         $model->unload();
 
@@ -1708,7 +1708,7 @@ class Model implements \IteratorAggregate
      */
     public function export(array $keys = null, $keyKey = null, $typecast_data = true): array
     {
-        $this->assertIsModel();
+        $this->assertIsEntitySet();
 
         $this->checkPersistence('export');
 
@@ -1818,7 +1818,7 @@ class Model implements \IteratorAggregate
     public function delete($id = null)
     {
         if ($id !== null) {
-            $this->assertIsModel();
+            $this->assertIsEntitySet();
 
             $this->load($id)->delete();
 
@@ -1929,9 +1929,9 @@ class Model implements \IteratorAggregate
         if ($this->isEntity()) {
             return [
                 'entityId' => $this->primaryKey && $this->hasField($this->primaryKey)
-                    ? (($this->_entityId !== null ? $this->_entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null'))
+                    ? (($this->entityId !== null ? $this->entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null'))
                     : 'no id field',
-                'model' => $this->getModel()->__debugInfo(),
+                'model' => $this->getEntitySet()->__debugInfo(),
             ];
         }
 

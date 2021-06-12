@@ -17,7 +17,7 @@ use Phlex\Data\Model;
  *
  * UserAction must NOT rely on any specific UI implementation.
  *
- * @method Exception getOwner() use getModel() or getEntity() method instead
+ * @method Exception getOwner() use getEntitySet() or getEntity() method instead
  */
 class UserAction
 {
@@ -106,7 +106,7 @@ class UserAction
             };
 
             if ($this->atomic) {
-                return $this->getModel()->atomic($run);
+                return $this->getEntitySet()->atomic($run);
             }
 
             return $run();
@@ -186,7 +186,7 @@ class UserAction
             return ($this->description)($this);
         }
 
-        return $this->description ?? $this->getCaption() . ' ' . $this->getModel()->getCaption();
+        return $this->description ?? $this->getCaption() . ' ' . $this->getEntitySet()->getCaption();
     }
 
     /**
@@ -213,9 +213,9 @@ class UserAction
     /**
      * Return model associated with this action.
      */
-    public function getModel(): Model
+    public function getEntitySet(): Model
     {
-        return $this->getOwner()->getModel(true); // @phpstan-ignore-line
+        return $this->getOwner()->getEntitySet(true); // @phpstan-ignore-line
     }
 
     public function getEntity(): Model

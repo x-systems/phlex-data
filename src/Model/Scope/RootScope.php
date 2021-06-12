@@ -24,7 +24,7 @@ class RootScope extends Model\Scope
 
     public function setModel(Model $model)
     {
-        $model->assertIsModel();
+        $model->assertIsEntitySet();
 
         if ($this->model !== $model) {
             $this->model = $model;

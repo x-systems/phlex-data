@@ -180,19 +180,7 @@ abstract class Persistence
             }
         }, [], -1000);
 
-        $result = $this->query($model)->whereId($id)->update($data)->execute();
-
-        // @todo $result->rowCount() is specific to PDO, must be done specific to Query
-        // if any rows were updated in database, and we had expressions, reload
-        if ($model->reload_after_save === true /* && (!$result || iterator_count($result)) */) {
-            $dirty = $model->getDirtyRef();
-            $model->reload();
-            $dirtyRef = &$model->getDirtyRef();
-            $model->_dirty_after_reload = $dirtyRef;
-            $dirtyRef = $dirty;
-        }
-
-        return $result;
+        return $this->query($model)->whereId($id)->update($data)->execute();
     }
 
     /**

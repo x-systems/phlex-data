@@ -103,6 +103,36 @@ class Model implements \IteratorAggregate
      */
     private $entityId;
 
+    /** @var Model\Scope\RootScope */
+    private $scope;
+
+    /**
+     * Currently loaded record data. This record is associative array
+     * that contain field=>data pairs. It may contain data for un-defined
+     * fields only if $onlyFields mode is false.
+     *
+     * Avoid accessing $data directly, use set() / get() instead.
+     *
+     * @var array
+     */
+    private $data = [];
+
+    /**
+     * After loading an active record from DataSet it will be stored in
+     * $data property and you can access it using get(). If you use
+     * set() to change any of the data, the original value will be copied
+     * here.
+     *
+     * If the value you set equal to the original value, then the key
+     * in this array will be removed.
+     *
+     * The $dirty data will be reset after you save() the data but it is
+     * still available to all before/after save handlers.
+     *
+     * @var array
+     */
+    private $dirty = [];
+
     /**
      * The class used by addField() method.
      *
@@ -161,9 +191,6 @@ class Model implements \IteratorAggregate
      */
     public $persistence;
 
-    /** @var Model\Scope\RootScope */
-    private $scope;
-
     /**
      * Array of limit set.
      *
@@ -184,33 +211,6 @@ class Model implements \IteratorAggregate
      * @var array
      */
     public $with = [];
-
-    /**
-     * Currently loaded record data. This record is associative array
-     * that contain field=>data pairs. It may contain data for un-defined
-     * fields only if $onlyFields mode is false.
-     *
-     * Avoid accessing $data directly, use set() / get() instead.
-     *
-     * @var array
-     */
-    private $data = [];
-
-    /**
-     * After loading an active record from DataSet it will be stored in
-     * $data property and you can access it using get(). If you use
-     * set() to change any of the data, the original value will be copied
-     * here.
-     *
-     * If the value you set equal to the original value, then the key
-     * in this array will be removed.
-     *
-     * The $dirty data will be reset after you save() the data but it is
-     * still available to all before/after save handlers.
-     *
-     * @var array
-     */
-    private $dirty = [];
 
     /**
      * Setting model as read_only will protect you from accidentally
@@ -1537,25 +1537,25 @@ class Model implements \IteratorAggregate
             if ($is_update) {
                 $data = [];
                 $dirty_join = false;
-                foreach ($dirtyRef as $name => $ignore) {
-                    if (!$this->hasField($name)) {
+                foreach ($dirtyRef as $key => $ignore) {
+                    if (!$this->hasField($key)) {
                         continue;
                     }
 
-                    $field = $this->getField($name);
+                    $field = $this->getField($key);
                     if (!$field->checkSetAccess() || !$field->interactsWithPersistence() || !$field->savesToPersistence()) {
                         continue;
                     }
 
                     // get the value of the field
-                    $value = $this->get($name);
+                    $value = $this->get($key);
 
                     if ($field->hasJoin()) {
                         $dirty_join = true;
                         // storing into a different table join
-                        $field->getJoin()->set($name, $value);
+                        $field->getJoin()->set($key, $value);
                     } else {
-                        $data[$name] = $value;
+                        $data[$key] = $value;
                     }
                 }
 
@@ -1568,26 +1568,35 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                $this->persistence->update($this, $this->getId(), $data);
+                $result = $this->persistence->update($this, $this->getId(), $data);
 
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
+
+                // if any rows were updated in database, and we had expressions, reload
+                if ($this->reload_after_save === true && $result->rowCount()) {
+                    $dirty = $dirtyRef;
+                    $this->reload();
+                    $dirtyRef = &$this->getDirtyRef();
+                    $this->_dirty_after_reload = $dirtyRef;
+                    $dirtyRef = $dirty;
+                }
             } else {
                 $data = [];
-                foreach ($this->get() as $name => $value) {
-                    if (!$this->hasField($name)) {
+                foreach ($this->get() as $key => $value) {
+                    if (!$this->hasField($key)) {
                         continue;
                     }
 
-                    $field = $this->getField($name);
+                    $field = $this->getField($key);
                     if (!$field->checkSetAccess() || !$field->interactsWithPersistence() || !$field->savesToPersistence()) {
                         continue;
                     }
 
                     if ($field->hasJoin()) {
                         // storing into a different table join
-                        $field->getJoin()->set($name, $value);
+                        $field->getJoin()->set($key, $value);
                     } else {
-                        $data[$name] = $value;
+                        $data[$key] = $value;
                     }
                 }
 

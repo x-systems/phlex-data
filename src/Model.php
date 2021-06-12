@@ -1377,6 +1377,15 @@ class Model implements \IteratorAggregate
      */
     public function saveAndUnload(array $data = [])
     {
+        $this->saveWithoutReloading($data);
+
+        $this->unload();
+
+        return $this;
+    }
+
+    public function saveWithoutReloading(array $data = [])
+    {
         $reloadAfterSaveBackup = $this->reloadAfterSave;
         try {
             $this->reloadAfterSave = false;
@@ -1384,8 +1393,6 @@ class Model implements \IteratorAggregate
         } finally {
             $this->reloadAfterSave = $reloadAfterSaveBackup;
         }
-
-        $this->unload();
 
         return $this;
     }
@@ -1654,13 +1661,7 @@ class Model implements \IteratorAggregate
         }
 
         // save data fields
-        $reloadAfterSaveBackup = $entity->reloadAfterSave;
-        try {
-            $entity->reloadAfterSave = false;
-            $entity->save($row);
-        } finally {
-            $entity->reloadAfterSave = $reloadAfterSaveBackup;
-        }
+        $entity->saveWithoutReloading($row);
 
         // store id value
         if ($entity->primaryKey) {

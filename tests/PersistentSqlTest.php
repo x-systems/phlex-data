@@ -192,7 +192,7 @@ class PersistentSqlTest extends Sql\TestCase
         $m->addField('surname');
 
         // insert new record, model id field
-        $m->reload_after_save = false;
+        $m->reloadAfterSave = false;
         $m = $m->createEntity();
         $m->save(['name' => 'Jane', 'surname' => 'Doe']);
         $this->assertSame('Jane', $m->get('name'));

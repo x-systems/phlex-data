@@ -296,7 +296,7 @@ class Model implements \IteratorAggregate
      *
      * @var bool|null
      */
-    public $reload_after_save;
+    public $reloadAfterSave;
 
     /**
      * If this model is "contained into" another model by using containsOne
@@ -1387,12 +1387,12 @@ class Model implements \IteratorAggregate
      */
     public function saveAndUnload(array $data = [])
     {
-        $reloadAfterSaveBackup = $this->reload_after_save;
+        $reloadAfterSaveBackup = $this->reloadAfterSave;
         try {
-            $this->reload_after_save = false;
+            $this->reloadAfterSave = false;
             $this->save($data);
         } finally {
-            $this->reload_after_save = $reloadAfterSaveBackup;
+            $this->reloadAfterSave = $reloadAfterSaveBackup;
         }
 
         $this->unload();
@@ -1571,7 +1571,7 @@ class Model implements \IteratorAggregate
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
 
                 // if any rows were updated in database, and we had expressions, reload
-                if ($this->reload_after_save === true && $result->rowCount()) {
+                if ($this->reloadAfterSave === true && $result->rowCount()) {
                     $dirty = $dirtyRef;
                     $this->reload();
                     $dirtyRef = &$this->getDirtyRef();
@@ -1613,7 +1613,7 @@ class Model implements \IteratorAggregate
                     $this->setId($id);
                     $this->hook(self::HOOK_AFTER_INSERT, [$this->getId()]);
 
-                    if ($this->reload_after_save !== false) {
+                    if ($this->reloadAfterSave !== false) {
                         $d = $dirtyRef;
                         $dirtyRef = [];
                         $this->reload();
@@ -1664,12 +1664,12 @@ class Model implements \IteratorAggregate
         }
 
         // save data fields
-        $reloadAfterSaveBackup = $entity->reload_after_save;
+        $reloadAfterSaveBackup = $entity->reloadAfterSave;
         try {
-            $entity->reload_after_save = false;
+            $entity->reloadAfterSave = false;
             $entity->save($row);
         } finally {
-            $entity->reload_after_save = $reloadAfterSaveBackup;
+            $entity->reloadAfterSave = $reloadAfterSaveBackup;
         }
 
         // store id value

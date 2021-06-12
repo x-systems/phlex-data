@@ -1524,12 +1524,12 @@ class Model implements \IteratorAggregate
             if (($errors = $this->validate('save')) !== []) {
                 throw new Model\Field\ValidationException($errors, $this);
             }
-            $is_update = $this->isLoaded();
-            if ($this->hook(self::HOOK_BEFORE_SAVE, [$is_update]) === false) {
+            $isUpdate = $this->isLoaded();
+            if ($this->hook(self::HOOK_BEFORE_SAVE, [$isUpdate]) === false) {
                 return $this;
             }
 
-            if ($is_update) {
+            if ($isUpdate) {
                 $data = [];
                 $dirty_join = false;
                 foreach ($dirtyRef as $key => $ignore) {
@@ -1624,7 +1624,7 @@ class Model implements \IteratorAggregate
                 $dirtyRef = $dirtyAfterReload;
             }
 
-            $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
+            $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate]);
 
             return $this;
         });

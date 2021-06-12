@@ -1635,9 +1635,7 @@ class Model implements \IteratorAggregate
      */
     public function insert(array $row)
     {
-        $model = ($this->isEntity() ? $this->getEntitySet() : $this)->createEntity();
-
-        $model->unload();
+        $entity = $this->getEntitySet(true)->createEntity();
 
         // Find any row values that do not correspond to fields, and they may correspond to
         // references instead
@@ -1659,25 +1657,25 @@ class Model implements \IteratorAggregate
         }
 
         // save data fields
-        $reloadAfterSaveBackup = $model->reload_after_save;
+        $reloadAfterSaveBackup = $entity->reload_after_save;
         try {
-            $model->reload_after_save = false;
-            $model->save($row);
+            $entity->reload_after_save = false;
+            $entity->save($row);
         } finally {
-            $model->reload_after_save = $reloadAfterSaveBackup;
+            $entity->reload_after_save = $reloadAfterSaveBackup;
         }
 
         // store id value
-        if ($this->primaryKey) {
-            $model->getDataRef()[$model->primaryKey] = $model->getId();
+        if ($entity->primaryKey) {
+            $entity->getDataRef()[$entity->primaryKey] = $entity->getId();
         }
 
         // if there was referenced data, then import it
         foreach ($refs as $key => $value) {
-            $model->ref($key)->import($value);
+            $entity->ref($key)->import($value);
         }
 
-        return $this->primaryKey ? $model->getId() : null;
+        return $entity->primaryKey ? $entity->getId() : null;
     }
 
     /**

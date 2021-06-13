@@ -353,6 +353,20 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * Check if model has persistence with specified method.
+     */
+    public function assertHasPersistence(string $method = null): void
+    {
+        if (!$this->persistence) {
+            throw new Exception('Model is not associated with any persistence');
+        }
+
+        if ($method && !$this->persistence->hasMethod($method)) {
+            throw new Exception("Persistence does not support {$method} method");
+        }
+    }
+
+    /**
      * @return static
      */
     public function getEntitySet(bool $allowOnEntitySet = false): self
@@ -1245,7 +1259,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Entity must be unloaded');
         }
 
-        $this->checkPersistence();
+        $this->assertHasPersistence();
 
         if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
             return $this;
@@ -1488,27 +1502,13 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Check if model has persistence with specified method.
-     */
-    public function checkPersistence(string $method = null): void
-    {
-        if (!$this->persistence) {
-            throw new Exception('Model is not associated with any persistence');
-        }
-
-        if ($method && !$this->persistence->hasMethod($method)) {
-            throw new Exception("Persistence does not support {$method} method");
-        }
-    }
-
-    /**
      * Save record.
      *
      * @return $this
      */
     public function save(array $data = [])
     {
-        $this->checkPersistence();
+        $this->assertHasPersistence();
 
         if ($this->read_only) {
             throw new Exception('Model is read-only and cannot be saved');
@@ -1704,7 +1704,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntitySet();
 
-        $this->checkPersistence('export');
+        $this->assertHasPersistence('export');
 
         // @todo: why only persisting fields?
         // prepare array with field names
@@ -1863,7 +1863,7 @@ class Model implements \IteratorAggregate
      */
     public function toQuery(): Persistence\Query
     {
-        $this->checkPersistence('query');
+        $this->assertHasPersistence('query');
 
         return $this->persistence->query($this);
     }

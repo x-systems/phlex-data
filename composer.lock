@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5dc7525f373f6d911d44988b05a49efa",
+    "content-hash": "758b359f82598fdbf470914633388d2a",
     "packages": [
         {
             "name": "composer/package-versions-deprecated",
@@ -1687,7 +1687,7 @@
         },
         {
             "name": "x-systems/phlex-core",
-            "version": "dev-develop",
+            "version": "3.0.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/x-systems/phlex-core.git",
@@ -1763,7 +1763,7 @@
             ],
             "support": {
                 "issues": "https://github.com/x-systems/phlex-core/issues",
-                "source": "https://github.com/x-systems/phlex-core/tree/develop"
+                "source": "https://github.com/x-systems/phlex-core/tree/3.0.x"
             },
             "time": "2021-05-12T09:51:14+00:00"
         }

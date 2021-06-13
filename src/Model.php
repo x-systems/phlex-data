@@ -953,11 +953,11 @@ class Model implements \IteratorAggregate
      */
     public function getTitles(): array
     {
-        $field = $this->titleKey && $this->hasField($this->titleKey) ? $this->titleKey : $this->primaryKey;
+        $key = $this->titleKey && $this->hasField($this->titleKey) ? $this->titleKey : $this->primaryKey;
 
-        return array_map(function ($row) use ($field) {
-            return $row[$field];
-        }, $this->export([$field], $this->primaryKey));
+        return array_map(function ($row) use ($key) {
+            return $row[$key];
+        }, $this->export([$key], $this->primaryKey));
     }
 
     /**
@@ -969,15 +969,13 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Does field exist?
+     * Does key exist in Model data?
      */
     public function _isset(string $key): bool
     {
         $this->checkOnlyFieldsField($key);
 
-        $dirtyRef = &$this->getDirtyRef();
-
-        return array_key_exists($key, $dirtyRef);
+        return array_key_exists($key, $this->getDirtyRef());
     }
 
     /**
@@ -1697,10 +1695,10 @@ class Model implements \IteratorAggregate
      * Export DataSet as array of hashes.
      *
      * @param array|null $keys          Names of fields to export
-     * @param string     $keyKey        Optional name of field which value we will use as array key
+     * @param string     $arrayKey      Optional name of field which value we will use as array key
      * @param bool       $typecast_data Should we typecast exported data
      */
-    public function export(array $keys = null, $keyKey = null, $typecast_data = true): array
+    public function export(array $keys = null, $arrayKey = null, $typecast_data = true): array
     {
         $this->assertIsEntitySet();
 
@@ -1713,7 +1711,7 @@ class Model implements \IteratorAggregate
         }
 
         // no key field - then just do export
-        if ($keyKey === null) {
+        if ($arrayKey === null) {
             return $this->persistence->export($this, $keys, $typecast_data);
         }
 
@@ -1722,8 +1720,8 @@ class Model implements \IteratorAggregate
         $key_field_added = false;
 
         // add key_field to array if it's not there
-        if (!in_array($keyKey, $keys, true)) {
-            $keys[] = $keyKey;
+        if (!in_array($arrayKey, $keys, true)) {
+            $keys[] = $arrayKey;
             $key_field_added = true;
         }
 
@@ -1733,9 +1731,9 @@ class Model implements \IteratorAggregate
         // prepare resulting array
         $res = [];
         foreach ($data as $row) {
-            $key = $row[$keyKey];
+            $key = $row[$arrayKey];
             if ($key_field_added) {
-                unset($row[$keyKey]);
+                unset($row[$arrayKey]);
             }
             $res[$key] = $row;
         }

@@ -1375,11 +1375,7 @@ class Model implements \IteratorAggregate
      */
     public function saveAndUnload(array $data = [])
     {
-        $this->saveWithoutReloading($data);
-
-        $this->unload();
-
-        return $this;
+        return $this->saveWithoutReloading($data)->unload();
     }
 
     public function saveWithoutReloading(array $data = [])

@@ -1378,6 +1378,11 @@ class Model implements \IteratorAggregate
         return $this->saveWithoutReloading($data)->unload();
     }
 
+    /**
+     * Save the $data but do not reload the entity from persistence.
+     *
+     * @return $this
+     */
     public function saveWithoutReloading(array $data = [])
     {
         $reloadAfterSaveBackup = $this->reloadAfterSave;
@@ -1397,19 +1402,19 @@ class Model implements \IteratorAggregate
      */
     public function asModel(string $class, array $options = []): self
     {
-        $m = $this->newInstance($class, $options);
+        $model = $this->newInstance($class, $options);
 
-        foreach ($this->data as $field => $value) {
-            if ($value !== null && $value !== $this->getField($field)->default && $field !== $this->primaryKey) {
+        foreach ($this->data as $key => $value) {
+            if ($value !== null && $value !== $this->getField($key)->default && $key !== $this->primaryKey) {
                 // Copying only non-default value
-                $m->set($field, $value);
+                $model->set($key, $value);
             }
         }
 
         // next we need to go over fields to see if any system
         // values have changed and mark them as dirty
 
-        return $m;
+        return $model;
     }
 
     /**

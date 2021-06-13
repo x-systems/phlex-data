@@ -93,6 +93,9 @@ class Model implements \IteratorAggregate
     /** @const string */
     public const FIELD_FILTER_ONLY_FIELDS = 'only fields';
 
+    /** @const string */
+    public const VALIDATE_INTENT_SAVE = 'save';
+
     /**
      * @var static|null not-null if and only if this instance is an entity
      */
@@ -102,6 +105,36 @@ class Model implements \IteratorAggregate
      * @var mixed once set, loading a different ID will result in an error
      */
     private $entityId;
+
+    /** @var Model\Scope\RootScope */
+    private $scope;
+
+    /**
+     * Currently loaded record data. This record is associative array
+     * that contain field=>data pairs. It may contain data for un-defined
+     * fields only if $onlyFields mode is false.
+     *
+     * Avoid accessing $data directly, use set() / get() instead.
+     *
+     * @var array
+     */
+    private $data = [];
+
+    /**
+     * After loading an active record from DataSet it will be stored in
+     * $data property and you can access it using get(). If you use
+     * set() to change any of the data, the original value will be copied
+     * here.
+     *
+     * If the value you set equal to the original value, then the key
+     * in this array will be removed.
+     *
+     * The $dirty data will be reset after you save() the data but it is
+     * still available to all before/after save handlers.
+     *
+     * @var array
+     */
+    private $dirty = [];
 
     /**
      * The class used by addField() method.
@@ -161,9 +194,6 @@ class Model implements \IteratorAggregate
      */
     public $persistence;
 
-    /** @var Model\Scope\RootScope */
-    private $scope;
-
     /**
      * Array of limit set.
      *
@@ -184,33 +214,6 @@ class Model implements \IteratorAggregate
      * @var array
      */
     public $with = [];
-
-    /**
-     * Currently loaded record data. This record is associative array
-     * that contain field=>data pairs. It may contain data for un-defined
-     * fields only if $onlyFields mode is false.
-     *
-     * Avoid accessing $data directly, use set() / get() instead.
-     *
-     * @var array
-     */
-    private $data = [];
-
-    /**
-     * After loading an active record from DataSet it will be stored in
-     * $data property and you can access it using get(). If you use
-     * set() to change any of the data, the original value will be copied
-     * here.
-     *
-     * If the value you set equal to the original value, then the key
-     * in this array will be removed.
-     *
-     * The $dirty data will be reset after you save() the data but it is
-     * still available to all before/after save handlers.
-     *
-     * @var array
-     */
-    private $dirty = [];
 
     /**
      * Setting model as read_only will protect you from accidentally
@@ -276,16 +279,6 @@ class Model implements \IteratorAggregate
     public $strict_types = true;
 
     /**
-     * When set to true, loading model from database will also
-     * perform value normalization. Use this if you think that
-     * persistence may contain badly formatted data that may
-     * impact your business logic.
-     *
-     * @var bool
-     */
-    public $load_normalization = false;
-
-    /**
      * Models that contain expressions will automatically reload after save.
      * This is to ensure that any SQL-based calculation are executed and
      * updated correctly after you have performed any modifications to
@@ -296,7 +289,7 @@ class Model implements \IteratorAggregate
      *
      * @var bool|null
      */
-    public $reload_after_save;
+    public $reloadAfterSave;
 
     /**
      * If this model is "contained into" another model by using containsOne
@@ -356,6 +349,20 @@ class Model implements \IteratorAggregate
     {
         if (!$this->isEntity()) {
             throw new Exception('Expected entity, but instance is a model');
+        }
+    }
+
+    /**
+     * Check if model has persistence with specified method.
+     */
+    public function assertHasPersistence(string $method = null): void
+    {
+        if (!$this->persistence) {
+            throw new Exception('Model is not associated with any persistence');
+        }
+
+        if ($method && !$this->persistence->hasMethod($method)) {
+            throw new Exception("Persistence does not support {$method} method");
         }
     }
 
@@ -528,7 +535,7 @@ class Model implements \IteratorAggregate
      * Always use
      *   return array_merge(parent::validate($intent), $errors);
      *
-     * @param string $intent by default only 'save' is used (from beforeSave) but you can use other intents yourself
+     * @param string $intent by default only Model::VALIDATE_INTENT_SAVE is used (from beforeSave) but you can use other intents yourself
      *
      * @return array [field => err_spec]
      */
@@ -718,12 +725,7 @@ class Model implements \IteratorAggregate
 
         $this->checkOnlyFieldsField($key);
 
-        $dirtyRef = &$this->getDirtyRef();
-        if (array_key_exists($key, $dirtyRef)) {
-            return true;
-        }
-
-        return false;
+        return array_key_exists($key, $this->getDirtyRef());
     }
 
     /**
@@ -1257,7 +1259,7 @@ class Model implements \IteratorAggregate
             throw new Exception('Entity must be unloaded');
         }
 
-        $this->checkPersistence();
+        $this->assertHasPersistence();
 
         if ($this->hook(self::HOOK_BEFORE_LOAD, [$id]) === false) {
             return $this;
@@ -1387,15 +1389,23 @@ class Model implements \IteratorAggregate
      */
     public function saveAndUnload(array $data = [])
     {
-        $reloadAfterSaveBackup = $this->reload_after_save;
+        return $this->saveWithoutReloading($data)->unload();
+    }
+
+    /**
+     * Save the $data but do not reload the entity from persistence.
+     *
+     * @return $this
+     */
+    public function saveWithoutReloading(array $data = [])
+    {
+        $reloadAfterSaveBackup = $this->reloadAfterSave;
         try {
-            $this->reload_after_save = false;
+            $this->reloadAfterSave = false;
             $this->save($data);
         } finally {
-            $this->reload_after_save = $reloadAfterSaveBackup;
+            $this->reloadAfterSave = $reloadAfterSaveBackup;
         }
-
-        $this->unload();
 
         return $this;
     }
@@ -1406,19 +1416,19 @@ class Model implements \IteratorAggregate
      */
     public function asModel(string $class, array $options = []): self
     {
-        $m = $this->newInstance($class, $options);
+        $model = $this->newInstance($class, $options);
 
-        foreach ($this->data as $field => $value) {
-            if ($value !== null && $value !== $this->getField($field)->default && $field !== $this->primaryKey) {
+        foreach ($this->data as $key => $value) {
+            if ($value !== null && $value !== $this->getField($key)->default && $key !== $this->primaryKey) {
                 // Copying only non-default value
-                $m->set($field, $value);
+                $model->set($key, $value);
             }
         }
 
         // next we need to go over fields to see if any system
         // values have changed and mark them as dirty
 
-        return $m;
+        return $model;
     }
 
     /**
@@ -1492,30 +1502,13 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Check if model has persistence with specified method.
-     */
-    public function checkPersistence(string $method = null): void
-    {
-        if (!$this->persistence) {
-            throw new Exception('Model is not associated with any persistence');
-        }
-
-        if ($method && !$this->persistence->hasMethod($method)) {
-            throw new Exception("Persistence does not support {$method} method");
-        }
-    }
-
-    /** @var array */
-    public $_dirty_after_reload = [];
-
-    /**
      * Save record.
      *
      * @return $this
      */
     public function save(array $data = [])
     {
-        $this->checkPersistence();
+        $this->assertHasPersistence();
 
         if ($this->read_only) {
             throw new Exception('Model is read-only and cannot be saved');
@@ -1525,37 +1518,39 @@ class Model implements \IteratorAggregate
 
         return $this->atomic(function () {
             $dirtyRef = &$this->getDirtyRef();
+            $dirtyAfterReload = [];
 
-            if (($errors = $this->validate('save')) !== []) {
+            if (($errors = $this->validate(self::VALIDATE_INTENT_SAVE)) !== []) {
                 throw new Model\Field\ValidationException($errors, $this);
             }
-            $is_update = $this->isLoaded();
-            if ($this->hook(self::HOOK_BEFORE_SAVE, [$is_update]) === false) {
+
+            $isUpdate = $this->isLoaded();
+            if ($this->hook(self::HOOK_BEFORE_SAVE, [$isUpdate]) === false) {
                 return $this;
             }
 
-            if ($is_update) {
+            if ($isUpdate) {
                 $data = [];
                 $dirty_join = false;
-                foreach ($dirtyRef as $name => $ignore) {
-                    if (!$this->hasField($name)) {
+                foreach ($dirtyRef as $key => $ignore) {
+                    if (!$this->hasField($key)) {
                         continue;
                     }
 
-                    $field = $this->getField($name);
+                    $field = $this->getField($key);
                     if (!$field->checkSetAccess() || !$field->interactsWithPersistence() || !$field->savesToPersistence()) {
                         continue;
                     }
 
                     // get the value of the field
-                    $value = $this->get($name);
+                    $value = $this->get($key);
 
                     if ($field->hasJoin()) {
                         $dirty_join = true;
                         // storing into a different table join
-                        $field->getJoin()->set($name, $value);
+                        $field->getJoin()->set($key, $value);
                     } else {
-                        $data[$name] = $value;
+                        $data[$key] = $value;
                     }
                 }
 
@@ -1568,26 +1563,34 @@ class Model implements \IteratorAggregate
                     return $this;
                 }
 
-                $this->persistence->update($this, $this->getId(), $data);
+                $result = $this->persistence->update($this, $this->getId(), $data);
 
                 $this->hook(self::HOOK_AFTER_UPDATE, [&$data]);
+
+                // if any rows were updated in database, and we had expressions, reload
+                if ($this->reloadAfterSave === true && $result->rowCount()) {
+                    $dirtyBeforeReload = $dirtyRef;
+                    $this->reload();
+                    $dirtyAfterReload = $dirtyRef;
+                    $dirtyRef = $dirtyBeforeReload;
+                }
             } else {
                 $data = [];
-                foreach ($this->get() as $name => $value) {
-                    if (!$this->hasField($name)) {
+                foreach ($this->get() as $key => $value) {
+                    if (!$this->hasField($key)) {
                         continue;
                     }
 
-                    $field = $this->getField($name);
+                    $field = $this->getField($key);
                     if (!$field->checkSetAccess() || !$field->interactsWithPersistence() || !$field->savesToPersistence()) {
                         continue;
                     }
 
                     if ($field->hasJoin()) {
                         // storing into a different table join
-                        $field->getJoin()->set($name, $value);
+                        $field->getJoin()->set($key, $value);
                     } else {
-                        $data[$name] = $value;
+                        $data[$key] = $value;
                     }
                 }
 
@@ -1606,21 +1609,20 @@ class Model implements \IteratorAggregate
                     $this->setId($id);
                     $this->hook(self::HOOK_AFTER_INSERT, [$this->getId()]);
 
-                    if ($this->reload_after_save !== false) {
-                        $d = $dirtyRef;
-                        $dirtyRef = [];
+                    if ($this->reloadAfterSave !== false) {
+                        $dirtyBeforeReload = $dirtyRef;
                         $this->reload();
-                        $this->_dirty_after_reload = $dirtyRef;
-                        $dirtyRef = $d;
+                        $dirtyAfterReload = $dirtyRef;
+                        $dirtyRef = $dirtyBeforeReload;
                     }
                 }
             }
 
             if ($this->isLoaded()) {
-                $dirtyRef = $this->_dirty_after_reload;
+                $dirtyRef = $dirtyAfterReload;
             }
 
-            $this->hook(self::HOOK_AFTER_SAVE, [$is_update]);
+            $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate]);
 
             return $this;
         });
@@ -1657,13 +1659,7 @@ class Model implements \IteratorAggregate
         }
 
         // save data fields
-        $reloadAfterSaveBackup = $entity->reload_after_save;
-        try {
-            $entity->reload_after_save = false;
-            $entity->save($row);
-        } finally {
-            $entity->reload_after_save = $reloadAfterSaveBackup;
-        }
+        $entity->saveWithoutReloading($row);
 
         // store id value
         if ($entity->primaryKey) {
@@ -1708,7 +1704,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntitySet();
 
-        $this->checkPersistence('export');
+        $this->assertHasPersistence('export');
 
         // @todo: why only persisting fields?
         // prepare array with field names
@@ -1867,7 +1863,7 @@ class Model implements \IteratorAggregate
      */
     public function toQuery(): Persistence\Query
     {
-        $this->checkPersistence('query');
+        $this->assertHasPersistence('query');
 
         return $this->persistence->query($this);
     }

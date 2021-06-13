@@ -711,12 +711,7 @@ class Model implements \IteratorAggregate
 
         $this->checkOnlyFieldsField($key);
 
-        $dirtyRef = &$this->getDirtyRef();
-        if (array_key_exists($key, $dirtyRef)) {
-            return true;
-        }
-
-        return false;
+        return array_key_exists($key, $this->getDirtyRef());
     }
 
     /**
@@ -1527,6 +1522,7 @@ class Model implements \IteratorAggregate
             if (($errors = $this->validate(self::VALIDATE_INTENT_SAVE)) !== []) {
                 throw new Model\Field\ValidationException($errors, $this);
             }
+
             $isUpdate = $this->isLoaded();
             if ($this->hook(self::HOOK_BEFORE_SAVE, [$isUpdate]) === false) {
                 return $this;

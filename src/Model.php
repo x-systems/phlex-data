@@ -1572,11 +1572,10 @@ class Model implements \IteratorAggregate
 
                 // if any rows were updated in database, and we had expressions, reload
                 if ($this->reloadAfterSave === true && $result->rowCount()) {
-                    $dirty = $dirtyRef;
+                    $dirtyBeforeReload = $dirtyRef;
                     $this->reload();
-                    $dirtyRef = &$this->getDirtyRef();
                     $dirtyAfterReload = $dirtyRef;
-                    $dirtyRef = $dirty;
+                    $dirtyRef = $dirtyBeforeReload;
                 }
             } else {
                 $data = [];
@@ -1614,11 +1613,10 @@ class Model implements \IteratorAggregate
                     $this->hook(self::HOOK_AFTER_INSERT, [$this->getId()]);
 
                     if ($this->reloadAfterSave !== false) {
-                        $d = $dirtyRef;
-                        $dirtyRef = [];
+                        $dirtyBeforeReload = $dirtyRef;
                         $this->reload();
                         $dirtyAfterReload = $dirtyRef;
-                        $dirtyRef = $d;
+                        $dirtyRef = $dirtyBeforeReload;
                     }
                 }
             }

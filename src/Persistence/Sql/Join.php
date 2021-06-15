@@ -179,7 +179,7 @@ class Join extends Model\Join implements Expressionable
 
         $query = $this->statement()
             ->insert()
-            ->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+            ->set($model->persistence->encodeRow($model, $this->save_buffer));
 
         $this->save_buffer = [];
         $query
@@ -210,7 +210,7 @@ class Join extends Model\Join implements Expressionable
 
         $query = $this->statement()
             ->insert()
-            ->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+            ->set($model->persistence->encodeRow($model, $this->save_buffer));
 
         $this->save_buffer = [];
 
@@ -237,7 +237,7 @@ class Join extends Model\Join implements Expressionable
         $model = $this->getOwner();
         $query = $this->statement()
             ->update()
-            ->set($model->persistence->typecastSaveRow($model, $this->save_buffer));
+            ->set($model->persistence->encodeRow($model, $this->save_buffer));
 
         $this->save_buffer = [];
 

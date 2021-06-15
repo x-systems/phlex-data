@@ -16,14 +16,14 @@ class SerializeTest extends Sql\TestCase
 
         $this->assertSame(
             ['data' => 'a:1:{s:3:"foo";s:3:"bar";}'],
-            $this->db->typecastSaveRow(
+            $this->db->encodeRow(
                 $m,
                 ['data' => ['foo' => 'bar']]
             )
         );
         $this->assertSame(
             ['data' => ['foo' => 'bar']],
-            $this->db->typecastLoadRow(
+            $this->db->decodeRow(
                 $m,
                 ['data' => 'a:1:{s:3:"foo";s:3:"bar";}']
             )
@@ -33,14 +33,14 @@ class SerializeTest extends Sql\TestCase
         $f->type = 'array';
         $this->assertSame(
             ['data' => '{"foo":"bar"}'],
-            $this->db->typecastSaveRow(
+            $this->db->encodeRow(
                 $m,
                 ['data' => ['foo' => 'bar']]
             )
         );
         $this->assertSame(
             ['data' => ['foo' => 'bar']],
-            $this->db->typecastLoadRow(
+            $this->db->decodeRow(
                 $m,
                 ['data' => '{"foo":"bar"}']
             )
@@ -54,7 +54,7 @@ class SerializeTest extends Sql\TestCase
         $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
 
         $this->expectException(\JsonException::class);
-        $this->db->typecastLoadRow($m, ['data' => '{"foo":"bar" OPS']);
+        $this->db->decodeRow($m, ['data' => '{"foo":"bar" OPS']);
     }
 
     public function testSerializeErrorJson2(): void
@@ -68,7 +68,7 @@ class SerializeTest extends Sql\TestCase
         $dbData[] = &$dbData;
 
         $this->expectException(\JsonException::class);
-        $this->db->typecastSaveRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
+        $this->db->encodeRow($m, ['data' => ['foo' => 'bar', 'recursive' => $dbData]]);
     }
 
     /*
@@ -86,7 +86,7 @@ class SerializeTest extends Sql\TestCase
         $this->expectException(Exception::class);
         $this->assertEquals(
             ['data' => ['foo' => 'bar']]
-            , $db->typecastLoadRow($m,
+            , $db->decodeRow($m,
             ['data' => 'a:1:{s:3:"foo";s:3:"bar"; OPS']
         ));
     }

@@ -132,7 +132,7 @@ abstract class Persistence
             throw new RecordNotFoundException();
         }
 
-        return $this->typecastLoadRow($model, $rawData);
+        return $this->decodeRow($model, $rawData);
     }
 
     /**
@@ -149,7 +149,7 @@ abstract class Persistence
             $this->syncIdSequence($model);
         }
 
-        $data = $this->typecastSaveRow($model, $data);
+        $data = $this->encodeRow($model, $data);
 
         $this->query($model)->insert($data)->execute();
 
@@ -171,7 +171,7 @@ abstract class Persistence
      */
     public function update(Model $model, $id, array $data)
     {
-        $data = $this->typecastSaveRow($model, $data);
+        $data = $this->encodeRow($model, $data);
 
         $model->onHook(Persistence\Query::HOOK_AFTER_UPDATE, function (Model $model, Persistence\Query $query, $result) use ($data) {
             if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->getDirtyRef()[$model->primaryKey]) {
@@ -196,15 +196,15 @@ abstract class Persistence
     /**
      * Export all DataSet.
      *
-     * @param bool $typecast Should we typecast exported data
+     * @param bool $decode Should we decode exported data
      */
-    public function export(Model $model, array $fields = null, bool $typecast = true): array
+    public function export(Model $model, array $fields = null, bool $decode = true): array
     {
         $data = $this->query($model)->select($fields)->getRows();
 
-        if ($typecast) {
+        if ($decode) {
             $data = array_map(function ($row) use ($model) {
-                return $this->typecastLoadRow($model, $row);
+                return $this->decodeRow($model, $row);
             }, $data);
         }
 
@@ -237,7 +237,7 @@ abstract class Persistence
      *     'is_married'=>1
      *   ]
      */
-    public function typecastSaveRow(Model $model, array $row): array
+    public function encodeRow(Model $model, array $row): array
     {
         $result = [];
         foreach ($row as $key => $value) {
@@ -266,7 +266,7 @@ abstract class Persistence
      * may be "aliased" from SQL persistences or mapped depending on persistence
      * driver.
      */
-    public function typecastLoadRow(Model $model, array $row): array
+    public function decodeRow(Model $model, array $row): array
     {
         $result = [];
         foreach ($row as $key => $value) {

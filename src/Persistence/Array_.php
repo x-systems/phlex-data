@@ -80,7 +80,7 @@ class Array_ extends Persistence
                 unset($row[$primaryKeyColumnName]);
             }
 
-            // typecastSave value so we can use strict comparison
+            // encode value so we can use strict comparison
             $row = [$primaryKeyColumnName => $primaryKeyField->encodePersistenceValue($id)] + $row;
         }
 

@@ -275,7 +275,7 @@ class Field
                 // TODO probably create and use a default persistence
                 $persistenceValue = $this->normalize($v);
             } else {
-                $persistenceValue = $this->getOwner()->persistence->typecastSaveRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
+                $persistenceValue = $this->getOwner()->persistence->encodeRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
             }
 
             if (is_scalar($persistenceValue)) {

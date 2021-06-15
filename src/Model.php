@@ -1698,7 +1698,7 @@ class Model implements \IteratorAggregate
      * @param string     $arrayKey      Optional name of field which value we will use as array key
      * @param bool       $typecast_data Should we typecast exported data
      */
-    public function export(array $keys = null, $arrayKey = null, $typecast_data = true): array
+    public function export(array $keys = null, string $arrayKey = null, bool $decode = true): array
     {
         $this->assertIsEntitySet();
 
@@ -1712,7 +1712,7 @@ class Model implements \IteratorAggregate
 
         // no key field - then just do export
         if ($arrayKey === null) {
-            return $this->persistence->export($this, $keys, $typecast_data);
+            return $this->persistence->export($this, $keys, $decode);
         }
 
         // do we have added key field in fields list?
@@ -1726,7 +1726,7 @@ class Model implements \IteratorAggregate
         }
 
         // export
-        $data = $this->persistence->export($this, $keys, $typecast_data);
+        $data = $this->persistence->export($this, $keys, $decode);
 
         // prepare resulting array
         $res = [];
@@ -1752,7 +1752,7 @@ class Model implements \IteratorAggregate
             $thisCloned = $this->createEntity();
 
             $dataRef = &$thisCloned->getDataRef();
-            $dataRef = $this->persistence->typecastLoadRow($this, $data);
+            $dataRef = $this->persistence->decodeRow($this, $data);
 
             if ($this->primaryKey) {
                 $thisCloned->setId($data[$this->primaryKey] ?? null);

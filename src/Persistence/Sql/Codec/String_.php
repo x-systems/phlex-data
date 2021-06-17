@@ -9,7 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Phlex\Data\Persistence\Sql;
 
 /**
- * @method \Phlex\Data\Model\Field\Type\String_ getPersistenceValueType()
+ * @method \Phlex\Data\Model\Field\Type\String_ getValueType()
  */
 class String_ extends Sql\Codec
 {
@@ -28,7 +28,7 @@ class String_ extends Sql\Codec
     {
         $column = parent::migrate($migrator);
 
-        if ($maxLength = $this->getPersistenceValueType()->maxLength ?? null) {
+        if ($maxLength = $this->getValueType()->maxLength ?? null) {
             $column->setLength($maxLength);
         }
 

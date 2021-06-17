@@ -263,10 +263,10 @@ class ReferenceSqlTest extends Sql\TestCase
         $i = $i->load('1');
 
         // type was set explicitly
-        $this->assertSame(Model\Field\Type\Money::class, get_class($i->getField('total_vat')->getPersistenceValueType()));
+        $this->assertSame(Model\Field\Type\Money::class, get_class($i->getField('total_vat')->getSerializedValueType()));
 
         // type was not set and is not inherited
-        $this->assertSame(Model\Field\Type\Generic::class, get_class($i->getField('total_net')->getPersistenceValueType()));
+        $this->assertSame(Model\Field\Type\Generic::class, get_class($i->getField('total_net')->getSerializedValueType()));
 
         $this->assertEquals(40, $i->get('total_net'));
         $this->assertEquals(9.2, $i->get('total_vat'));

@@ -9,7 +9,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Persistence\Sql;
 
 /**
- * @method \Phlex\Data\Model\Field\Type\DateTime getPersistenceValueType()
+ * @method \Phlex\Data\Model\Field\Type\DateTime getValueType()
  */
 class DateTime extends Sql\Codec
 {
@@ -21,8 +21,8 @@ class DateTime extends Sql\Codec
 
     protected function doEncode($value)
     {
-        $dateTimeClass = $this->getPersistenceValueType()->dateTimeClass ?? \DateTime::class;
-        $timeZoneClass = $this->getPersistenceValueType()->dateTimeZoneClass ?? \DateTimeZone::class;
+        $dateTimeClass = $this->getValueType()->dateTimeClass ?? \DateTime::class;
+        $timeZoneClass = $this->getValueType()->dateTimeZoneClass ?? \DateTimeZone::class;
 
         if ($value instanceof $dateTimeClass || $value instanceof \DateTimeInterface) {
             // datetime only - set to persisting timezone
@@ -38,8 +38,8 @@ class DateTime extends Sql\Codec
 
     protected function doDecode($value)
     {
-        $dateTimeClass = $this->getPersistenceValueType()->dateTimeClass ?? \DateTime::class;
-        $timeZoneClass = $this->getPersistenceValueType()->dateTimeZoneClass ?? \DateTimeZone::class;
+        $dateTimeClass = $this->getValueType()->dateTimeClass ?? \DateTime::class;
+        $timeZoneClass = $this->getValueType()->dateTimeZoneClass ?? \DateTimeZone::class;
 
         $valueDecoded = null;
         if (is_numeric($value)) {

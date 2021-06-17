@@ -8,7 +8,7 @@ use Doctrine\DBAL\Types\Types;
 use Phlex\Data\Persistence\Sql;
 
 /**
- * @method \Phlex\Data\Model\Field\Type\Boolean getPersistenceValueType()
+ * @method \Phlex\Data\Model\Field\Type\Boolean getValueType()
  */
 class Boolean extends Sql\Codec
 {
@@ -17,9 +17,9 @@ class Boolean extends Sql\Codec
     protected function doEncode($value)
     {
         // if enum is set, first lets see if it matches one of those precisely
-        if ($value === $this->getPersistenceValueType()->valueTrue) {
+        if ($value === $this->getValueType()->valueTrue) {
             $value = true;
-        } elseif ($value === $this->getPersistenceValueType()->valueFalse) {
+        } elseif ($value === $this->getValueType()->valueFalse) {
             $value = false;
         }
 

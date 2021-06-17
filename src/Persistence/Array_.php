@@ -138,7 +138,7 @@ class Array_ extends Persistence
     {
         $table = $table ?? $model->table;
 
-        $type = $model->primaryKey ? get_class($model->getField($model->primaryKey)->getPersistenceValueType()) : Model\Field\Type\Integer::class;
+        $type = $model->primaryKey ? get_class($model->getField($model->primaryKey)->getSerializedValueType()) : Model\Field\Type\Integer::class;
 
         switch ($type) {
             case Model\Field\Type\Integer::class:

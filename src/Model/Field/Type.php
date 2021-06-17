@@ -6,7 +6,7 @@ namespace Phlex\Data\Model\Field;
 
 use Phlex\Core\DiContainerTrait;
 use Phlex\Core\Factory;
-use Phlex\Data\Model;
+use Phlex\Data;
 
 abstract class Type
 {
@@ -51,6 +51,23 @@ abstract class Type
     public $codec = [];
 
     /**
+     * Register custom field type to be resolved.
+     *
+     * @param string|array      $type
+     * @param string|array|null $seed
+     */
+    public static function register($type, $seed = null)
+    {
+        if (is_array($types = $type)) {
+            foreach ($types as $type => $seed) {
+                self::register($type, $seed);
+            }
+        }
+
+        self::$registry[$type] = $seed;
+    }
+
+    /**
      * Resolve field type to seed from Field::$registry.
      *
      * @param string|array|object|null $type
@@ -72,19 +89,21 @@ abstract class Type
         return self::$registry[$type ?? 0];
     }
 
-    public function createCodec(Model\Field $field)
+    public function createCodec(Data\Model\Field $field, Data\MutatorInterface $mutator = null)
     {
-        $persistence = $field->getOwner()->persistence;
+        if ($mutator === null) {
+            $mutator = $field->getOwner()->persistence;
+        }
 
-        $persistenceClass = get_class($persistence);
+        $mutatorClass = get_class($mutator);
 
-        $codecSeed = $this->codecs[$persistenceClass] ?? null;
+        $codecSeed = $this->codecs[$mutatorClass] ?? null;
 
         if (!$codecSeed/*  || (is_object($codecSeed) && $codecSeed->getField() !== $field) */) {
-            // resolve codec declared with the Model\Field\Type::$codecs
-            if (!$codecSeed = self::resolveCodecFromRegistry($persistenceClass, (array) $this->codecs)) {
+            // resolve codec declared with the Data\Model\Field\Type::$codecs
+            if (!$codecSeed = self::resolveCodecFromRegistry($mutatorClass, (array) $this->codecs)) {
                 // resolve codec declared with the Persistence
-                $codecSeed = self::resolveCodecFromRegistry(static::class, $persistence->getCodecs());
+                $codecSeed = self::resolveCodecFromRegistry(static::class, $mutator->getCodecs());
             }
 
             if (!is_object($codecSeed)) {
@@ -92,7 +111,7 @@ abstract class Type
             }
 
             // cache resolved codec
-            $this->codecs[$persistenceClass] = $codecSeed;
+            $this->codecs[$mutatorClass] = $codecSeed;
         }
 
         return Factory::factory($codecSeed, (array) $this->codec);
@@ -107,23 +126,6 @@ abstract class Type
         }
 
         return $codecClass ?? $registry[0] ?? null;
-    }
-
-    /**
-     * Register custom field type to be resolved.
-     *
-     * @param string|array      $type
-     * @param string|array|null $seed
-     */
-    public static function register($type, $seed = null)
-    {
-        if (is_array($types = $type)) {
-            foreach ($types as $type => $seed) {
-                self::register($type, $seed);
-            }
-        }
-
-        self::$registry[$type] = $seed;
     }
 
     public function normalize($value)

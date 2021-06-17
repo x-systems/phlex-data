@@ -7,8 +7,9 @@ namespace Phlex\Data;
 use Phlex\Core\Factory;
 use Phlex\Data\Model\RecordNotFoundException;
 
-abstract class Persistence
+abstract class Persistence implements MutatorInterface
 {
+    use MutatorTrait;
     use \Phlex\Core\ContainerTrait {
         add as _add;
     }
@@ -26,13 +27,6 @@ abstract class Persistence
     public const ID_LOAD_ANY = self::class . '@idLoadAny';
 
     /**
-     * Stores object custom codec resolution array.
-     *
-     * @var array
-     */
-    protected $codecs = [];
-
-    /**
      * Stores class default codec resolution array.
      *
      * @var array
@@ -40,36 +34,6 @@ abstract class Persistence
     protected static $defaultCodecs = [
         [Persistence\Codec::class],
     ];
-
-    /**
-     * Retrieve the default codecs for the persistence class.
-     */
-    public static function getDefaultCodecs(): array
-    {
-        $parentClass = get_parent_class(static::class);
-
-        return static::$defaultCodecs + ($parentClass ? $parentClass::getDefaultCodecs() : []);
-    }
-
-    /**
-     * Retrieve the active codecs for the persistence object.
-     */
-    public function getCodecs(): array
-    {
-        return (array) $this->codecs + $this->getDefaultCodecs();
-    }
-
-    /**
-     * Add custom codecs to Persistence.
-     *
-     * @return static
-     */
-    public function setCodecs(array $codecs)
-    {
-        $this->codecs = $codecs;
-
-        return $this;
-    }
 
     /**
      * Associate model with the data driver.

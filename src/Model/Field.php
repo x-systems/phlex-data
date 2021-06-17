@@ -302,7 +302,7 @@ class Field
         return $this->actual ?? $this->short_name;
     }
 
-    public function getPersistenceValueType(): Field\Type
+    public function getSerializedValueType(): Field\Type
     {
         if (!$serializer = $this->getSerializer()) {
             return $this->getValueType();
@@ -333,7 +333,7 @@ class Field
 
     public function getPersistenceCodec(): Persistence\Codec
     {
-        return $this->getPersistenceValueType()->createCodec($this);
+        return $this->getSerializedValueType()->createCodec($this);
     }
 
     public function getSerializer()

@@ -5,17 +5,22 @@ declare(strict_types=1);
 namespace Phlex\Data\Model\Field;
 
 use Phlex\Core\DiContainerTrait;
+use Phlex\Data;
 use Phlex\Data\Model;
 
 class Codec implements CodecInterface
 {
     use DiContainerTrait;
 
+    /** @var Data\MutatorInterface */
+    protected $mutator;
+
     /** @var Model\Field */
     protected $field;
 
-    public function __construct(Model\Field $field)
+    public function __construct(Data\MutatorInterface $mutator, Model\Field $field)
     {
+        $this->mutator = $mutator;
         $this->field = $field;
     }
 
@@ -30,6 +35,8 @@ class Codec implements CodecInterface
             $value = clone $value;
         }
 
+        $value = $this->field->serialize($value, $this->mutator);
+
         return $this->doEncode($value);
     }
 
@@ -38,6 +45,8 @@ class Codec implements CodecInterface
         if ($value === null || $value === '') {
             return;
         }
+
+        $value = $this->field->unserialize($value, $this->mutator);
 
         return $this->doDecode($value);
     }
@@ -68,6 +77,11 @@ class Codec implements CodecInterface
     public function getValueType(): Model\Field\Type
     {
         return $this->field->getValueType();
+    }
+
+    public function getKey(): string
+    {
+        return $this->field->short_name;
     }
 
     /**

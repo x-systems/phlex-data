@@ -9,12 +9,24 @@ use Phlex\Data\Model\Scope;
 
 class Codec extends Model\Field\Codec
 {
+    public function encode($value)
+    {
+        // check null values for mandatory fields
+        if ($value === null && $this->field->mandatory) {
+            throw new Model\Field\ValidationException([
+                $this->field->short_name => 'Mandatory field value cannot be null',
+            ], $this->field->getOwner());
+        }
+
+        return parent::encode($value);
+    }
+
     /**
      * Get field value type after serialization.
      */
     public function getValueType(): Model\Field\Type
     {
-        return $this->field->getSerializedValueType();
+        return $this->field->getSerializedValueType($this->mutator);
     }
 
     public function getQueryArguments($operator, $value): array
@@ -37,5 +49,10 @@ class Codec extends Model\Field\Codec
         }
 
         return [$this->field, $operator, $value];
+    }
+
+    public function getKey(): string
+    {
+        return $this->field->actual ?? $this->field->short_name;
     }
 }

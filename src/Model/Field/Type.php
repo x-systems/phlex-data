@@ -91,9 +91,7 @@ abstract class Type
 
     public function createCodec(Data\Model\Field $field, Data\MutatorInterface $mutator = null)
     {
-        if ($mutator === null) {
-            $mutator = $field->getOwner()->persistence;
-        }
+        $mutator = $mutator ?? $field->getPersistence();
 
         $mutatorClass = get_class($mutator);
 
@@ -107,7 +105,7 @@ abstract class Type
             }
 
             if (!is_object($codecSeed)) {
-                $codecSeed = Factory::factory(Factory::mergeSeeds((array) $this->codec, $codecSeed), [$field]);
+                $codecSeed = Factory::factory(Factory::mergeSeeds((array) $this->codec, $codecSeed), [$mutator, $field]);
             }
 
             // cache resolved codec

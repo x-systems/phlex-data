@@ -6,7 +6,6 @@ namespace Phlex\Data\Model\Field;
 
 use Phlex\Core\DiContainerTrait;
 use Phlex\Core\Factory;
-use Phlex\Data\Persistence\Codec;
 
 class Serializer
 {
@@ -42,6 +41,8 @@ class Serializer
 
     public function decode($value)
     {
+        var_dump($this->decodeFx);
+
         return $this->decodeFx ? ($this->decodeFx)($value) : $value;
     }
 }

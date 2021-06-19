@@ -52,7 +52,7 @@ class PersistentSqlTest extends Sql\TestCase
 
         $field = $model->addField('array', ['type' => 'array']);
 
-        $this->assertSame(Persistence\Sql\Platform\Oracle\Codec\Array_::class, get_class($field->getPersistenceCodec()));
+        $this->assertSame(Persistence\Sql\Platform\Oracle\Codec\Array_::class, get_class($field->getCodec()));
     }
 
     public function testLoadArray()

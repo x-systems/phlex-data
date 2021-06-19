@@ -78,7 +78,7 @@ class ContainsOne extends Model\Reference
             $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],
         ]);
 
-        return $persistence->setCodecs($this->getOwner()->persistence->getCodecs());
+        return $persistence->setCodecs($this->getPersistence()->getCodecs());
     }
 
     /**

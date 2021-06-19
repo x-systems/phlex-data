@@ -5,14 +5,28 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 class SerializeTest extends Sql\TestCase
 {
+    public function testSerializerResolution()
+    {
+        $serializer = Model\Field\Serializer::resolve('json');
+
+        $this->assertSame(Model\Field\Serializer::class, get_class($serializer));
+        $this->assertSame([Model\Field\Codec::class, 'jsonEncode'], $this->getProtected($serializer, 'encodeFx'));
+    }
+
     public function testBasicSerialize()
     {
         $m = new Model($this->db, ['table' => 'job']);
 
         $f = $m->addField('data', ['serialize' => 'serialize']);
+
+        $serializer = $f->getSerializer();
+
+        $this->assertSame(Model\Field\Serializer::class, get_class($serializer));
+        $this->assertSame('serialize', $this->getProtected($serializer, 'encodeFx'));
 
         $this->assertSame(
             ['data' => 'a:1:{s:3:"foo";s:3:"bar";}'],
@@ -51,7 +65,9 @@ class SerializeTest extends Sql\TestCase
     {
         $m = new Model($this->db, ['table' => 'job']);
 
-        $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
+        $m->addField('data', ['type' => 'array', 'serialize' => [
+            Persistence\Sql::class => 'json',
+        ]]);
 
         $this->expectException(\JsonException::class);
         $this->db->decodeRow($m, ['data' => '{"foo":"bar" OPS']);
@@ -61,7 +77,7 @@ class SerializeTest extends Sql\TestCase
     {
         $m = new Model($this->db, ['table' => 'job']);
 
-        $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
+        $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
 
         // recursive array - json can't encode that
         $dbData = [];

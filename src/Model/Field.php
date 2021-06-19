@@ -10,6 +10,7 @@ use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Core\TrackableTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
+use Phlex\Data\MutatorInterface;
 use Phlex\Data\Persistence;
 
 /**
@@ -20,6 +21,7 @@ class Field
     use DiContainerTrait;
     use Field\TypeTrait;
     use JoinLinkTrait;
+    use Model\ElementTrait;
     use ReadableCaptionTrait;
     use TrackableTrait;
 
@@ -269,13 +271,13 @@ class Field
                 return $v;
             }
 
-            if ($this->getOwner()->persistence === null) {
+            if ($persistence = $this->getPersistence()) {
+                $persistenceValue = $persistence->encodeRow($this->getOwner(), [$this->short_name => $v])[$this->getCodec($persistence)->getKey()];
+            } else {
                 // without persistence, we can not do a lot with non-scalar types, but as DateTime
                 // is used often, fix the compare for them
                 // TODO probably create and use a default persistence
                 $persistenceValue = $this->normalize($v);
-            } else {
-                $persistenceValue = $this->getOwner()->persistence->encodeRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
             }
 
             if (is_scalar($persistenceValue)) {
@@ -297,62 +299,59 @@ class Field
             : null;
     }
 
-    public function getPersistenceName(): string
+    public function getSerializedValueType(MutatorInterface $mutator = null): Field\Type
     {
-        return $this->actual ?? $this->short_name;
-    }
-
-    public function getSerializedValueType(): Field\Type
-    {
-        if (!$serializer = $this->getSerializer()) {
+        if (!$serializer = $this->getSerializer($mutator)) {
             return $this->getValueType();
         }
 
         return $serializer->getValueType();
     }
 
-    public function encodePersistenceValue($value)
+    public function getCodec(MutatorInterface $mutator = null): Field\Codec
     {
-        // check null values for mandatory fields
-        if ($value === null && $this->mandatory) {
-            throw new Field\ValidationException([$this->short_name => 'Mandatory field value cannot be null'], $this->getOwner());
+        $mutator = $mutator ?? $this->getPersistence();
+
+        return $this->getSerializedValueType($mutator)->createCodec($this, $mutator);
+    }
+
+    public function getSerializer(MutatorInterface $mutator = null): ?Field\Serializer
+    {
+        $mutator = $mutator ?? $this->getPersistence();
+
+        if ($this->serialize) {
+            $this->serialize = (array) $this->serialize;
+
+            if (!($preset = $this->serialize[get_class($mutator)] ?? null)) {
+                foreach (class_parents($mutator) as $parent) {
+                    if ($preset = $this->serialize[$parent] ?? null) {
+                        break;
+                    }
+                }
+
+                $preset = $preset ?? $this->serialize[0] ?? null;
+            }
+
+            if ($preset !== null) {
+                return Factory::factory(Field\Serializer::resolve($preset));
+            }
         }
 
-        return $this->getPersistenceCodec()->encode($this->serialize($value));
+        return null;
     }
 
-    public function decodePersistenceValue($value)
+    public function serialize($value, MutatorInterface $mutator = null)
     {
-        // ignore null values
-        if ($value === null) {
-            return $value;
-        }
-
-        return $this->getPersistenceCodec()->decode($this->unserialize($value));
-    }
-
-    public function getPersistenceCodec(): Persistence\Codec
-    {
-        return $this->getSerializedValueType()->createCodec($this);
-    }
-
-    public function getSerializer()
-    {
-        return $this->serialize ? Factory::factory(Field\Serializer::resolve($this->serialize)) : null;
-    }
-
-    protected function serialize($value)
-    {
-        if (!$serializer = $this->getSerializer()) {
+        if (!$serializer = $this->getSerializer($mutator)) {
             return $value;
         }
 
         return $serializer->encode($value);
     }
 
-    protected function unserialize($value)
+    public function unserialize($value, MutatorInterface $mutator = null)
     {
-        if (!$serializer = $this->getSerializer()) {
+        if (!$serializer = $this->getSerializer($mutator)) {
             return $value;
         }
 

@@ -20,6 +20,7 @@ use Phlex\Data\Persistence;
  */
 class Reference
 {
+    use Model\ElementTrait;
     use \Phlex\Core\DiContainerTrait;
     use \Phlex\Core\InitializerTrait;
     use \Phlex\Core\TrackableTrait;

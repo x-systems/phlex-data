@@ -90,9 +90,7 @@ class Join extends Model\Join
         }
 
         // Figure out where are we going to save data
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
-
-        $this->id = $persistence->insert(
+        $this->id = $this->getPersistence()->insert(
             $this->makeFakeModelWithForeignTable(),
             $this->save_buffer
         );
@@ -115,9 +113,7 @@ class Join extends Model\Join
 
         $this->save_buffer[$this->foreign_field] = $this->hasJoin() ? $this->getJoin()->id : $id;
 
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
-
-        $this->id = $persistence->insert(
+        $this->id = $this->getPersistence()->insert(
             $this->makeFakeModelWithForeignTable(),
             $this->save_buffer
         );
@@ -132,9 +128,7 @@ class Join extends Model\Join
             return;
         }
 
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
-
-        $this->id = $persistence->update(
+        $this->id = $this->getPersistence()->update(
             $this->makeFakeModelWithForeignTable(),
             $this->id,
             $this->save_buffer
@@ -152,9 +146,7 @@ class Join extends Model\Join
             return;
         }
 
-        $persistence = $this->persistence ?: $this->getOwner()->persistence;
-
-        $persistence->delete(
+        $this->getPersistence()->delete(
             $this->makeFakeModelWithForeignTable(),
             $this->id
         );

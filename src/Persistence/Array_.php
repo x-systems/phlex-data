@@ -46,7 +46,7 @@ class Array_ extends Persistence
         $id = $id ?? $this->lastInsertId($model);
 
         if ($model->primaryKey) {
-            $primaryKeyColumnName = $model->getPrimaryKeyField()->getPersistenceName();
+            $primaryKeyColumnName = $model->getPrimaryKeyField()->getCodec($this)->getKey();
 
             unset($row[$primaryKeyColumnName]);
         }
@@ -73,7 +73,7 @@ class Array_ extends Persistence
 
         if ($model->primaryKey) {
             $primaryKeyField = $model->getPrimaryKeyField();
-            $primaryKeyColumnName = $primaryKeyField->getPersistenceName();
+            $primaryKeyColumnName = $primaryKeyField->getCodec($this)->getKey();
 
             if (array_key_exists($primaryKeyColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$primaryKeyColumnName], $id);
@@ -81,7 +81,7 @@ class Array_ extends Persistence
             }
 
             // encode value so we can use strict comparison
-            $row = [$primaryKeyColumnName => $primaryKeyField->encodePersistenceValue($id)] + $row;
+            $row = [$primaryKeyColumnName => $primaryKeyField->getCodec($this)->encode($id)] + $row;
         }
 
         return $row;
@@ -138,7 +138,7 @@ class Array_ extends Persistence
     {
         $table = $table ?? $model->table;
 
-        $type = $model->primaryKey ? get_class($model->getField($model->primaryKey)->getSerializedValueType()) : Model\Field\Type\Integer::class;
+        $type = $model->primaryKey ? get_class($model->getPrimaryKeyField()->getSerializedValueType($this)) : Model\Field\Type\Integer::class;
 
         switch ($type) {
             case Model\Field\Type\Integer::class:

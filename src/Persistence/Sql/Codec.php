@@ -19,7 +19,7 @@ class Codec extends Persistence\Codec
 
     public function getColumnTypeName(): string
     {
-        return $this->columnTypeName;
+        return $this->serialize ? Types::STRING : $this->columnTypeName;
     }
 
     protected function doEncode($value)

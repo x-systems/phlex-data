@@ -10,12 +10,12 @@ use Phlex\Core\Factory;
 class Serializer
 {
     use DiContainerTrait;
-    use TypeTrait;
 
     protected static $presets = [
         'serialize' => ['encodeFx' => 'serialize', 'decodeFx' => 'unserialize'],
         'json' => ['encodeFx' => [Codec::class, 'jsonEncode'], 'decodeFx' => [Codec::class, 'jsonDecode']],
-        'base64' => ['encodeFx' => 'base64_encode', 'decodeFx' => 'base64_encode'],
+        'base64' => ['encodeFx' => 'base64_encode', 'decodeFx' => 'base64_decode'],
+        'md5' => ['encodeFx' => 'md5'],
     ];
 
     /** @var \Closure|null */
@@ -34,15 +34,13 @@ class Serializer
         return Factory::factory(Factory::mergeSeeds([self::class], $serializerSeed));
     }
 
-    public function encode($value)
+    public function encode($value): string
     {
         return $this->encodeFx ? ($this->encodeFx)($value) : $value;
     }
 
     public function decode($value)
     {
-        var_dump($this->decodeFx);
-
         return $this->decodeFx ? ($this->decodeFx)($value) : $value;
     }
 }

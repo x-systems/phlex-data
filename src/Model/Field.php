@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Phlex\Data\Model;
 
 use Phlex\Core\DiContainerTrait;
-use Phlex\Core\Factory;
 use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Core\TrackableTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\MutatorInterface;
-use Phlex\Data\Persistence;
 
 /**
  * @method Model|null getOwner()
@@ -299,63 +297,9 @@ class Field
             : null;
     }
 
-    public function getSerializedValueType(MutatorInterface $mutator = null): Field\Type
-    {
-        if (!$serializer = $this->getSerializer($mutator)) {
-            return $this->getValueType();
-        }
-
-        return $serializer->getValueType();
-    }
-
     public function getCodec(MutatorInterface $mutator = null): Field\Codec
     {
-        $mutator = $mutator ?? $this->getPersistence();
-
-        return $this->getSerializedValueType($mutator)->createCodec($this, $mutator);
-    }
-
-    public function getSerializer(MutatorInterface $mutator = null): ?Field\Serializer
-    {
-        $mutator = $mutator ?? $this->getPersistence();
-
-        if ($this->serialize) {
-            $this->serialize = (array) $this->serialize;
-
-            if (!($preset = $this->serialize[get_class($mutator)] ?? null)) {
-                foreach (class_parents($mutator) as $parent) {
-                    if ($preset = $this->serialize[$parent] ?? null) {
-                        break;
-                    }
-                }
-
-                $preset = $preset ?? $this->serialize[0] ?? null;
-            }
-
-            if ($preset !== null) {
-                return Factory::factory(Field\Serializer::resolve($preset));
-            }
-        }
-
-        return null;
-    }
-
-    public function serialize($value, MutatorInterface $mutator = null)
-    {
-        if (!$serializer = $this->getSerializer($mutator)) {
-            return $value;
-        }
-
-        return $serializer->encode($value);
-    }
-
-    public function unserialize($value, MutatorInterface $mutator = null)
-    {
-        if (!$serializer = $this->getSerializer($mutator)) {
-            return $value;
-        }
-
-        return $serializer->decode($value);
+        return $this->getValueType()->createCodec($this, $mutator ?? $this->getPersistence());
     }
 
     /**

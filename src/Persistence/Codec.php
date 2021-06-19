@@ -26,7 +26,7 @@ class Codec extends Model\Field\Codec
      */
     public function getValueType(): Model\Field\Type
     {
-        return $this->field->getSerializedValueType($this->mutator);
+        return $this->field->getValueType();
     }
 
     public function getQueryArguments($operator, $value): array

@@ -18,6 +18,9 @@ class Codec implements CodecInterface
     /** @var Model\Field */
     protected $field;
 
+    /** @var Model\Field\Serializer|string|array|null */
+    protected $serialize;
+
     public function __construct(Data\MutatorInterface $mutator, Model\Field $field)
     {
         $this->mutator = $mutator;
@@ -35,7 +38,9 @@ class Codec implements CodecInterface
             $value = clone $value;
         }
 
-        $value = $this->field->serialize($value, $this->mutator);
+        if ($this->serialize) {
+            return $this->serialize($value);
+        }
 
         return $this->doEncode($value);
     }
@@ -46,7 +51,9 @@ class Codec implements CodecInterface
             return;
         }
 
-        $value = $this->field->unserialize($value, $this->mutator);
+        if ($this->serialize) {
+            return $this->unserialize($value);
+        }
 
         return $this->doDecode($value);
     }
@@ -54,6 +61,33 @@ class Codec implements CodecInterface
     protected function isEncodable($value): bool
     {
         return $value !== null;
+    }
+
+    public function getSerializer(): ?Serializer
+    {
+        if ($this->serialize && !is_object($this->serialize)) {
+            $this->serialize = Serializer::resolve($this->serialize);
+        }
+
+        return $this->serialize;
+    }
+
+    protected function serialize($value)
+    {
+        if (!$serializer = $this->getSerializer()) {
+            return $value;
+        }
+
+        return $serializer->encode($value);
+    }
+
+    protected function unserialize($value)
+    {
+        if (!$serializer = $this->getSerializer()) {
+            return $value;
+        }
+
+        return $serializer->decode($value);
     }
 
     protected function doEncode($value)

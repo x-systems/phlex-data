@@ -19,7 +19,7 @@ class Codec extends Persistence\Codec
 
     public function getColumnTypeName(): string
     {
-        return $this->columnTypeName;
+        return $this->serialize ? Types::STRING : $this->columnTypeName;
     }
 
     protected function doEncode($value)
@@ -35,7 +35,7 @@ class Codec extends Persistence\Codec
 
     public function migrate(Migration $migrator): Column
     {
-        $columnNameIdentifier = $migrator->getDatabasePlatform()->quoteSingleIdentifier($this->field->getPersistenceName());
+        $columnNameIdentifier = $migrator->getDatabasePlatform()->quoteSingleIdentifier($this->getKey());
 
         $column = $migrator->table->addColumn($columnNameIdentifier, $this->getColumnTypeName());
 

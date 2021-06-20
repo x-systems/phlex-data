@@ -14,7 +14,7 @@ class Selectable extends \Phlex\Data\Model\Field\Type
      */
     public $values;
 
-    protected $labels;
+    protected $labels = [];
 
     public $allowMultipleSelection = false;
 
@@ -46,6 +46,11 @@ class Selectable extends \Phlex\Data\Model\Field\Type
         $this->labels = $values;
 
         return $this;
+    }
+
+    public function getLabel($value)
+    {
+        return $this->labels[$value] ?? $value;
     }
 
     public function toString($value): ?string

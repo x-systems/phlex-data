@@ -18,7 +18,7 @@ class ContainsMany extends ContainsOne
             $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? $this->getOurFieldValue() : [],
         ]);
 
-        return $persistence->setCodecs($this->getOwner()->persistence->getCodecs());
+        return $persistence->setCodecs($this->getPersistence()->getCodecs());
     }
 
     /**

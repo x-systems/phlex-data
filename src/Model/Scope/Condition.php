@@ -241,7 +241,7 @@ class Condition extends AbstractScope
 
             // handle the query arguments using field
             if ($field instanceof Model\Field) {
-                [$field, $operator, $value] = $field->getPersistenceCodec()->getQueryArguments($operator, $value);
+                [$field, $operator, $value] = $field->getCodec()->getQueryArguments($operator, $value); // @phpstan-ignore-line
             }
 
             // only expression contained in $field

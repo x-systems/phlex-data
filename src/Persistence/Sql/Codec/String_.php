@@ -21,7 +21,7 @@ class String_ extends Sql\Codec
             return $value;
         }
 
-        return $this->doDecode($value);
+        return parent::decode($value);
     }
 
     public function migrate(Sql\Migration $migrator): Column

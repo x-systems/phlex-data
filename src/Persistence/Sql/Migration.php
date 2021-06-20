@@ -106,7 +106,7 @@ class Migration
 
     public function addColumn(Model\Field $field): DBAL\Schema\Column
     {
-        $codec = $field->getPersistenceCodec();
+        $codec = $field->getCodec($this->persistence);
 
         if (!$codec instanceof Persistence\Sql\Codec) {
             throw new Exception('Only fields with Persistence\Sql\Codec can be migrated to Persistence\Sql');

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Phlex\Data;
 
 use Phlex\Core\Factory;
-use Phlex\Data\Model\RecordNotFoundException;
 
 abstract class Persistence implements MutatorInterface
 {
@@ -93,7 +92,7 @@ abstract class Persistence implements MutatorInterface
         $rawData = $query->getRow();
 
         if ($rawData === null) {
-            throw new RecordNotFoundException();
+            throw new Model\RecordNotFoundException();
         }
 
         return $this->decodeRow($model, $rawData);
@@ -179,75 +178,5 @@ abstract class Persistence implements MutatorInterface
 
     protected function syncIdSequence(Model $model): void
     {
-    }
-
-    /**
-     * Will convert one row of data from native PHP types into
-     * persistence types. This will also take care of the "actual"
-     * field keys. Example:.
-     *
-     * In:
-     *  [
-     *    'name'=>' John Smith',
-     *    'age'=>30,
-     *    'password'=>'abc',
-     *    'is_married'=>true,
-     *  ]
-     *
-     *  Out:
-     *   [
-     *     'first_name'=>'John Smith',
-     *     'age'=>30,
-     *     'is_married'=>1
-     *   ]
-     */
-    public function encodeRow(Model $model, array $row): array
-    {
-        $result = [];
-        foreach ($row as $key => $value) {
-            // We have no knowledge of the field, it wasn't defined, so
-            // we will leave it as-is.
-            if (!$model->hasField($key)) {
-                $result[$key] = $value;
-
-                continue;
-            }
-
-            // Look up field object
-            $field = $model->getField($key);
-
-            $result[$field->getPersistenceName()] = $field->encodePersistenceValue($value);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Will convert one row of data from Persistence-specific
-     * types to PHP native types.
-     *
-     * NOTE: Please DO NOT perform "actual" field mapping here, because data
-     * may be "aliased" from SQL persistences or mapped depending on persistence
-     * driver.
-     */
-    public function decodeRow(Model $model, array $row): array
-    {
-        $result = [];
-        foreach ($row as $key => $value) {
-            // We have no knowledge of the field, it wasn't defined, so
-            // we will leave it as-is.
-            if (!$model->hasField($key)) {
-                $result[$key] = $value;
-
-                continue;
-            }
-
-            // Look up field object
-            $field = $model->getField($key);
-
-            $result[$key] = $field->decodePersistenceValue($value);
-        }
-
-        return $result;
     }
 }

@@ -82,8 +82,8 @@ abstract class Type
 
         // using seed with alias e.g. ['string', 'maxLength' => 50]
         // convert the alias to actual class name and proper seed array
-        if (is_array($type) && isset(self::$registry[$type[0] ?? null])) {
-            return self::$registry[$type[0]] + $type;
+        if (is_array($type)) {
+            return self::$registry[$type[0] ?? 0] + $type;
         }
 
         return self::$registry[$type ?? 0];
@@ -91,9 +91,7 @@ abstract class Type
 
     public function createCodec(Data\Model\Field $field, Data\MutatorInterface $mutator = null)
     {
-        if ($mutator === null) {
-            $mutator = $field->getOwner()->persistence;
-        }
+        $mutator = $mutator ?? $field->getPersistence();
 
         $mutatorClass = get_class($mutator);
 
@@ -101,17 +99,13 @@ abstract class Type
 
         if (!$codecSeed/*  || (is_object($codecSeed) && $codecSeed->getField() !== $field) */) {
             // resolve codec declared with the Data\Model\Field\Type::$codecs
-            if (!$codecSeed = self::resolveCodecFromRegistry($mutatorClass, (array) $this->codecs)) {
-                // resolve codec declared with the Persistence
-                $codecSeed = self::resolveCodecFromRegistry(static::class, $mutator->getCodecs());
-            }
+            $codecSeedFieldType = self::resolveCodecFromRegistry($mutatorClass, (array) $this->codecs);
 
-            if (!is_object($codecSeed)) {
-                $codecSeed = Factory::factory(Factory::mergeSeeds((array) $this->codec, $codecSeed), [$field]);
-            }
+            // resolve codec declared with the Mutator
+            $codecSeedMutator = self::resolveCodecFromRegistry(static::class, $mutator->getCodecs());
 
             // cache resolved codec
-            $this->codecs[$mutatorClass] = $codecSeed;
+            $codecSeed = $this->codecs[$mutatorClass] = Factory::factory(Factory::mergeSeeds((array) $this->codec, $codecSeedFieldType, $codecSeedMutator), [$mutator, $field]);
         }
 
         return Factory::factory($codecSeed, (array) $this->codec);
@@ -119,13 +113,17 @@ abstract class Type
 
     protected static function resolveCodecFromRegistry(string $searchClass, array $registry)
     {
-        foreach (array_merge([$searchClass], class_parents($searchClass)) as $class) {
-            if ($codecClass = $registry[$class] ?? null) {
-                break;
+        if (array_key_exists($searchClass, $registry)) {
+            return $registry[$searchClass];
+        }
+
+        foreach ($registry as $mapClass => $codecSeed) {
+            if (is_string($mapClass) && is_a($searchClass, $mapClass, true)) {
+                return $codecSeed;
             }
         }
 
-        return $codecClass ?? $registry[0] ?? null;
+        return $registry[0] ?? null;
     }
 
     public function normalize($value)
@@ -180,5 +178,17 @@ abstract class Type
         if ($value !== null && !is_scalar($value)) {
             throw new Type\ValidationException('Must use scalar value');
         }
+    }
+
+    /**
+     * Method is called when using 'serialize' in the Field type seed.
+     */
+    public function setSerialize($serializerPresets)
+    {
+        foreach ((array) $serializerPresets as $mutatorClass => $serializerPreset) {
+            $this->codecs[$mutatorClass] = array_merge($this->codecs[$mutatorClass] ?? [], ['serialize' => $serializerPreset]);
+        }
+
+        return $this;
     }
 }

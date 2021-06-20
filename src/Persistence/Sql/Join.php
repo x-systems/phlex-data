@@ -14,6 +14,8 @@ use Phlex\Data\Persistence;
  */
 class Join extends Model\Join implements Expressionable
 {
+    use Model\ElementTrait;
+
     /**
      * By default we create ON expression ourselves, but if you want to specify
      * it, use the 'on' property.
@@ -101,7 +103,7 @@ class Join extends Model\Join implements Expressionable
      */
     public function statement(): Persistence\Sql\Statement
     {
-        $statement = $this->getOwner()->persistence->query($this->getOwner())->getStatement(); // @phpstan-ignore-line
+        $statement = $this->getPersistence()->query($this->getOwner())->getStatement(); // @phpstan-ignore-line
 
         return $statement->reset('table')->table($this->foreign_table, $this->foreign_alias);
     }

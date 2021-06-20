@@ -42,17 +42,19 @@ class Field extends Model\Field implements Expressionable
                 ->addMoreInfo('persistence', $model->persistence ?? null);
         }
 
+        $persistenceName = $this->getCodec($model->persistence)->getKey();
+
         if ($model->getOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX)) {
             $template = '{{}}.{}';
             $args = [
                 $this->getTablePrefix(),
-                $this->getPersistenceName(),
+                $persistenceName,
             ];
         } else {
             // references set flag OPTION_USE_TABLE_PREFIX, so no need to check them here
             $template = '{}';
             $args = [
-                $this->getPersistenceName(),
+                $persistenceName,
             ];
         }
 

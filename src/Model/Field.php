@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Phlex\Data\Model;
 
 use Phlex\Core\DiContainerTrait;
-use Phlex\Core\Factory;
 use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Core\TrackableTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
-use Phlex\Data\Persistence;
+use Phlex\Data\MutatorInterface;
 
 /**
  * @method Model|null getOwner()
@@ -20,6 +19,7 @@ class Field
     use DiContainerTrait;
     use Field\TypeTrait;
     use JoinLinkTrait;
+    use Model\ElementTrait;
     use ReadableCaptionTrait;
     use TrackableTrait;
 
@@ -269,13 +269,13 @@ class Field
                 return $v;
             }
 
-            if ($this->getOwner()->persistence === null) {
+            if ($persistence = $this->getPersistence()) {
+                $persistenceValue = $persistence->encodeRow($this->getOwner(), [$this->short_name => $v])[$this->getCodec($persistence)->getKey()];
+            } else {
                 // without persistence, we can not do a lot with non-scalar types, but as DateTime
                 // is used often, fix the compare for them
                 // TODO probably create and use a default persistence
                 $persistenceValue = $this->normalize($v);
-            } else {
-                $persistenceValue = $this->getOwner()->persistence->encodeRow($this->getOwner(), [$this->short_name => $v])[$this->getPersistenceName()];
             }
 
             if (is_scalar($persistenceValue)) {
@@ -297,66 +297,9 @@ class Field
             : null;
     }
 
-    public function getPersistenceName(): string
+    public function getCodec(MutatorInterface $mutator = null): Field\Codec
     {
-        return $this->actual ?? $this->short_name;
-    }
-
-    public function getSerializedValueType(): Field\Type
-    {
-        if (!$serializer = $this->getSerializer()) {
-            return $this->getValueType();
-        }
-
-        return $serializer->getValueType();
-    }
-
-    public function encodePersistenceValue($value)
-    {
-        // check null values for mandatory fields
-        if ($value === null && $this->mandatory) {
-            throw new Field\ValidationException([$this->short_name => 'Mandatory field value cannot be null'], $this->getOwner());
-        }
-
-        return $this->getPersistenceCodec()->encode($this->serialize($value));
-    }
-
-    public function decodePersistenceValue($value)
-    {
-        // ignore null values
-        if ($value === null) {
-            return $value;
-        }
-
-        return $this->getPersistenceCodec()->decode($this->unserialize($value));
-    }
-
-    public function getPersistenceCodec(): Persistence\Codec
-    {
-        return $this->getSerializedValueType()->createCodec($this);
-    }
-
-    public function getSerializer()
-    {
-        return $this->serialize ? Factory::factory(Field\Serializer::resolve($this->serialize)) : null;
-    }
-
-    protected function serialize($value)
-    {
-        if (!$serializer = $this->getSerializer()) {
-            return $value;
-        }
-
-        return $serializer->encode($value);
-    }
-
-    protected function unserialize($value)
-    {
-        if (!$serializer = $this->getSerializer()) {
-            return $value;
-        }
-
-        return $serializer->decode($value);
+        return $this->getValueType()->createCodec($this, $mutator ?? $this->getPersistence());
     }
 
     /**

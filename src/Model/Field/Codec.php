@@ -5,17 +5,25 @@ declare(strict_types=1);
 namespace Phlex\Data\Model\Field;
 
 use Phlex\Core\DiContainerTrait;
+use Phlex\Data;
 use Phlex\Data\Model;
 
 class Codec implements CodecInterface
 {
     use DiContainerTrait;
 
+    /** @var Data\MutatorInterface */
+    protected $mutator;
+
     /** @var Model\Field */
     protected $field;
 
-    public function __construct(Model\Field $field)
+    /** @var Model\Field\Serializer|string|array|null */
+    protected $serialize;
+
+    public function __construct(Data\MutatorInterface $mutator, Model\Field $field)
     {
+        $this->mutator = $mutator;
         $this->field = $field;
     }
 
@@ -30,6 +38,10 @@ class Codec implements CodecInterface
             $value = clone $value;
         }
 
+        if ($this->serialize) {
+            return $this->serialize($value);
+        }
+
         return $this->doEncode($value);
     }
 
@@ -39,12 +51,43 @@ class Codec implements CodecInterface
             return;
         }
 
+        if ($this->serialize) {
+            return $this->unserialize($value);
+        }
+
         return $this->doDecode($value);
     }
 
     protected function isEncodable($value): bool
     {
         return $value !== null;
+    }
+
+    public function getSerializer(): ?Serializer
+    {
+        if ($this->serialize && !is_object($this->serialize)) {
+            $this->serialize = Serializer::resolve($this->serialize);
+        }
+
+        return $this->serialize;
+    }
+
+    protected function serialize($value)
+    {
+        if (!$serializer = $this->getSerializer()) {
+            return $value;
+        }
+
+        return $serializer->encode($value);
+    }
+
+    protected function unserialize($value)
+    {
+        if (!$serializer = $this->getSerializer()) {
+            return $value;
+        }
+
+        return $serializer->decode($value);
     }
 
     protected function doEncode($value)
@@ -68,6 +111,11 @@ class Codec implements CodecInterface
     public function getValueType(): Model\Field\Type
     {
         return $this->field->getValueType();
+    }
+
+    public function getKey(): string
+    {
+        return $this->field->short_name;
     }
 
     /**

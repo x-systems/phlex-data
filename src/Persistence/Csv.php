@@ -124,7 +124,8 @@ class Csv extends Persistence
 
         if ($model->primaryKey) {
             $primaryKeyField = $model->getPrimaryKeyField();
-            $primaryKeyColumnName = $primaryKeyField->getPersistenceName();
+            $codec = $primaryKeyField->getCodec($this);
+            $primaryKeyColumnName = $codec->getKey();
 
             if (array_key_exists($primaryKeyColumnName, $row)) {
                 $this->assertNoIdMismatch($row[$primaryKeyColumnName], $id);
@@ -132,7 +133,7 @@ class Csv extends Persistence
             }
 
             // encode value so we can use strict comparison
-            $row = [$primaryKeyColumnName => $primaryKeyField->encodePersistenceValue($id)] + $row;
+            $row = [$primaryKeyColumnName => $codec->encode($id)] + $row;
         }
 
         return $row;

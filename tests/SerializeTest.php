@@ -5,44 +5,109 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 class SerializeTest extends Sql\TestCase
 {
+    public function testSerializerResolution()
+    {
+        $serializer = Model\Field\Serializer::resolve('json');
+
+        $this->assertSame(Model\Field\Serializer::class, get_class($serializer));
+        $this->assertSame([Model\Field\Codec::class, 'jsonEncode'], $this->getProtected($serializer, 'encodeFx'));
+    }
+
     public function testBasicSerialize()
     {
         $m = new Model($this->db, ['table' => 'job']);
 
-        $f = $m->addField('data', ['serialize' => 'serialize']);
+        $f1 = $m->addField('data1', ['type' => ['array', 'serialize' => 'serialize']]);
+        $m->addField('data2', ['serialize' => 'base64']);
+        $m->addField('data3', ['type' => ['array', 'serialize' => [
+            Persistence\Sql::class => 'json',
+        ]]]);
+        $m->addField('data4', ['type' => ['string', 'codecs' => [
+            Persistence\Array_::class => [
+                'serialize' => 'serialize',
+            ],
+        ]]]);
+
+        $serializer = $f1->getCodec()->getSerializer();
+
+        $this->assertSame(Model\Field\Serializer::class, get_class($serializer));
+        $this->assertSame('serialize', $this->getProtected($serializer, 'encodeFx'));
 
         $this->assertSame(
-            ['data' => 'a:1:{s:3:"foo";s:3:"bar";}'],
+            [
+                'data1' => serialize(['foo' => 'bar']),
+                'data2' => base64_encode('abc'),
+                'data3' => json_encode(['foo' => 'bar']),
+                'data4' => 'no_changes',
+            ],
             $this->db->encodeRow(
                 $m,
-                ['data' => ['foo' => 'bar']]
-            )
-        );
-        $this->assertSame(
-            ['data' => ['foo' => 'bar']],
-            $this->db->decodeRow(
-                $m,
-                ['data' => 'a:1:{s:3:"foo";s:3:"bar";}']
+                [
+                    'data1' => ['foo' => 'bar'],
+                    'data2' => 'abc',
+                    'data3' => ['foo' => 'bar'],
+                    'data4' => 'no_changes',
+                ],
             )
         );
 
-        $f->serialize = 'json';
-        $f->type = 'array';
         $this->assertSame(
-            ['data' => '{"foo":"bar"}'],
-            $this->db->encodeRow(
-                $m,
-                ['data' => ['foo' => 'bar']]
-            )
-        );
-        $this->assertSame(
-            ['data' => ['foo' => 'bar']],
+            [
+                'data1' => ['foo' => 'bar'],
+                'data2' => 'abc',
+                'data3' => ['foo' => 'bar'],
+                'data4' => 'no_changes',
+            ],
             $this->db->decodeRow(
                 $m,
-                ['data' => '{"foo":"bar"}']
+                [
+                    'data1' => serialize(['foo' => 'bar']),
+                    'data2' => base64_encode('abc'),
+                    'data3' => json_encode(['foo' => 'bar']),
+                    'data4' => 'no_changes',
+                ],
+            )
+        );
+    }
+
+    public function testOneWaySerialize()
+    {
+        $m = new Model($this->db, ['table' => 'job']);
+
+        $f1 = $m->addField('data1', ['type' => ['string', 'serialize' => [
+            Persistence\Sql::class => ['encodeFx' => 'md5'],
+        ]]]);
+
+        $serializer = $f1->getCodec()->getSerializer();
+
+        $this->assertSame(Model\Field\Serializer::class, get_class($serializer));
+        $this->assertSame('md5', $this->getProtected($serializer, 'encodeFx'));
+
+        $this->assertSame(
+            [
+                'data1' => md5('test'),
+            ],
+            $this->db->encodeRow(
+                $m,
+                [
+                    'data1' => 'test',
+                ],
+            )
+        );
+
+        $this->assertSame(
+            [
+                'data1' => md5('test'),
+            ],
+            $this->db->decodeRow(
+                $m,
+                [
+                    'data1' => md5('test'),
+                ],
             )
         );
     }
@@ -51,7 +116,9 @@ class SerializeTest extends Sql\TestCase
     {
         $m = new Model($this->db, ['table' => 'job']);
 
-        $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
+        $m->addField('data', ['type' => ['array', 'serialize' => [
+            Persistence\Sql::class => 'json',
+        ]]]);
 
         $this->expectException(\JsonException::class);
         $this->db->decodeRow($m, ['data' => '{"foo":"bar" OPS']);
@@ -61,7 +128,7 @@ class SerializeTest extends Sql\TestCase
     {
         $m = new Model($this->db, ['table' => 'job']);
 
-        $f = $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
+        $m->addField('data', ['type' => 'array', 'serialize' => 'json']);
 
         // recursive array - json can't encode that
         $dbData = [];

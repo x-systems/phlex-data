@@ -21,4 +21,14 @@ trait TypeTrait
 
         return $this->type;
     }
+
+    /**
+     * Method is called when using 'serialize' in the object seed.
+     */
+    public function setSerialize($serializerPresets)
+    {
+        $this->getValueType()->setSerialize($serializerPresets);
+
+        return $this;
+    }
 }

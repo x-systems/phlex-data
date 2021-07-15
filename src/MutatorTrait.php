@@ -20,7 +20,7 @@ trait MutatorTrait
     {
         $parentClass = get_parent_class(static::class);
 
-        return (static::$defaultCodecs ?? []) + ($parentClass ? $parentClass::getDefaultCodecs() : []);
+        return (static::$defaultCodecs ?? []) + ($parentClass && method_exists($parentClass, 'getDefaultCodecs') ? $parentClass::getDefaultCodecs() : []);
     }
 
     /**

@@ -302,6 +302,16 @@ class Field
         return $this->getValueType()->createCodec($this, $mutator ?? $this->getPersistence());
     }
 
+    public function encode($value, MutatorInterface $mutator = null)
+    {
+        return $this->getCodec($mutator)->encode($value);
+    }
+
+    public function decode($value, MutatorInterface $mutator = null)
+    {
+        return $this->getCodec($mutator)->decode($value);
+    }
+
     /**
      * Should this field use alias?
      */

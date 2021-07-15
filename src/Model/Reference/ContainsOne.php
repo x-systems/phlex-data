@@ -56,10 +56,10 @@ class ContainsOne extends Model\Reference
         }
 
         $ourModel = $this->getOurModel();
-        $ourField = $this->getOurKey();
+        $ourKey = $this->getOurKey();
 
-        if (!$ourModel->hasElement($ourField)) {
-            $ourModel->addField($ourField, [
+        if (!$ourModel->hasElement($ourKey)) {
+            $ourModel->addField($ourKey, [
                 'type' => $this->type,
                 'referenceLink' => $this->link,
                 'system' => $this->system,

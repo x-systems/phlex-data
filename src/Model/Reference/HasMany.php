@@ -41,9 +41,7 @@ class HasMany extends Model\Reference
         $ourModel = $this->getOurModel();
 
         if ($ourModel->isLoaded()) {
-            return $this->ourKey
-                ? $ourModel->get($this->ourKey)
-                : $ourModel->getId();
+            return $ourModel->get($this->getOurKey());
         }
 
         // create expression based on existing conditions

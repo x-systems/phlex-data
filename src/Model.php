@@ -1742,6 +1742,18 @@ class Model implements \IteratorAggregate
     }
 
     /**
+     * Returns entity values as array encoded for the $mutator.
+     *
+     * @return \Traversable<static>
+     */
+    public function encode(MutatorInterface $mutator): array
+    {
+        $this->assertIsEntity();
+
+        return $mutator->encodeRow($this, $this->get());
+    }
+
+    /**
      * Returns iterator (yield values).
      *
      * @return \Traversable<static>

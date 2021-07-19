@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Model;
 
 use Phlex\Core\DiContainerTrait;
+use Phlex\Core\OptionsTrait;
 use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Core\TrackableTrait;
 use Phlex\Data\Exception;
@@ -20,6 +21,7 @@ class Field
     use Field\TypeTrait;
     use JoinLinkTrait;
     use Model\ElementTrait;
+    use OptionsTrait;
     use ReadableCaptionTrait;
     use TrackableTrait;
 

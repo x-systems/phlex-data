@@ -11,6 +11,7 @@ use Phlex\Core\DynamicMethodTrait;
 use Phlex\Core\Factory;
 use Phlex\Core\HookTrait;
 use Phlex\Core\InitializerTrait;
+use Phlex\Core\OptionsTrait;
 use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Data\Persistence\Sql;
 
@@ -36,9 +37,9 @@ class Model implements \IteratorAggregate
     use InitializerTrait;
     use Model\AggregatesTrait;
     use Model\JoinsTrait;
-    use Model\OptionsTrait;
     use Model\ReferencesTrait;
     use Model\UserActionsTrait;
+    use OptionsTrait;
     use ReadableCaptionTrait;
 
     /** @const string */

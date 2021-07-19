@@ -314,14 +314,6 @@ class Field
         return $this->getCodec($mutator)->decode($value);
     }
 
-    /**
-     * Should this field use alias?
-     */
-    public function useAlias(): bool
-    {
-        return isset($this->actual);
-    }
-
     // }}}
 
     // {{{ Handy methods used by UI

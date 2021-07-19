@@ -1768,7 +1768,7 @@ class Model implements \IteratorAggregate
             $dataRef = $this->persistence->decodeRow($this, $data);
 
             if ($this->primaryKey) {
-                $thisCloned->setId($data[$this->primaryKey] ?? null);
+                $thisCloned->setId($dataRef[$this->primaryKey] ?? null);
             }
 
             // you can return false in afterLoad hook to prevent to yield this data row

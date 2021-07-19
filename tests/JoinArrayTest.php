@@ -160,6 +160,7 @@ class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
     {
         $db = new Persistence\Array_(['user' => [], 'contact' => []]);
         $m_u = new Model($db, ['table' => 'user']);
+        $m_u->addField('test_id', ['type' => 'integer']);
         $m_u->addField('name');
         $j = $m_u->join('contact', ['master_field' => 'test_id']);
         $j->addField('contact_phone');

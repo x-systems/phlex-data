@@ -29,6 +29,19 @@ class Field extends Model\Field implements Expressionable
         return parent::normalize($value);
     }
 
+    public function getAlias(): ?string
+    {
+        return $this->useAlias() ? $this->getCodec()->getKey() : null;
+    }
+
+    /**
+     * Should this field use alias?
+     */
+    public function useAlias(): bool
+    {
+        return isset($this->actual);
+    }
+
     /**
      * When field is used as expression, this method will be called.
      * Universal way to convert ourselves to expression. Off-load implementation into persistence.

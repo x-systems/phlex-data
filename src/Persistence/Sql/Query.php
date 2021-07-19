@@ -116,7 +116,7 @@ class Query extends Persistence\Query implements Expressionable
 
     protected function addField(Model\Field $field): void
     {
-        $this->statement->field($field, $field->useAlias() ? $field->short_name : null);
+        $this->statement->field($field, $field->getAlias()); // @phpstan-ignore-line $field here is of Sql\Field type
     }
 
     protected function initInsert(array $data): void

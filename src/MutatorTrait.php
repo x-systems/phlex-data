@@ -99,18 +99,13 @@ trait MutatorTrait
     public function decodeRow(Model $model, array $row): array
     {
         $result = [];
-        foreach ($row as $key => $value) {
-            // We have no knowledge of the field, it wasn't defined, so
-            // we will leave it as-is.
-            if (!$model->hasField($key)) {
-                $result[$key] = $value;
+        foreach ($model->getFields() as $field) {
+            $codec = $field->getCodec($this);
+            $key = $codec->getKey();
 
-                continue;
+            if (array_key_exists($key, $row)) {
+                $result[$field->short_name] = $codec->decode($row[$key]);
             }
-
-            $codec = $model->getField($key)->getCodec($this);
-
-            $result[$key] = $codec->decode($value);
         }
 
         return $result;

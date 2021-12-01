@@ -108,6 +108,8 @@ class HasOne extends Model\Reference
      */
     public $serialize;
 
+    public $options;
+
     /**
      * Reference\HasOne will also add a field corresponding
      * to 'ourKey' unless it exists of course.
@@ -136,6 +138,7 @@ class HasOne extends Model\Reference
                 'mandatory' => $this->mandatory,
                 'required' => $this->required,
                 'serialize' => $this->serialize,
+                'options' => $this->options,
             ]);
         }
     }

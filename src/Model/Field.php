@@ -134,7 +134,7 @@ class Field
 
     protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        $name = $this->short_name; // use static function to allow this object to be GCed
+        $name = $this->elementId; // use static function to allow this object to be GCed
 
         return $this->getOwner()->onHookDynamicShort(
             $spot,
@@ -168,14 +168,14 @@ class Field
         // NULL value is always fine if it is allowed
         if ($value === null || $value === '') {
             if ($this->required) {
-                throw new Field\ValidationException([$this->name => 'Must not be null or empty']);
+                throw new Field\ValidationException([$this->elementName ?? $this->elementId => 'Must not be null or empty']);
             }
         }
 
         try {
             return $this->getValueType()->normalize($value);
         } catch (Field\Type\ValidationException $e) {
-            throw new Field\ValidationException([$this->name => $e->getMessage()]);
+            throw new Field\ValidationException([$this->elementName ?? $this->elementId => $e->getMessage()]);
         }
     }
 
@@ -196,7 +196,7 @@ class Field
      */
     public function get()
     {
-        return $this->getOwner()->get($this->short_name);
+        return $this->getOwner()->get($this->elementId);
     }
 
     /**
@@ -206,7 +206,7 @@ class Field
      */
     public function set($value): self
     {
-        $this->getOwner()->set($this->short_name, $value);
+        $this->getOwner()->set($this->elementId, $value);
 
         return $this;
     }
@@ -216,7 +216,7 @@ class Field
      */
     public function setNull(): self
     {
-        $this->getOwner()->setNull($this->short_name);
+        $this->getOwner()->setNull($this->elementId);
 
         return $this;
     }
@@ -228,10 +228,10 @@ class Field
         if ($model->hasPrimaryKeyField() && !$this->isPrimaryKey()) {
             throw (new Exception('Model already has different primaryKey set'))
                 ->addMoreInfo('existingPrimaryKey', $model->primaryKey)
-                ->addMoreInfo('attemptedPrimaryKey', $this->short_name);
+                ->addMoreInfo('attemptedPrimaryKey', $this->elementId);
         }
 
-        $model->primaryKey = $this->short_name;
+        $model->primaryKey = $this->elementId;
         $this->required = true;
         $this->system = true;
 
@@ -272,7 +272,7 @@ class Field
             }
 
             if ($persistence = $this->getPersistence()) {
-                $persistenceValue = $persistence->encodeRow($this->getOwner(), [$this->short_name => $v])[$this->getCodec($persistence)->getKey()];
+                $persistenceValue = $persistence->encodeRow($this->getOwner(), [$this->elementId => $v])[$this->getCodec($persistence)->getKey()];
             } else {
                 // without persistence, we can not do a lot with non-scalar types, but as DateTime
                 // is used often, fix the compare for them
@@ -356,7 +356,7 @@ class Field
      */
     public function getCaption(): string
     {
-        return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption(preg_replace('~^atk_fp_\w+?__~', '', $this->short_name));
+        return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption(preg_replace('~^atk_fp_\w+?__~', '', $this->elementId));
     }
 
     // }}}
@@ -394,7 +394,7 @@ class Field
     public function assertAccess(int $permission): void
     {
         if (!$this->checkAccess($permission)) {
-            throw (new Exception('Attempting to access field without permission' . $this->short_name))
+            throw (new Exception('Attempting to access field without permission' . $this->elementId))
                 ->addMoreInfo('field', $this)
                 ->addMoreInfo('model', $this->owner);
         }
@@ -465,7 +465,7 @@ class Field
     public function __debugInfo(): array
     {
         $arr = [
-            'short_name' => $this->short_name,
+            'elementId' => $this->elementId,
             'value' => $this->get(),
         ];
 

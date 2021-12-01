@@ -138,7 +138,7 @@ class Join
 
     protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        $name = $this->short_name; // use static function to allow this object to be GCed
+        $name = $this->elementId; // use static function to allow this object to be GCed
 
         return $this->getOwner()->onHookDynamicShort(
             $spot,
@@ -216,7 +216,7 @@ class Join
      */
     public function addField(string $name, array $seed = []): Field
     {
-        $seed['joinName'] = $this->short_name;
+        $seed['joinName'] = $this->elementId;
 
         return $this->getOwner()->addField($this->prefix . $name, $seed);
     }
@@ -248,7 +248,7 @@ class Join
      */
     public function join(string $foreign_table, array $defaults = [])
     {
-        $defaults['joinName'] = $this->short_name;
+        $defaults['joinName'] = $this->elementId;
 
         return $this->getOwner()->join($foreign_table, $defaults);
     }
@@ -260,7 +260,7 @@ class Join
      */
     public function leftJoin(string $foreign_table, array $defaults = [])
     {
-        $defaults['joinName'] = $this->short_name;
+        $defaults['joinName'] = $this->elementId;
 
         return $this->getOwner()->leftJoin($foreign_table, $defaults);
     }
@@ -275,7 +275,7 @@ class Join
     /*
     public function weakJoin($defaults = [])
     {
-        $defaults['joinName'] = $this->short_name;
+        $defaults['joinName'] = $this->elementId;
 
         return $this->getOwner()->weakJoin($defaults);
     }
@@ -288,7 +288,7 @@ class Join
      */
     public function hasOne(string $link, array $defaults = [])
     {
-        $defaults['joinName'] = $this->short_name;
+        $defaults['joinName'] = $this->elementId;
 
         return $this->getOwner()->hasOne($link, $defaults);
     }

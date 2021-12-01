@@ -745,7 +745,7 @@ class Model implements \IteratorAggregate
         $onlyFields = $onlyFields ?? true;
 
         return array_filter($this->fields, function (Model\Field $field, $name) use ($filters, $onlyFields) {
-            if ($onlyFields && !$this->isOnlyFieldsField($field->short_name)) {
+            if ($onlyFields && !$this->isOnlyFieldsField($field->elementId)) {
                 return false;
             }
 
@@ -771,13 +771,13 @@ class Model implements \IteratorAggregate
             case self::FIELD_FILTER_VISIBLE:
                 return $field->isVisible();
             case self::FIELD_FILTER_ONLY_FIELDS:
-                return $this->isOnlyFieldsField($field->short_name);
+                return $this->isOnlyFieldsField($field->elementId);
             case self::FIELD_FILTER_PERSIST:
                 if (!$field->interactsWithPersistence()) {
                     return false;
                 }
 
-                return $field->system || $this->isOnlyFieldsField($field->short_name);
+                return $field->system || $this->isOnlyFieldsField($field->elementId);
             default:
                 throw (new Exception('Filter is not supported'))
                     ->addMoreInfo('filter', $filter);

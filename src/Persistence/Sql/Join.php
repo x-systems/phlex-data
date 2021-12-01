@@ -64,7 +64,7 @@ class Join extends Model\Join implements Expressionable
 
         // Our short name will be unique
         if (!$this->foreign_alias) {
-            $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->short_name;
+            $this->foreign_alias = ($this->getOwner()->table_alias ?: '') . $this->elementId;
         }
 
         $this->onHookShortToOwner(Persistence\Query::HOOK_INIT_SELECT, \Closure::fromCallable([$this, 'initSelectQuery']));
@@ -87,7 +87,7 @@ class Join extends Model\Join implements Expressionable
 
                     $field = $owner->addField($this->master_field, ['system' => true, 'read_only' => true]);
 
-                    $this->master_field = $field->short_name;
+                    $this->master_field = $field->elementId;
                 }
             }
 
@@ -138,13 +138,13 @@ class Join extends Model\Join implements Expressionable
 
         /*
         if ($this->reverse) {
-            $query->field([$this->short_name => ($this->join ?:
+            $query->field([$this->elementId => ($this->join ?:
                 (
                     ($model->table_alias ?: $model->table)
                     .'.'.$this->master_field)
             )]);
         } else {
-            $query->field([$this->short_name => $this->foreign_alias.'.'.$this->foreign_field]);
+            $query->field([$this->elementId => $this->foreign_alias.'.'.$this->foreign_field]);
         }
          */
     }
@@ -157,9 +157,9 @@ class Join extends Model\Join implements Expressionable
         $model = $this->getOwner();
 
         // we need to collect ID
-        if (isset($model->getDataRef()[$this->short_name])) {
-            $this->id = $model->getDataRef()[$this->short_name];
-            unset($model->getDataRef()[$this->short_name]);
+        if (isset($model->getDataRef()[$this->elementId])) {
+            $this->id = $model->getDataRef()[$this->elementId];
+            unset($model->getDataRef()[$this->elementId]);
         }
     }
 

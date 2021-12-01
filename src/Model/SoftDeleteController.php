@@ -39,7 +39,7 @@ class SoftDeleteController
 
     public function __construct($defaults = [])
     {
-        $this->short_name = self::TRACKABLE_ID;
+        $this->elementId = self::TRACKABLE_ID;
 
         $this->setDefaults($defaults);
     }

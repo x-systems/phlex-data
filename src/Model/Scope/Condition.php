@@ -99,7 +99,7 @@ class Condition extends AbstractScope
         if ($key instanceof AbstractScope) {
             throw new Exception('Only Scope can contain another conditions');
         } elseif ($key instanceof Model\Field) { // for BC
-            $key = $key->short_name;
+            $key = $key->elementId;
         } elseif (!is_string($key) && !($key instanceof Sql\Expressionable)) {
             throw new Exception('Field must be a string or an instance of Sql\Expressionable');
         }
@@ -406,7 +406,7 @@ class Condition extends AbstractScope
         if ($field instanceof Model\Field && $field->getReference() !== null) {
             // make sure we set the value in the Model
             $model = $model->isEntity() ? clone $model : $model->createEntity();
-            $model->set($field->short_name, $value);
+            $model->set($field->elementId, $value);
 
             // then take the title
             $title = $model->getRef($field->getReference()->link)->ref()->getTitle();

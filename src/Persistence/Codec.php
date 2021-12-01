@@ -14,7 +14,7 @@ class Codec extends Model\Field\Codec
         // check null values for mandatory fields
         if ($value === null && $this->field->mandatory) {
             throw new Model\Field\ValidationException([
-                $this->field->short_name => 'Mandatory field value cannot be null',
+                $this->field->elementId => 'Mandatory field value cannot be null',
             ], $this->field->getOwner());
         }
 
@@ -53,6 +53,6 @@ class Codec extends Model\Field\Codec
 
     public function getKey(): string
     {
-        return $this->field->actual ?? $this->field->short_name;
+        return $this->field->actual ?? $this->field->elementId;
     }
 }

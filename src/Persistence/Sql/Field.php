@@ -83,7 +83,7 @@ class Field extends Model\Field implements Expressionable
     protected function getTablePrefix(): string
     {
         return $this->hasJoin()
-            ? ($this->getJoin()->foreign_alias ?: $this->getJoin()->short_name)
+            ? ($this->getJoin()->foreign_alias ?: $this->getJoin()->elementId)
             : ($this->getOwner()->table_alias ?: $this->getOwner()->table);
     }
 }

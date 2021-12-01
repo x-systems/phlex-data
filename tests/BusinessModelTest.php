@@ -18,11 +18,11 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
 
         $f = $m->getField('name');
-        $this->assertSame('name', $f->short_name);
+        $this->assertSame('name', $f->elementId);
 
         $m->addField('surname', new Model\Field());
         $f = $m->getField('surname');
-        $this->assertSame('surname', $f->short_name);
+        $this->assertSame('surname', $f->elementId);
     }
 
     public function testFieldAccess(): void

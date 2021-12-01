@@ -155,7 +155,7 @@ class Query extends Persistence\Query implements Expressionable
         $expr = $coalesce ? "coalesce({$functionName}([]), 0)" : "{$functionName}([])";
 
         if (!$alias && $field instanceof Field\Expression) {
-            $alias = $functionName . '_' . $field->short_name;
+            $alias = $functionName . '_' . $field->elementId;
         }
 
         $this->statement->reset('field')->field(new Expression($expr, [$field]), $alias);
@@ -170,7 +170,7 @@ class Query extends Persistence\Query implements Expressionable
         $field = is_string($key) ? $this->model->getField($key) : $key;
 
         if (!$alias && $field instanceof Field\Expression) {
-            $alias = $field->short_name;
+            $alias = $field->elementId;
         }
 
         $this->statement->reset('field')->field($field, $alias);

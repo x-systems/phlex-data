@@ -210,7 +210,7 @@ class Query extends Persistence\Query
      */
     protected function initAggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): void
     {
-        $field = is_string($field) ? $field : $field->short_name;
+        $field = is_string($field) ? $field : $field->elementId;
 
         $result = 0;
         $column = array_column($this->getRows(), $field);
@@ -301,7 +301,7 @@ class Query extends Persistence\Query
                     ->addMoreInfo('condition', $condition);
             }
 
-            $match = $this->evaluateIf($row[$field->actual ?? $field->short_name] ?? null, $operator, $value);
+            $match = $this->evaluateIf($row[$field->actual ?? $field->elementId] ?? null, $operator, $value);
         }
 
         // nested conditions

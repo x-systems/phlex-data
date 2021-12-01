@@ -94,7 +94,7 @@ class UserAction
 
             $run = function () use ($args) {
                 if ($this->callback === null) {
-                    $fx = [$this->getEntity(), $this->short_name];
+                    $fx = [$this->getEntity(), $this->elementId];
                 } elseif (is_string($this->callback)) {
                     $fx = [$this->getEntity(), $this->callback];
                 } else {
@@ -238,6 +238,6 @@ class UserAction
 
     public function getCaption(): string
     {
-        return $this->caption ?? ucwords(str_replace('_', ' ', $this->short_name));
+        return $this->caption ?? ucwords(str_replace('_', ' ', $this->elementId));
     }
 }

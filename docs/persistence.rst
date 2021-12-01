@@ -280,12 +280,12 @@ of References.
 Your init() method for a Field_Currency might look like this::
 
 
-    function init(): void {
-        parent::init();
+    function doInit(): void {
+        parent::doInit();
 
         $this->never_persist = true;
 
-        $f = $this->short_name; // balance
+        $f = $this->elementId; // balance
 
         $this->getOwner()->addField(
             $f.'_amount',

@@ -59,12 +59,12 @@ class Scope extends Scope\AbstractScope
                 $this->elements[$k]->unsetOwner();
             }
             $this->elements[$k]->setOwner($this);
-            $this->elements[$k]->short_name = $nestedCondition->short_name;
+            $this->elements[$k]->elementId = $nestedCondition->elementId;
         }
         if ($this->issetOwner()) {
             $this->unsetOwner();
         }
-        $this->short_name = null; // @phpstan-ignore-line
+        $this->elementId = null; // @phpstan-ignore-line
     }
 
     /**

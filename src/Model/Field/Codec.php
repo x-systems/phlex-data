@@ -115,7 +115,7 @@ class Codec implements CodecInterface
 
     public function getKey(): string
     {
-        return $this->field->short_name;
+        return $this->field->elementId;
     }
 
     /**

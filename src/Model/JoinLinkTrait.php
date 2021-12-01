@@ -25,7 +25,7 @@ trait JoinLinkTrait
 
     public function setJoin(Join $join): self
     {
-        $this->joinName = $join->short_name;
+        $this->joinName = $join->elementId;
 
         return $this;
     }

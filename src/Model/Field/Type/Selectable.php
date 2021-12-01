@@ -30,13 +30,24 @@ class Selectable extends \Phlex\Data\Model\Field\Type
 
         $value = (array) $value;
 
-        if (array_udiff($value, $this->values, function ($v1, $v2) {
-            return $v1 === $v2 ? 0 : 1;
-        })) {
-            throw new ValidationException('Must be one of the associated values');
+        foreach ($value as $v) {
+            if (!in_array($v, $this->values, true)) {
+                throw new ValidationException('Must be one of the associated values');
+            }
         }
 
         return $this->allowMultipleSelection ? $value : reset($value);
+    }
+
+    public function setValues(array $values)
+    {
+        if (!array_is_list($values)) {
+            return $this->setValuesWithLabels($values);
+        }
+
+        $this->values = $values;
+
+        return $this;
     }
 
     public function setValuesWithLabels(array $values)
@@ -46,6 +57,11 @@ class Selectable extends \Phlex\Data\Model\Field\Type
         $this->labels = $values;
 
         return $this;
+    }
+
+    public function getValuesWithLabels()
+    {
+        return $this->labels ?: array_combine((array) $this->values, (array) $this->values);
     }
 
     public function getLabel($value)

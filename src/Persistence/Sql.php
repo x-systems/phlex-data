@@ -150,8 +150,8 @@ abstract class Sql extends Persistence
             $dsn = $parts['scheme'] . ':host=' . $parts['host']
             . (isset($parts['port']) ? ';port=' . $parts['port'] : '')
             . ';dbname=' . substr($parts['path'], 1);
-            $user = $user ?? ($parts['user'] ?? null);
-            $pass = $pass ?? ($parts['pass'] ?? null);
+            $user ??= ($parts['user'] ?? null);
+            $pass ??= ($parts['pass'] ?? null);
         }
 
         // If it's still array, then simply use it
@@ -282,11 +282,14 @@ abstract class Sql extends Persistence
 
     public function statement($defaults = []): Sql\Statement
     {
-        return Factory::factory($this->_default_seed_statement, array_merge($defaults, [
-            'persistence' => $this,
-        ], $this->connection ? [
-            'identifierQuoteCharacter' => $this->connection->getDatabasePlatform()->getIdentifierQuoteCharacter(),
-        ] : []
+        return Factory::factory($this->_default_seed_statement, array_merge(
+            $defaults,
+            [
+                'persistence' => $this,
+            ],
+            $this->connection ? [
+                'identifierQuoteCharacter' => $this->connection->getDatabasePlatform()->getIdentifierQuoteCharacter(),
+            ] : []
         ));
     }
 

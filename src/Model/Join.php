@@ -142,9 +142,7 @@ class Join
 
         return $this->getOwner()->onHookDynamicShort(
             $spot,
-            static function (Model $owner) use ($name) {
-                return $owner->getElement($name);
-            },
+            static fn (Model $owner) => $owner->getElement($name),
             $fx,
             $args,
             $priority

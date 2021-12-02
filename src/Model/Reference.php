@@ -93,9 +93,7 @@ class Reference
 
         return $model->onHookDynamic(
             $spot,
-            static function (Model $model) use ($name) {
-                return $model->getElement($name);
-            },
+            static fn (Model $model) => $model->getElement($name),
             $fx,
             $args,
             $priority
@@ -108,9 +106,7 @@ class Reference
             throw new Exception('Model owner reference unexpectedly already set');
         }
         $model->ownerReference = $this;
-        $getThisFx = static function (Model $model) {
-            return $model->ownerReference;
-        };
+        $getThisFx = static fn (Model $model) => $model->ownerReference;
 
         return $model->onHookDynamic(
             $spot,
@@ -151,7 +147,7 @@ class Reference
     public function createTheirModel(array $defaults = []): Model
     {
         // set table_alias
-        $defaults['table_alias'] = $defaults['table_alias'] ?? $this->table_alias;
+        $defaults['table_alias'] ??= $this->table_alias;
 
         if (is_object($this->model)) {
             if ($this->model instanceof \Closure) {

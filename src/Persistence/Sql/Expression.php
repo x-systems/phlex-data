@@ -463,7 +463,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
 
     public function execute(Persistence\Sql $persistence = null)
     {
-        $persistence = $persistence ?? $this->persistence;
+        $persistence ??= $this->persistence;
 
         if (!$persistence) {
             throw new Exception('Expression can only be executed when persistence is specified');

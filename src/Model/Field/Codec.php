@@ -125,7 +125,7 @@ class Codec implements CodecInterface
      */
     public static function jsonDecode(string $json, bool $assoc = true)
     {
-        return json_decode($json, $assoc, 512, JSON_THROW_ON_ERROR);
+        return json_decode($json, $assoc, 512, \JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -135,6 +135,6 @@ class Codec implements CodecInterface
      */
     public static function jsonEncode($value): string
     {
-        return json_encode($value, JSON_THROW_ON_ERROR, 512);
+        return json_encode($value, \JSON_THROW_ON_ERROR, 512);
     }
 }

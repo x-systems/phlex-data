@@ -56,7 +56,7 @@ class Condition extends Sql\Expression
                 '/^([^ <>!=]*)([><!=]*|( *(not|is|in|like))*) *$/',
                 $field,
                 $matches
-                );
+            );
 
             // matches[2] will contain the condition, but $operator will contain the value
             $value = $operator;

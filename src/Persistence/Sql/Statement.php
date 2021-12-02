@@ -382,7 +382,7 @@ class Statement extends Expression
         $masterField = null,
         $joinKind = null,
         $foreignTableAlias = null
-        ) {
+    ) {
         // If array - add recursively
         if (is_array($foreignTables)) {
             foreach ($foreignTables as $alias => $foreignTable) {
@@ -846,7 +846,7 @@ class Statement extends Expression
             if ($desc !== null) {
                 throw new Exception(
                     'If first argument is array, second argument must not be used'
-                    );
+                );
             }
             foreach (array_reverse($order) as $o) {
                 $this->order($o);

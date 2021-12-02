@@ -166,9 +166,7 @@ abstract class Persistence implements MutatorInterface
         $data = $this->query($model)->select($fields)->getRows();
 
         if ($decode) {
-            $data = array_map(function ($row) use ($model) {
-                return $this->decodeRow($model, $row);
-            }, $data);
+            $data = array_map(fn ($row) => $this->decodeRow($model, $row), $data);
         }
 
         return $data;

@@ -39,7 +39,7 @@
 		"sort-packages" : true
 	},
 	"require" : {
-		"php" : ">=7.3.0",
+		"php" : ">=7.4.0",
 		"ext-intl" : "*",
 		"doctrine/dbal" : "~3",
 		"x-systems/phlex-core" : "3.0.x-dev"
@@ -51,7 +51,7 @@
 		"mahalux/atk4-hintable" : "^1.1.4"
 	},
 	"require-dev" : {
-		"friendsofphp/php-cs-fixer" : "^2.17",
+		"friendsofphp/php-cs-fixer" : "^3.0",
 		"johnkary/phpunit-speedtrap" : "^3.2",
 		"phpstan/phpstan" : "^0.12.82",
 		"phpunit/phpcov" : "*",

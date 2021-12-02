@@ -35,7 +35,7 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         );
 
         // see https://bugs.php.net/bug.php?id=65601
-        if (PHP_MAJOR_VERSION < 8) {
+        if (\PHP_MAJOR_VERSION < 8) {
             $fileObject->setFlags($fileObject->getFlags() | \SplFileObject::READ_AHEAD);
         }
 

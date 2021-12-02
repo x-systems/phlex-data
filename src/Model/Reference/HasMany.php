@@ -116,21 +116,13 @@ class HasMany extends Model\Reference
             };
             unset($defaults['args']);
         } elseif (is_object($defaults['aggregate'])) {
-            $fx = function () use ($defaults, $alias) {
-                return $this->refLink()->toQuery()->field($defaults['aggregate'], $alias);
-            };
+            $fx = fn () => $this->refLink()->toQuery()->field($defaults['aggregate'], $alias);
         } elseif ($defaults['aggregate'] === 'count' && !isset($defaults['field'])) {
-            $fx = function () use ($alias) {
-                return $this->refLink()->toQuery()->count($alias);
-            };
+            $fx = fn () => $this->refLink()->toQuery()->count($alias);
         } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {
-            $fx = function () use ($defaults, $field) {
-                return $this->refLink()->toQuery()->aggregate($defaults['aggregate'], $field, null, true);
-            };
+            $fx = fn () => $this->refLink()->toQuery()->aggregate($defaults['aggregate'], $field, null, true);
         } else {
-            $fx = function () use ($defaults, $field) {
-                return $this->refLink()->toQuery()->aggregate($defaults['aggregate'], $field);
-            };
+            $fx = fn () => $this->refLink()->toQuery()->aggregate($defaults['aggregate'], $field);
         }
 
         return $this->getOurModel()->addExpression($key, array_merge([$fx], $defaults));

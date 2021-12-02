@@ -43,7 +43,7 @@ class Array_ extends Persistence
     {
         $row = $this->getRowWithId($model, $row, $id);
 
-        $id = $id ?? $this->lastInsertId($model);
+        $id ??= $this->lastInsertId($model);
 
         if ($model->primaryKey) {
             $primaryKeyColumnName = $model->getPrimaryKeyField()->getCodec($this)->getKey();
@@ -136,7 +136,7 @@ class Array_ extends Persistence
      */
     public function generateNewId(Model $model, string $table = null)
     {
-        $table = $table ?? $model->table;
+        $table ??= $model->table;
 
         $type = $model->primaryKey ? get_class($model->getPrimaryKeyField()->getValueType()) : Model\Field\Type\Integer::class;
 

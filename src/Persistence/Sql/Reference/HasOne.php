@@ -38,7 +38,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         $ourModel = $this->getOurModel();
 
         // if caption is not defined in $defaults -> get it directly from the linked model field $theirKey
-        $defaults['caption'] = $defaults['caption'] ?? $ourModel->refModel($this->link)->getField($theirKey)->getCaption();
+        $defaults['caption'] ??= $ourModel->refModel($this->link)->getField($theirKey)->getCaption();
 
         /** @var Persistence\Sql\Field\Expression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourKey, array_merge(

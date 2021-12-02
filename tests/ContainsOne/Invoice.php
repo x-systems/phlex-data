@@ -18,7 +18,7 @@ class Invoice extends Model
 
     protected function doInitialize(): void
     {
-        parent:: doInitialize();
+        parent::doInitialize();
 
         $this->titleKey = $this->key()->ref_no;
 

@@ -144,7 +144,7 @@ trait HintableModelTrait
                 }, null, Model::class)();
                 $model->onHookShort(Model::HOOK_AFTER_LOAD, \Closure::bind(function () {
                     if ($this->entityId === '_atk__data__hintable_magic__refMany') {
-                        $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS, 4);
+                        $backtrace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS, 4);
                         if (
                             count($backtrace) >= 4
                             && ($backtrace[3]['function'] ?? null) === 'getIterator'

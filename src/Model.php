@@ -322,9 +322,7 @@ class Model implements \IteratorAggregate
      */
     public function __construct(Persistence $persistence = null, array $defaults = [])
     {
-        $this->scope = \Closure::bind(function () {
-            return new Model\Scope\RootScope();
-        }, null, Model\Scope\RootScope::class)()
+        $this->scope = \Closure::bind(fn () => new Model\Scope\RootScope(), null, Model\Scope\RootScope::class)()
             ->setModel($this);
 
         $this->setDefaults($defaults);
@@ -454,9 +452,7 @@ class Model implements \IteratorAggregate
         $this->addUserAction('delete', [
             'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
             'modifier' => Model\UserAction::MODIFIER_DELETE,
-            'callback' => function ($model) {
-                return $model->delete();
-            },
+            'callback' => fn ($model) => $model->delete(),
         ]);
 
         $this->addUserAction('validate', [
@@ -742,7 +738,7 @@ class Model implements \IteratorAggregate
             $filters = [$filters];
         }
 
-        $onlyFields = $onlyFields ?? true;
+        $onlyFields ??= true;
 
         return array_filter($this->fields, function (Model\Field $field, $name) use ($filters, $onlyFields) {
             if ($onlyFields && !$this->isOnlyFieldsField($field->elementId)) {
@@ -756,7 +752,7 @@ class Model implements \IteratorAggregate
             }
 
             return false;
-        }, ARRAY_FILTER_USE_BOTH);
+        }, \ARRAY_FILTER_USE_BOTH);
     }
 
     protected function fieldMatchesFilter(Model\Field $field, string $filter): bool
@@ -840,7 +836,7 @@ class Model implements \IteratorAggregate
         // set temporary hook to disable any normalization (null validation)
         $hookIndex = $this->onHookShort(self::HOOK_NORMALIZE, static function () {
             throw new \Phlex\Core\HookBreaker(false);
-        }, [], PHP_INT_MIN);
+        }, [], \PHP_INT_MIN);
         try {
             return $this->set($key, null);
         } finally {
@@ -956,9 +952,7 @@ class Model implements \IteratorAggregate
     {
         $key = $this->titleKey && $this->hasField($this->titleKey) ? $this->titleKey : $this->primaryKey;
 
-        return array_map(function ($row) use ($key) {
-            return $row[$key];
-        }, $this->export([$key], $this->primaryKey));
+        return array_map(fn ($row) => $row[$key], $this->export([$key], $this->primaryKey));
     }
 
     /**
@@ -1466,7 +1460,7 @@ class Model implements \IteratorAggregate
      */
     public function withPersistence(Persistence $persistence, $id = null, string $class = null)
     {
-        $class = $class ?? static::class;
+        $class ??= static::class;
 
         /** @var self $model */
         $model = new $class($persistence, ['table' => $this->table]);
@@ -1695,9 +1689,9 @@ class Model implements \IteratorAggregate
     /**
      * Export DataSet as array of hashes.
      *
-     * @param array|null $keys          Names of fields to export
-     * @param string     $arrayKey      Optional name of field which value we will use as array key
-     * @param bool       $typecast_data Should we typecast exported data
+     * @param array|null $keys     Names of fields to export
+     * @param string     $arrayKey Optional name of field which value we will use as array key
+     * @param bool       $decode   Should we decode exported data
      */
     public function export(array $keys = null, string $arrayKey = null, bool $decode = true): array
     {

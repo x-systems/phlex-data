@@ -107,7 +107,7 @@ class Csv extends Persistence
 
         $row = array_intersect_key(array_merge($emptyRow, $this->getRowWithId($model, $row, $id)), $emptyRow);
 
-        $id = $id ?? $this->lastInsertId;
+        $id ??= $this->lastInsertId;
 
         $this->fileObject->seek($id);
 
@@ -167,7 +167,7 @@ class Csv extends Persistence
         );
 
         // see https://bugs.php.net/bug.php?id=65601
-        if (PHP_MAJOR_VERSION < 8) {
+        if (\PHP_MAJOR_VERSION < 8) {
             $this->fileObject->setFlags($this->fileObject->getFlags() | \SplFileObject::READ_AHEAD);
         }
 
@@ -191,9 +191,7 @@ class Csv extends Persistence
             return $this->fileObject->current();
         });
 
-        return array_map(function ($name) {
-            return preg_replace('/[^a-z0-9_-]+/i', '_', $name);
-        }, $header ?: []);
+        return array_map(fn ($name) => preg_replace('/[^a-z0-9_-]+/i', '_', $name), $header ?: []);
     }
 
     private function executeRestoringPointer(\Closure $fx, array $args = [])

@@ -278,7 +278,7 @@ abstract class Query implements \IteratorAggregate
 
             if ($limit || $offset) {
                 if ($limit === null) {
-                    $limit = PHP_INT_MAX;
+                    $limit = \PHP_INT_MAX;
                 }
 
                 return [$limit, $offset ?? 0];
@@ -327,9 +327,7 @@ abstract class Query implements \IteratorAggregate
      */
     public function getRows(): array
     {
-        return $this->executeQueryWithDebug(function () {
-            return $this->withMode()->doGetRows();
-        });
+        return $this->executeQueryWithDebug(fn () => $this->withMode()->doGetRows());
     }
 
     abstract protected function doGetRows(): array;
@@ -353,9 +351,7 @@ abstract class Query implements \IteratorAggregate
      */
     public function getOne()
     {
-        return $this->executeQueryWithDebug(function () {
-            return $this->doGetOne();
-        });
+        return $this->executeQueryWithDebug(fn () => $this->doGetOne());
     }
 
     abstract protected function doGetOne();

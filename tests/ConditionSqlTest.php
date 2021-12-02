@@ -361,7 +361,7 @@ class ConditionSqlTest extends Sql\TestCase
         $m->addField('name');
         $m->addField('date', ['type' => 'date']);
 
-        if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 3) {
+        if (\PHP_MAJOR_VERSION === 7 && \PHP_MINOR_VERSION === 3) {
             $this->expectError();
         } else {
             $this->expectExceptionMessageMatches('~could not be converted to string~');
@@ -385,14 +385,14 @@ class ConditionSqlTest extends Sql\TestCase
         $u->addCondition(Model\Scope::createOr(
             ['name', 'John'],
             ['name', 'Peter'],
-            ));
+        ));
 
         $this->assertEquals(2, $u->getCount());
 
         $u->addCondition(Model\Scope::createOr(
             ['name', 'Peter'],
             ['name', 'Joe'],
-            ));
+        ));
         $this->assertEquals(1, $u->getCount());
     }
 

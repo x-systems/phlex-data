@@ -119,9 +119,7 @@ class Migration
     {
         $reference = $field->getReference();
         if ($reference instanceof Model\Reference\HasOne) {
-            $referenceTheirField = \Closure::bind(function () use ($reference) {
-                return $reference->theirKey;
-            }, null, Model\Reference::class)();
+            $referenceTheirField = \Closure::bind(fn () => $reference->theirKey, null, Model\Reference::class)();
 
             $referenceField = $referenceTheirField ?? $reference->getOwner()->primaryKey;
 

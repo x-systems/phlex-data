@@ -138,9 +138,7 @@ class Field
 
         return $this->getOwner()->onHookDynamicShort(
             $spot,
-            static function (Model $owner) use ($name) {
-                return $owner->getField($name);
-            },
+            static fn (Model $owner) => $owner->getField($name),
             $fx,
             $args,
             $priority

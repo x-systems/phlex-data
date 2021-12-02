@@ -54,9 +54,7 @@ trait UserActionsTrait
      */
     public function getUserActions(string $appliesTo = null): array
     {
-        return array_filter($this->userActions, function ($action) use ($appliesTo) {
-            return !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo);
-        });
+        return array_filter($this->userActions, fn ($action) => !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo));
     }
 
     /**

@@ -91,7 +91,7 @@ abstract class Type
 
     public function createCodec(Data\Model\Field $field, Data\MutatorInterface $mutator = null)
     {
-        $mutator = $mutator ?? $field->getPersistence();
+        $mutator ??= $field->getPersistence();
 
         $mutatorClass = get_class($mutator);
 
@@ -113,7 +113,7 @@ abstract class Type
 
     public static function resolveFromRegistry(array $registry, string $searchClass = null)
     {
-        $searchClass = $searchClass ?? static::class;
+        $searchClass ??= static::class;
 
         if (array_key_exists($searchClass, $registry)) {
             return $registry[$searchClass];

@@ -50,7 +50,7 @@ class Oracle extends Persistence\Sql
             $dbalConnection->platform = new class() extends DBAL\Platforms\OraclePlatform {
                 private function forwardTypeDeclarationSQL(string $targetMethodName, array $column): string
                 {
-                    $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS);
+                    $backtrace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS);
                     foreach ($backtrace as $frame) {
                         if ($this === ($frame['object'] ?? null)
                                 && $targetMethodName === ($frame['function'] ?? null)) {

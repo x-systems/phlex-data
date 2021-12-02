@@ -35,9 +35,7 @@ class Query extends Persistence\Query
 
         $this->iterator = $this->getPersistence()->getRawDataIterator($model);
 
-        $this->fx = function (\Iterator $iterator) {
-            return new Query\Result($iterator);
-        };
+        $this->fx = fn (\Iterator $iterator) => new Query\Result($iterator);
     }
 
     protected function initSelect($fields = null): void
@@ -107,7 +105,7 @@ class Query extends Persistence\Query
             $args = [];
             foreach ($this->order as [$field, $order]) {
                 $args[] = array_column($data, $field);
-                $args[] = $order === 'desc' ? SORT_DESC : SORT_ASC;
+                $args[] = $order === 'desc' ? \SORT_DESC : \SORT_ASC;
             }
             $args[] = &$data;
 
@@ -136,7 +134,7 @@ class Query extends Persistence\Query
         // @todo: kept for BC, inconstent results with SQL count!
         $this->initLimit();
 
-        $alias = $alias ?? 'count';
+        $alias ??= 'count';
 
         $this->iterator = new \ArrayIterator([[$alias => iterator_count($this->iterator)]]);
     }
@@ -221,9 +219,7 @@ class Query extends Persistence\Query
 
             break;
             case 'AVG':
-                $column = $coalesce ? $column : array_filter($column, function ($value) {
-                    return $value !== null;
-                });
+                $column = $coalesce ? $column : array_filter($column, fn ($value) => $value !== null);
 
                 $result = array_sum($column) / count($column);
 
@@ -260,14 +256,10 @@ class Query extends Persistence\Query
             // - PHP 8.0 - fixed in php, see:
             // https://github.com/php/php-src/commit/afab9eb48c883766b7870f76f2e2b0a4bd575786
             // remove the if below once PHP 7.3 and 7.4 is no longer supported
-            $filterFx = function ($row) {
-                return $this->match($row, $this->scope);
-            };
-            if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION === 4) {
+            $filterFx = fn ($row) => $this->match($row, $this->scope);
+            if (\PHP_MAJOR_VERSION === 7 && \PHP_MINOR_VERSION === 4) {
                 $filterFxWeakRef = \WeakReference::create($filterFx);
-                $this->iterator = new \CallbackFilterIterator($this->cloneIterator(), static function (array $row) use ($filterFxWeakRef) {
-                    return $filterFxWeakRef->get()($row);
-                });
+                $this->iterator = new \CallbackFilterIterator($this->cloneIterator(), static fn (array $row) => $filterFxWeakRef->get()($row));
                 $this->iterator->filterFx = $filterFx; // @phpstan-ignore-line - prevent filter function to be GCed
             } else {
                 $this->iterator = new \CallbackFilterIterator($this->cloneIterator(), $filterFx);

@@ -40,9 +40,7 @@ class Codec extends Model\Field\Codec
 
         if ($this->isEncodable($value) && !in_array($operator, $skipValueEncoding, true)) {
             if (is_array($value)) {
-                $value = array_map(function ($option) {
-                    return $this->encode($option);
-                }, $value);
+                $value = array_map(fn ($option) => $this->encode($option), $value);
             } else {
                 $value = $this->encode($value);
             }

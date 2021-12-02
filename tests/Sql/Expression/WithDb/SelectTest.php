@@ -57,9 +57,7 @@ class SelectTest extends PHPUnit\TestCase
             ['id' => 3, 'name' => 'Harry', 'surname' => 'Taylor', 'retired' => true],
             ['id' => 4, 'name' => 'Charlie', 'surname' => 'Lee', 'retired' => false],
         ] as $row) {
-            $this->persistence->connection->executeQuery($fixIdentifiersFunc('INSERT INTO "employee" (' . implode(', ', array_map(function ($v) {
-                return '"' . $v . '"';
-            }, array_keys($row))) . ') VALUES(' . implode(', ', array_map(function ($v) {
+            $this->persistence->connection->executeQuery($fixIdentifiersFunc('INSERT INTO "employee" (' . implode(', ', array_map(fn ($v) => '"' . $v . '"', array_keys($row))) . ') VALUES(' . implode(', ', array_map(function ($v) {
                 if (is_bool($v)) {
                     if ($this->persistence->connection->getDatabasePlatform() instanceof PostgreSQL94Platform) {
                         return $v ? 'true' : 'false';
@@ -238,9 +236,7 @@ class SelectTest extends PHPUnit\TestCase
         // but returns [Peter, Jane] - in original order.
         // That's why we add usort here.
         $data = $this->q('employee')->field('id,name')->execute()->fetchAllAssociative();
-        usort($data, function ($a, $b) {
-            return $a['id'] - $b['id'];
-        });
+        usort($data, fn ($a, $b) => $a['id'] - $b['id']);
         $this->assertEquals(
             [['id' => '1', 'name' => 'Peter'], ['id' => '2', 'name' => 'Jane']],
             $data

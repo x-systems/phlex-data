@@ -106,16 +106,12 @@ class UserActionTest extends Sql\TestCase
     public function testPreview(): void
     {
         $client = new UaClient($this->pers);
-        $client->addUserAction('say_name', function ($m) {
-            return $m->get('name');
-        });
+        $client->addUserAction('say_name', fn ($m) => $m->get('name'));
 
         $client = $client->load(1);
         $this->assertSame('John', $client->getUserAction('say_name')->execute());
 
-        $client->getUserAction('say_name')->preview = function ($m, $arg) {
-            return ($m instanceof UaClient) ? 'will say ' . $m->get('name') : 'will fail';
-        };
+        $client->getUserAction('say_name')->preview = fn ($m, $arg) => ($m instanceof UaClient) ? 'will say ' . $m->get('name') : 'will fail';
         $this->assertSame('will say John', $client->getUserAction('say_name')->preview('x'));
 
         $client->addUserAction('also_backup', ['callback' => 'backup_clients']);
@@ -186,9 +182,7 @@ class UserActionTest extends Sql\TestCase
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('send_reminder')->enabled = function () {
-            return false;
-        };
+        $client->getUserAction('send_reminder')->enabled = fn () => false;
 
         $this->expectExceptionMessage('disabled');
         $client->getUserAction('send_reminder')->execute();
@@ -199,9 +193,7 @@ class UserActionTest extends Sql\TestCase
         $client = new UaClient($this->pers);
         $client = $client->load(1);
 
-        $client->getUserAction('send_reminder')->enabled = function () {
-            return true;
-        };
+        $client->getUserAction('send_reminder')->enabled = fn () => true;
 
         $client->getUserAction('send_reminder')->execute();
         $this->assertTrue(true); // no exception
@@ -263,9 +255,7 @@ class UserActionTest extends Sql\TestCase
         $action->confirmation = 'Are you sure?';
         $this->assertSame('Are you sure?', $action->getConfirmation());
 
-        $action->confirmation = function ($action) {
-            return 'Proceed with Test: ' . $action->getEntity()->getTitle();
-        };
+        $action->confirmation = fn ($action) => 'Proceed with Test: ' . $action->getEntity()->getTitle();
         $this->assertSame('Proceed with Test: John', $action->getConfirmation());
     }
 }

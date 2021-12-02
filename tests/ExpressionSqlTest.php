@@ -69,9 +69,7 @@ class ExpressionSqlTest extends Sql\TestCase
         ]);
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', function ($i) {
-            return '[total_net]+[total_vat]';
-        });
+        $i->addExpression('total_gross', fn ($i) => '[total_net]+[total_vat]');
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(

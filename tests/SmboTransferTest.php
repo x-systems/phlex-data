@@ -53,9 +53,7 @@ class SmboTransferTest extends Sql\TestCase
 
         $t = new Transfer($this->db);
         $data = $t->export(['id', 'transfer_document_id']);
-        usort($data, function ($e1, $e2) {
-            return $e1['id'] < $e2['id'] ? -1 : 1;
-        });
+        usort($data, fn ($e1, $e2) => $e1['id'] < $e2['id'] ? -1 : 1);
         $this->assertSame([
             ['id' => 1, 'transfer_document_id' => 2],
             ['id' => 2, 'transfer_document_id' => 1],

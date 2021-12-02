@@ -126,9 +126,7 @@ class HintableModelArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame(1, $model->simpleMany->loadAny()->id);
         $this->assertSame(2, $model->load(12)->simpleMany->loadAny()->id);
 
-        $this->assertSame([2 => 2, 3 => 3], array_map(function (Model\Simple $model) {
-            return $model->id;
-        }, iterator_to_array($model->load(12)->simpleMany)));
+        $this->assertSame([2 => 2, 3 => 3], array_map(fn (Model\Simple $model) => $model->id, iterator_to_array($model->load(12)->simpleMany)));
     }
 
     public function testRefManyIsNotEntity(): void

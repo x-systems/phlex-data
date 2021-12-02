@@ -15,9 +15,7 @@ class FieldHereditaryTest extends Sql\TestCase
 
         // default title field
         $m = new Model($p);
-        $m->addExpression('caps', function ($m) {
-            return strtoupper($m->get('name'));
-        });
+        $m->addExpression('caps', fn ($m) => strtoupper($m->get('name')));
 
         $m = $m->load(1);
         $this->assertSame('world', $m->get('name'));

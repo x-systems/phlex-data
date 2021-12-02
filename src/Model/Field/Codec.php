@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field;
 
-use Phlex\Core\DiContainerTrait;
+use Phlex\Core\InjectableTrait;
 use Phlex\Data;
 use Phlex\Data\Model;
 
 class Codec implements CodecInterface
 {
-    use DiContainerTrait;
+    use InjectableTrait;
 
     /** @var Data\MutatorInterface */
     protected $mutator;

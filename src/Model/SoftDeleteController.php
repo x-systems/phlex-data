@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
-use Phlex\Core\DiContainerTrait;
 use Phlex\Core\InitializerTrait;
+use Phlex\Core\InjectableTrait;
 use Phlex\Core\TrackableTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
@@ -15,8 +15,8 @@ use Phlex\Data\Model;
  */
 class SoftDeleteController
 {
-    use DiContainerTrait;
     use InitializerTrait;
+    use InjectableTrait;
     use TrackableTrait;
 
     public const TRACKABLE_ID = self::class . '@softDeleteController';

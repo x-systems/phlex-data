@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field;
 
-use Phlex\Core\DiContainerTrait;
 use Phlex\Core\Factory;
+use Phlex\Core\InjectableTrait;
 use Phlex\Data;
 
 abstract class Type
 {
-    use DiContainerTrait;
+    use InjectableTrait;
 
     protected static $registry = [
         [Type\Generic::class],

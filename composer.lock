@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a63f8dd839a9421e2fd370e69bf3b92f",
+    "content-hash": "3a106dd95048953f03907108edabdb5f",
     "packages": [
         {
             "name": "composer/package-versions-deprecated",
@@ -1824,18 +1824,18 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/x-systems/phlex-core.git",
-                "reference": "eb6327273453009952e70e4d2039bd310192c624"
+                "reference": "96da1fe671a786e927afa2252f9eb9adbe35b401"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/x-systems/phlex-core/zipball/eb6327273453009952e70e4d2039bd310192c624",
-                "reference": "eb6327273453009952e70e4d2039bd310192c624",
+                "url": "https://api.github.com/repos/x-systems/phlex-core/zipball/96da1fe671a786e927afa2252f9eb9adbe35b401",
+                "reference": "96da1fe671a786e927afa2252f9eb9adbe35b401",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "illuminate/support": "~8.37",
-                "php": ">=7.3.0",
+                "php": ">=7.4.0",
                 "psr/log": "~1.0",
                 "symfony/polyfill-php74": "^1.17",
                 "symfony/polyfill-php80": "^1.17",
@@ -1849,7 +1849,9 @@
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^2.16",
                 "johnkary/phpunit-speedtrap": "^3.2",
-                "phpstan/phpstan": "^0.12.58",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan": "^1.2",
+                "phpstan/phpstan-deprecation-rules": "^1.0",
                 "phpunit/phpunit": ">=9.1",
                 "symfony/contracts": ">=1.1"
             },
@@ -1899,7 +1901,7 @@
                 "issues": "https://github.com/x-systems/phlex-core/issues",
                 "source": "https://github.com/x-systems/phlex-core/tree/3.0.x"
             },
-            "time": "2021-12-01T12:01:31+00:00"
+            "time": "2021-12-02T15:33:25+00:00"
         }
     ],
     "packages-dev": [
@@ -2917,16 +2919,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "0.12.99",
+            "version": "1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "b4d40f1d759942f523be267a1bab6884f46ca3f7"
+                "reference": "cbe085f9fdead5b6d62e4c022ca52dc9427a10ee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/b4d40f1d759942f523be267a1bab6884f46ca3f7",
-                "reference": "b4d40f1d759942f523be267a1bab6884f46ca3f7",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/cbe085f9fdead5b6d62e4c022ca52dc9427a10ee",
+                "reference": "cbe085f9fdead5b6d62e4c022ca52dc9427a10ee",
                 "shasum": ""
             },
             "require": {
@@ -2942,7 +2944,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "0.12-dev"
+                    "dev-master": "1.2-dev"
                 }
             },
             "autoload": {
@@ -2957,7 +2959,7 @@
             "description": "PHPStan - PHP Static Analysis Tool",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/0.12.99"
+                "source": "https://github.com/phpstan/phpstan/tree/1.2.0"
             },
             "funding": [
                 {
@@ -2977,7 +2979,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-09-12T20:09:55+00:00"
+            "time": "2021-11-18T14:09:01+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -3058,16 +3060,16 @@
         },
         {
             "name": "phpunit/php-file-iterator",
-            "version": "3.0.5",
+            "version": "3.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-file-iterator.git",
-                "reference": "aa4be8575f26070b100fccb67faabb28f21f66f8"
+                "reference": "cf1c2e7c203ac650e352f4cc675a7021e7d1b3cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-file-iterator/zipball/aa4be8575f26070b100fccb67faabb28f21f66f8",
-                "reference": "aa4be8575f26070b100fccb67faabb28f21f66f8",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-file-iterator/zipball/cf1c2e7c203ac650e352f4cc675a7021e7d1b3cf",
+                "reference": "cf1c2e7c203ac650e352f4cc675a7021e7d1b3cf",
                 "shasum": ""
             },
             "require": {
@@ -3106,7 +3108,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-file-iterator/issues",
-                "source": "https://github.com/sebastianbergmann/php-file-iterator/tree/3.0.5"
+                "source": "https://github.com/sebastianbergmann/php-file-iterator/tree/3.0.6"
             },
             "funding": [
                 {
@@ -3114,7 +3116,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-09-28T05:57:25+00:00"
+            "time": "2021-12-02T12:48:52+00:00"
         },
         {
             "name": "phpunit/php-invoker",

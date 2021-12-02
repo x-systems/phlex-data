@@ -12,9 +12,9 @@ abstract class Persistence implements MutatorInterface
     use \Phlex\Core\ContainerTrait {
         add as _add;
     }
-    use \Phlex\Core\DiContainerTrait;
     use \Phlex\Core\DynamicMethodTrait;
     use \Phlex\Core\HookTrait;
+    use \Phlex\Core\InjectableTrait;
     use \Phlex\Core\NameTrait;
 
     /** @const string */
@@ -28,7 +28,7 @@ abstract class Persistence implements MutatorInterface
     /**
      * Stores class default codec resolution array.
      *
-     * @var array
+     * @var array|null
      */
     protected static $defaultCodecs = [
         [Persistence\Codec::class],

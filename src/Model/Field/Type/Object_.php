@@ -12,9 +12,9 @@ class Object_ extends \Phlex\Data\Model\Field\Type
     protected function doNormalize($value)
     {
         if (is_string($value)) {
-            try {
-                $value = json_decode($value, false);
-            } catch (\Exception $e) {
+            $value = json_decode($value, false);
+
+            if ($value === false) {
                 throw new ValidationException('Value cannot be normalized');
             }
         }

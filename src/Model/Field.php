@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
-use Phlex\Core\DiContainerTrait;
+use Phlex\Core\InjectableTrait;
 use Phlex\Core\OptionsTrait;
 use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Core\TrackableTrait;
@@ -17,8 +17,8 @@ use Phlex\Data\MutatorInterface;
  */
 class Field
 {
-    use DiContainerTrait;
     use Field\TypeTrait;
+    use InjectableTrait;
     use JoinLinkTrait;
     use Model\ElementTrait;
     use OptionsTrait;
@@ -75,7 +75,7 @@ class Field
      * will always return meaningful label (even if caption is null). Set
      * this property to any string.
      *
-     * @var string
+     * @var string|null
      */
     public $caption;
 
@@ -92,7 +92,7 @@ class Field
      *
      * Can contain error message for UI.
      *
-     * @var bool|string
+     * @var bool|string|null
      */
     public $mandatory = false;
 

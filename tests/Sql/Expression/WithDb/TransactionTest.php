@@ -93,11 +93,6 @@ class TransactionTest extends PHPUnit\TestCase
         return $q;
     }
 
-    private function e($template = null, $args = null)
-    {
-        return $this->persistence->expr($template, $args);
-    }
-
     public function testCommitException1()
     {
         // try to commit when not in transaction

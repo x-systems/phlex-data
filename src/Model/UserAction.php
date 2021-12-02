@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
-use Phlex\Core\DiContainerTrait;
 use Phlex\Core\Exception;
 use Phlex\Core\InitializerTrait;
+use Phlex\Core\InjectableTrait;
 use Phlex\Core\TrackableTrait;
 use Phlex\Data\Model;
 
@@ -21,8 +21,8 @@ use Phlex\Data\Model;
  */
 class UserAction
 {
-    use DiContainerTrait;
     use InitializerTrait;
+    use InjectableTrait;
     use TrackableTrait;
 
     /** @var Model|null */
@@ -46,16 +46,16 @@ class UserAction
     /** @var string How this action interact with record. default = 'read' */
     public $modifier = self::MODIFIER_READ;
 
-    /** @var \Closure|string code to execute. By default will call method with same name */
+    /** @var \Closure|string|null code to execute. By default will call method with same name */
     public $callback;
 
-    /** @var \Closure|string code, identical to callback, but would generate preview of action without permanent effect */
+    /** @var \Closure|string|null code, identical to callback, but would generate preview of action without permanent effect */
     public $preview;
 
-    /** @var string caption to put on the button */
+    /** @var string|null caption to put on the button */
     public $caption;
 
-    /** @var string|\Closure a longer description of this action. Closure must return string. */
+    /** @var string|\Closure|null a longer description of this action. Closure must return string. */
     public $description;
 
     /** @var bool Specifies that the action is dangerous. Should be displayed in red. */

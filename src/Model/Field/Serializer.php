@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field;
 
-use Phlex\Core\DiContainerTrait;
 use Phlex\Core\Factory;
+use Phlex\Core\InjectableTrait;
 
 class Serializer
 {
-    use DiContainerTrait;
+    use InjectableTrait;
 
     protected static $presets = [
         'serialize' => ['encodeFx' => 'serialize', 'decodeFx' => 'unserialize'],

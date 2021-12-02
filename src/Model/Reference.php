@@ -21,8 +21,8 @@ use Phlex\Data\Persistence;
 class Reference
 {
     use Model\ElementTrait;
-    use \Phlex\Core\DiContainerTrait;
     use \Phlex\Core\InitializerTrait;
+    use \Phlex\Core\InjectableTrait;
     use \Phlex\Core\TrackableTrait;
 
     /**
@@ -57,7 +57,7 @@ class Reference
      * This is an optional property which can be used by your implementation
      * to store field-level relationship based on a common field matching.
      *
-     * @var string
+     * @var string|null
      */
     protected $ourKey;
 
@@ -65,7 +65,7 @@ class Reference
      * This is an optional property which can be used by your implementation
      * to store field-level relationship based on a common field matching.
      *
-     * @var string
+     * @var string|null
      */
     protected $theirKey;
 
@@ -73,7 +73,7 @@ class Reference
      * Caption of the reeferenced model. Can be used in UI components, for example.
      * Should be in plain English and ready for proper localization.
      *
-     * @var string
+     * @var string|null
      */
     public $caption;
 

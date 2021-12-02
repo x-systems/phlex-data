@@ -6,11 +6,11 @@ namespace Phlex\Data;
 
 use Phlex\Core\CollectionTrait;
 use Phlex\Core\ContainerTrait;
-use Phlex\Core\DiContainerTrait;
 use Phlex\Core\DynamicMethodTrait;
 use Phlex\Core\Factory;
 use Phlex\Core\HookTrait;
 use Phlex\Core\InitializerTrait;
+use Phlex\Core\InjectableTrait;
 use Phlex\Core\OptionsTrait;
 use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Data\Persistence\Sql;
@@ -30,11 +30,11 @@ class Model implements \IteratorAggregate
     use ContainerTrait {
         add as _add;
     }
-    use DiContainerTrait;
     use DynamicMethodTrait;
     use Hintable\HintableModelTrait;
     use HookTrait;
     use InitializerTrait;
+    use InjectableTrait;
     use Model\AggregatesTrait;
     use Model\JoinsTrait;
     use Model\ReferencesTrait;
@@ -107,7 +107,7 @@ class Model implements \IteratorAggregate
      */
     private $entityId;
 
-    /** @var Model\Scope\RootScope */
+    /** @var Model\Scope\RootScope|null */
     private $scope;
 
     /**
@@ -170,21 +170,21 @@ class Model implements \IteratorAggregate
      *
      * $table = ['user', 'mysql'=>'tbl_user'];
      *
-     * @var string|array<0|string, string>|false
+     * @var string|array<0|string, string>|false|null
      */
     public $table;
 
     /**
      * Use alias for $table.
      *
-     * @var string
+     * @var string|null
      */
     public $table_alias;
 
     /**
      * Sequence name. Some DB engines use sequence for generating auto_increment IDs.
      *
-     * @var string
+     * @var string|null
      */
     public $sequence;
 
@@ -249,7 +249,7 @@ class Model implements \IteratorAggregate
      * Caption of the model. Can be used in UI components, for example.
      * Should be in plain English and ready for proper localization.
      *
-     * @var string
+     * @var string|null
      */
     public $caption;
 
@@ -301,7 +301,7 @@ class Model implements \IteratorAggregate
      */
     public $contained_in_root_model;
 
-    /** @var Model\Reference Only for Reference class */
+    /** @var Model\Reference|null Only for Reference class */
     public $ownerReference;
 
     /**

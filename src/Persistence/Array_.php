@@ -167,10 +167,10 @@ class Array_ extends Persistence
     public function lastInsertId(Model $model = null): string
     {
         if ($model) {
-            return (string) $this->autoIncrement[$model->table] ?? null;
+            return (string) ($this->autoIncrement[$model->table] ?? null);
         }
 
-        return (string) $this->autoIncrement['$'] ?? null;
+        return (string) ($this->autoIncrement['$'] ?? null);
     }
 
     public function query(Model $model): Persistence\Query

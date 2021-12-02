@@ -7,7 +7,7 @@ namespace Phlex\Data\Model\Field\Type;
 class Text extends \Phlex\Data\Model\Field\Type
 {
     /**
-     * @var int specify a maximum length for this text
+     * @var int|null specify a maximum length for this text
      */
     public $maxLength;
 

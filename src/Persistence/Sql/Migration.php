@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Phlex\Data\Persistence\Sql;
 
 use Doctrine\DBAL;
-use Phlex\Core\DiContainerTrait;
+use Phlex\Core\InjectableTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
 class Migration
 {
-    use DiContainerTrait;
+    use InjectableTrait;
 
     /** @var Persistence\Sql */
     public $persistence;
@@ -121,7 +121,7 @@ class Migration
         if ($reference instanceof Model\Reference\HasOne) {
             $referenceTheirField = \Closure::bind(fn () => $reference->theirKey, null, Model\Reference::class)();
 
-            $referenceField = $referenceTheirField ?? $reference->getOwner()->primaryKey;
+            $referenceField = $referenceTheirField ?: $reference->getOwner()->primaryKey;
 
             $modelSeed = is_array($reference->model)
                 ? $reference->model

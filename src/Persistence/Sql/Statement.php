@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
-use Phlex\Core\DiContainerTrait;
+use Phlex\Core\InjectableTrait;
 use Phlex\Data\Exception;
 
 class Statement extends Expression
 {
-    use DiContainerTrait;
+    use InjectableTrait;
 
     /**
      * Query will use one of the predefined templates. The $mode will contain

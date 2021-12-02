@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
-use Phlex\Core\DiContainerTrait;
 use Phlex\Core\InitializerTrait;
+use Phlex\Core\InjectableTrait;
 use Phlex\Core\TrackableTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
@@ -18,8 +18,8 @@ use Phlex\Data\Persistence;
  */
 class Join
 {
-    use DiContainerTrait;
     use InitializerTrait;
+    use InjectableTrait;
     use JoinLinkTrait;
     use TrackableTrait;
 
@@ -61,7 +61,7 @@ class Join
      * You can specify your own type of join by passing ['kind'=>'right']
      * as second argument to join().
      *
-     * @var string
+     * @var string|null
      */
     protected $kind;
 
@@ -85,7 +85,7 @@ class Join
      * of saving and delete needs to be reversed. In this case $reverse
      * will be set to `true`. You can specify value of this property.
      *
-     * @var bool
+     * @var bool|null
      */
     protected $reverse;
 
@@ -94,7 +94,7 @@ class Join
      * it's $foreign_table.'_id'.
      * Note that it should be actual field name in master table.
      *
-     * @var string
+     * @var string|null
      */
     protected $master_field;
 
@@ -103,14 +103,14 @@ class Join
      * it's 'id'.
      * Note that it should be actual field name in foreign table.
      *
-     * @var string
+     * @var string|null
      */
     protected $foreign_field;
 
     /**
      * A short symbolic name that will be used as an alias for the joined table.
      *
-     * @var string
+     * @var string|null
      */
     public $foreign_alias;
 

@@ -14,7 +14,7 @@ class DateTime extends \Phlex\Data\Model\Field\Type
      *
      * For example, 'DateTime', 'Carbon' etc.
      *
-     * @var string
+     * @var string|null
      */
     public $dateTimeClass = \DateTime::class;
 
@@ -23,7 +23,7 @@ class DateTime extends \Phlex\Data\Model\Field\Type
      *
      * For example, 'DateTimeZone', 'Carbon' etc.
      *
-     * @var string
+     * @var string|null
      */
     public $dateTimeZoneClass = \DateTimeZone::class;
 

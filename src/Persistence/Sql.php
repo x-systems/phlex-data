@@ -329,7 +329,7 @@ abstract class Sql extends Persistence
         return $model;
     }
 
-    protected function initPersistence(Model $model): void
+    protected function configure(Model $model): void
     {
         $model->unsetOption(self::OPTION_USE_TABLE_PREFIX);
 

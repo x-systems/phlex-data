@@ -77,9 +77,9 @@ class Csv extends Persistence
         $this->setDefaults($defaults);
     }
 
-    protected function initPersistence(Model $model)
+    protected function configure(Model $model)
     {
-        parent::initPersistence($model);
+        parent::configure($model);
 
         $this->initFileObject($model);
     }

@@ -50,7 +50,7 @@ abstract class Persistence implements MutatorInterface
         }
 
         $model->persistence = $this;
-        $this->initPersistence($model);
+        $this->configure($model);
         $model = $this->_add($model);
 
         $this->hook(self::HOOK_AFTER_ADD, [$model]);
@@ -59,11 +59,11 @@ abstract class Persistence implements MutatorInterface
     }
 
     /**
-     * Extend this method to enhance model to work with your persistence. Here
+     * Extend this method to configure model to work with your persistence. Here
      * you can define additional methods or store additional data. This method
      * is executed before Model::doInitialize().
      */
-    protected function initPersistence(Model $model)
+    protected function configure(Model $model)
     {
     }
 

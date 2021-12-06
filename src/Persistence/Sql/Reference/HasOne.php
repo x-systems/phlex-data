@@ -120,12 +120,10 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
     {
         $theirModel = $this->createTheirModel($defaults);
 
-        $theirModel->addCondition(
-            $this->theirKey ?: $theirModel->primaryKey,
+        return $theirModel->addCondition(
+            $this->getTheirKey($theirModel),
             $this->referenceOurValue()
         );
-
-        return $theirModel;
     }
 
     /**
@@ -140,7 +138,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
             return $theirModel;
         }
 
-        $theirKey = $this->theirKey ?: $theirModel->primaryKey;
+        $theirKey = $this->getTheirKey($theirModel);
         $ourField = $this->getOurField();
 
         // At this point the reference

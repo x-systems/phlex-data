@@ -13,7 +13,7 @@ use Phlex\Data\Persistence;
  */
 class HasMany extends Model\Reference
 {
-    public function getTheirKey(): string
+    public function getTheirKey(Model $theirModel = null): string
     {
         if ($this->theirKey) {
             return $this->theirKey;
@@ -23,9 +23,11 @@ class HasMany extends Model\Reference
         // TODO probably remove completely in the future
         $ourModel = $this->getOurModel();
         $theirKey = $ourModel->table . '_' . $ourModel->primaryKey;
-        if (!$this->createTheirModel()->hasField($theirKey)) {
-            throw (new Exception('Their model does not contain fallback field'))
-                ->addMoreInfo('their_fallback_field', $theirKey);
+        $theirModel ??= $this->createTheirModel();
+
+        if (!$theirModel->hasField($theirKey)) {
+            throw (new Exception('Their model does not contain fallback primary key'))
+                ->addMoreInfo('theirKey', $theirKey);
         }
 
         return $theirKey;
@@ -63,8 +65,10 @@ class HasMany extends Model\Reference
      */
     public function ref(array $defaults = []): Model
     {
-        return $this->createTheirModel($defaults)->addCondition(
-            $this->getTheirKey(),
+        $theirModel = $this->createTheirModel($defaults);
+
+        return $theirModel->addCondition(
+            $this->getTheirKey($theirModel),
             $this->getOurValue()
         );
     }
@@ -74,12 +78,12 @@ class HasMany extends Model\Reference
      */
     public function refLink(array $defaults = []): Model
     {
-        $theirModelLinked = $this->createTheirModel($defaults)->addCondition(
-            $this->getTheirKey(),
+        $theirModel = $this->createTheirModel($defaults);
+
+        return $theirModel->addCondition(
+            $this->getTheirKey($theirModel),
             $this->referenceOurValue()
         );
-
-        return $theirModelLinked;
     }
 
     /**

@@ -206,11 +206,7 @@ class ListsMany extends Model\Reference
         if ($this->getOurModel()->isEntity()) {
             if ($ourValue = $this->getOurFieldValue()) {
                 // if our model is loaded, then try to load referenced model
-                if ($this->theirKey) {
-                    $theirModel = $theirModel->tryLoadBy($this->theirKey, $ourValue);
-                } else {
-                    $theirModel = $theirModel->tryLoad($ourValue);
-                }
+                $theirModel = $theirModel->tryLoadBy($this->getTheirKey($theirModel), $ourValue);
             } else {
                 $theirModel = $theirModel->createEntity();
             }
@@ -220,10 +216,10 @@ class ListsMany extends Model\Reference
         $theirModel->reloadAfterSave = false;
 
         $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) {
-            $theirValue = $this->theirKey ? $theirModel->get($this->theirKey) : $theirModel->getId();
+            $theirFieldValue = $this->getTheirFieldValue($theirModel);
 
-            if ($this->getOurFieldValue() !== $theirValue) {
-                $this->getOurField()->set($theirValue)->getOwner()->save();
+            if ($this->getOurFieldValue() !== $theirFieldValue) {
+                $this->getOurField()->set($theirFieldValue)->getOwner()->save();
             }
 
             $theirModel->reload();

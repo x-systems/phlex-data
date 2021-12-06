@@ -82,11 +82,6 @@ class Reference
         $this->link = $link;
     }
 
-    public function getTheirKey(): string
-    {
-        return $this->theirKey ?? $this->model->primaryKey;
-    }
-
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->elementId; // use static function to allow this object to be GCed
@@ -151,7 +146,7 @@ class Reference
 
         if (is_object($this->model)) {
             if ($this->model instanceof \Closure) {
-                // if model is Closure, then call the closure and whci should return a model
+                // if model is Closure, then call the closure which should return a model
                 $theirModel = ($this->model)($this->getOurModel(), $this, $defaults);
             } else {
                 // if model is set, then use clone of this model
@@ -182,12 +177,30 @@ class Reference
         return $this->ourKey ?: $this->getOurModel()->primaryKey;
     }
 
+    public function getTheirKey(Model $theirModel = null): string
+    {
+        if ($this->theirKey !== null) {
+            return $this->theirKey;
+        }
+
+        $theirModel ??= $this->createTheirModel();
+
+        return $theirModel->primaryKey;
+    }
+
     /**
      * @return mixed
      */
     protected function getOurFieldValue()
     {
         return $this->getOurField()->get();
+    }
+
+    public function getTheirFieldValue(Model $theirModel = null)
+    {
+        $theirModel ??= $this->createTheirModel();
+
+        return $theirModel->get($this->getTheirKey($theirModel));
     }
 
     protected function initTableAlias(): void

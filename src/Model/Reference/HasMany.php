@@ -38,7 +38,7 @@ class HasMany extends Model\Reference
      *
      * @return mixed
      */
-    protected function getOurValue()
+    protected function getOurFieldValue()
     {
         $ourModel = $this->getOurModel();
 
@@ -69,7 +69,7 @@ class HasMany extends Model\Reference
 
         return $theirModel->addCondition(
             $this->getTheirKey($theirModel),
-            $this->getOurValue()
+            $this->getOurFieldValue()
         );
     }
 

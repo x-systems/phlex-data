@@ -134,11 +134,11 @@ class Field
 
     protected function onHookShortToOwner(string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        $name = $this->elementId; // use static function to allow this object to be GCed
+        $key = $this->getKey(); // use static function to allow this object to be GCed
 
         return $this->getOwner()->onHookDynamicShort(
             $spot,
-            static fn (Model $owner) => $owner->getField($name),
+            static fn (Model $owner) => $owner->getField($key),
             $fx,
             $args,
             $priority
@@ -194,7 +194,7 @@ class Field
      */
     public function get()
     {
-        return $this->getOwner()->get($this->elementId);
+        return $this->getOwner()->get($this->getKey());
     }
 
     /**
@@ -204,7 +204,7 @@ class Field
      */
     public function set($value): self
     {
-        $this->getOwner()->set($this->elementId, $value);
+        $this->getOwner()->set($this->getKey(), $value);
 
         return $this;
     }
@@ -214,9 +214,14 @@ class Field
      */
     public function setNull(): self
     {
-        $this->getOwner()->setNull($this->elementId);
+        $this->getOwner()->setNull($this->getKey());
 
         return $this;
+    }
+
+    public function getKey(): string
+    {
+        return $this->elementId;
     }
 
     public function asPrimaryKey(): self
@@ -226,10 +231,10 @@ class Field
         if ($model->hasPrimaryKeyField() && !$this->isPrimaryKey()) {
             throw (new Exception('Model already has different primaryKey set'))
                 ->addMoreInfo('existingPrimaryKey', $model->primaryKey)
-                ->addMoreInfo('attemptedPrimaryKey', $this->elementId);
+                ->addMoreInfo('attemptedPrimaryKey', $this->getKey());
         }
 
-        $model->primaryKey = $this->elementId;
+        $model->primaryKey = $this->getKey();
         $this->required = true;
         $this->system = true;
 
@@ -270,7 +275,7 @@ class Field
             }
 
             if ($persistence = $this->getPersistence()) {
-                $persistenceValue = $persistence->encodeRow($this->getOwner(), [$this->elementId => $v])[$this->getCodec($persistence)->getKey()];
+                $persistenceValue = $persistence->encodeRow($this->getOwner(), [$this->getKey() => $v])[$this->getCodec($persistence)->getKey()];
             } else {
                 // without persistence, we can not do a lot with non-scalar types, but as DateTime
                 // is used often, fix the compare for them
@@ -354,7 +359,7 @@ class Field
      */
     public function getCaption(): string
     {
-        return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption(preg_replace('~^atk_fp_\w+?__~', '', $this->elementId));
+        return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption(preg_replace('~^atk_fp_\w+?__~', '', $this->getKey()));
     }
 
     // }}}
@@ -463,7 +468,7 @@ class Field
     public function __debugInfo(): array
     {
         $arr = [
-            'elementId' => $this->elementId,
+            'key' => $this->getKey(),
             'value' => $this->get(),
         ];
 

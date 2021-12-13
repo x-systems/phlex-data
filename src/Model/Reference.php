@@ -259,16 +259,6 @@ class Reference
         return $this->createTheirModel($defaults);
     }
 
-    /**
-     * Returns referenced model without any extra conditions. Ever when extended
-     * must always respond with Model that does not look into current record
-     * or scope.
-     */
-    public function refModel(array $defaults = []): Model
-    {
-        return $this->createTheirModel($defaults);
-    }
-
     // {{{ Debug Methods
 
     /**

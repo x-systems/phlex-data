@@ -298,7 +298,7 @@ class Field
     public function getReference(): ?Reference
     {
         return $this->referenceLink !== null
-            ? $this->getOwner()->getRef($this->referenceLink)
+            ? $this->getOwner()->getReference($this->referenceLink)
             : null;
     }
 

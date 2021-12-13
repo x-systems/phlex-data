@@ -510,7 +510,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $o->hasOne('user_id', ['model' => $u]);
         $this->assertSame($o->getField('user_id')->isVisible(), true);
 
-        $o->getRef('user_id')->addTitle();
+        $o->getReference('user_id')->addTitle();
         $this->assertTrue($o->hasField('user'));
         $this->assertSame($o->getField('user')->isVisible(), true);
         $this->assertSame($o->getField('user_id')->isVisible(), false);
@@ -519,7 +519,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
         $o->hasOne('user_id', ['model' => $u]);
         $o->getField('user_id')->ui['visible'] = true;
-        $o->getRef('user_id')->addTitle();
+        $o->getReference('user_id')->addTitle();
 
         $this->assertSame($o->getField('user_id')->isVisible(), true);
     }

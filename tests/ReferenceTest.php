@@ -99,9 +99,9 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
     {
         $db = new Persistence\Array_();
         $order = new Model($db, ['table' => 'order']);
-        $order->addRef('archive', ['model' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
+        $order->addReference('archive', ['model' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
         $this->expectException(Exception::class);
-        $order->addRef('archive', ['model' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
+        $order->addReference('archive', ['model' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
     }
 
     public function testCustomRef(): void
@@ -109,7 +109,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $p = new Persistence\Array_();
 
         $m = new Model($p, ['table' => 'user']);
-        $m->addRef('archive', ['model' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
+        $m->addReference('archive', ['model' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
 
         $this->assertSame('user_archive', $m->ref('archive')->table);
     }

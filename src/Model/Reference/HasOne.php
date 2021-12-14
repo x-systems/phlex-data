@@ -7,9 +7,6 @@ namespace Phlex\Data\Model\Reference;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-/**
- * Reference\HasOne class.
- */
 class HasOne extends Model\Reference
 {
     use Model\JoinLinkTrait;

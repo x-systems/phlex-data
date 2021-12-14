@@ -48,7 +48,7 @@ abstract class Query implements \IteratorAggregate
     {
         $this->model = $model;
 
-        $model = $model->isEntity() ? $model->getEntitySet() : $model;
+        $model = $model->getEntitySet(true);
 
         $this->scope = clone $model->scope();
 
@@ -337,11 +337,7 @@ abstract class Query implements \IteratorAggregate
      */
     public function getRow(): ?array
     {
-        return $this->executeQueryWithDebug(function () {
-            $this->withMode()->limit(1);
-
-            return $this->doGetRow();
-        });
+        return $this->executeQueryWithDebug(fn () => $this->withMode()->limit(1)->doGetRow());
     }
 
     abstract protected function doGetRow(): ?array;

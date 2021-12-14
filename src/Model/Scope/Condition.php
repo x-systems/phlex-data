@@ -181,6 +181,7 @@ class Condition extends AbstractScope
         $operator = $this->operator;
         $value = $this->value;
 
+        // handle placeholder values
         if (is_a($value, Placeholder::class, true)) {
             if (!is_object($value)) {
                 $value = new $value();

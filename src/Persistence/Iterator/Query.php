@@ -134,9 +134,7 @@ class Query extends Persistence\Query
         // @todo: kept for BC, inconstent results with SQL count!
         $this->initLimit();
 
-        $alias ??= 'count';
-
-        $this->iterator = new \ArrayIterator([[$alias => iterator_count($this->iterator)]]);
+        $this->iterator = new \ArrayIterator([[$alias ?? 'count' => iterator_count($this->iterator)]]);
     }
 
     /**

@@ -143,7 +143,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
 
         // At this point the reference
         // if ourKey is the primaryKey and is being used in the reference
-        // we should persist the relation in condtition
+        // we should persist the relation in condition
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->isLoaded() && !$theirModel->isLoaded()) {
             if ($ourField->isPrimaryKey()) {
@@ -203,8 +203,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
 
         // Will try to execute last
         $this->onHookToOurModel($ourModel, Model::HOOK_BEFORE_SAVE, function (Model $ourModel) use ($key) {
-            // if title field is changed, but reference ID field (our_field)
-            // is not changed, then update reference ID field value
+            // if title field is changed but ourField is not changed so update ourField value
             if ($ourModel->isDirty($key) && !$ourModel->isDirty($this->ourKey)) {
                 $theirModel = $this->createTheirModel();
 
@@ -213,7 +212,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
             }
         }, [], 20);
 
-        // Set ID field as not visible in grid by default
+        // Set ourField as not visible in grid by default
         if (!array_key_exists('visible', $this->getOurField()->ui)) {
             $this->getOurField()->ui['visible'] = false;
         }

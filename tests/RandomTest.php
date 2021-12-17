@@ -28,7 +28,7 @@ class Model_Item extends Model
     {
         parent::doInitialize();
         $this->addField('name');
-        $this->hasOne('parent_item_id', ['model' => [self::class]])
+        $this->hasOne('parent_item_id', ['theirModel' => [self::class]])
             ->addTitle();
     }
 }
@@ -41,7 +41,7 @@ class Model_Item2 extends Model
         parent::doInitialize();
         $this->addField('name');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', ['model' => [self::class]])
+        $i2->hasOne('parent_item_id', ['theirModel' => [self::class]])
             ->addTitle();
     }
 }
@@ -58,10 +58,10 @@ class Model_Item3 extends Model
         $this->addField('name');
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
+        $i2->hasOne('parent_item_id', ['theirModel' => $m, 'table_alias' => 'parent'])
             ->withTitle();
 
-        $this->hasMany('Child', ['model' => $m, 'theirKey' => 'parent_item_id', 'table_alias' => 'child'])
+        $this->hasMany('Child', ['theirModel' => $m, 'theirKey' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
     }
 }
@@ -318,7 +318,7 @@ class RandomTest extends Sql\TestCase
         $m = new Model_Item($this->db);
 
         $this->expectException(Exception::class);
-        $m->hasOne('foo', ['model' => [Model_Item::class]])
+        $m->hasOne('foo', ['theirModel' => [Model_Item::class]])
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 
@@ -511,8 +511,8 @@ class RandomTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'db1.user']);
         $m->addField('name');
 
-        $d->hasOne('user_id', ['model' => $m])->addTitle();
-        $m->hasMany('Documents', ['model' => $d]);
+        $d->hasOne('user_id', ['theirModel' => $m])->addTitle();
+        $m->hasMany('Documents', ['theirModel' => $d]);
 
         $d->addCondition('user', 'Sarah');
 

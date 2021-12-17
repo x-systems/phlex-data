@@ -95,6 +95,7 @@ abstract class Type
 
         $mutatorClass = get_class($mutator);
 
+        // check if existing in resolved cache
         $codecSeed = $this->codecs[$mutatorClass] ?? null;
 
         if (!$codecSeed/*  || (is_object($codecSeed) && $codecSeed->getField() !== $field) */) {

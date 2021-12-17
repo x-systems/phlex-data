@@ -35,7 +35,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
 
-        $u->hasMany('Orders', ['model' => $o]);
+        $u->hasMany('Orders', ['theirModel' => $o]);
 
         $oo = $u->load(1)->ref('Orders');
         $ooo = $oo->tryLoad(1);
@@ -69,7 +69,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
 
-        $u->hasMany('Orders', ['model' => $o]);
+        $u->hasMany('Orders', ['theirModel' => $o]);
 
         $this->assertSameSql(
             'select "id","amount","user_id" from "order" where "user_id" = "user"."id"',
@@ -94,7 +94,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['currency', 'name']);
 
-        $u->hasMany('cur', ['model' => $c, 'ourKey' => 'currency', 'theirKey' => 'currency']);
+        $u->hasMany('cur', ['theirModel' => $c, 'ourKey' => 'currency', 'theirKey' => 'currency']);
 
         $cc = $u->load(1)->ref('cur');
         $cc = $cc->tryLoadAny();
@@ -110,7 +110,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['code', 'name']);
 
-        $u->hasMany('cur', ['model' => $c, 'ourKey' => 'currency_code', 'theirKey' => 'code']);
+        $u->hasMany('cur', ['theirModel' => $c, 'ourKey' => 'currency_code', 'theirKey' => 'code']);
 
         $this->assertSameSql(
             'select "id","code","name" from "currency" where "code" = "user"."currency_code"',
@@ -141,7 +141,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
 
-        $o->hasOne('user_id', ['model' => $u]);
+        $o->hasOne('user_id', ['theirModel' => $u]);
 
         $this->assertSame('John', $o->load(1)->ref('user_id')->get('name'));
         $this->assertSame('Peter', $o->load(2)->ref('user_id')->get('name'));
@@ -179,7 +179,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', ['date', 'type' => 'date']]);
 
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
+        $o->hasOne('user_id', ['theirModel' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
 
         $this->assertSame('John', $o->load(1)->get('username'));
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('date'));
@@ -190,12 +190,12 @@ class ReferenceSqlTest extends Sql\TestCase
 
         // few more tests
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
+        $o->hasOne('user_id', ['theirModel' => $u])->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
         $this->assertSame('John', $o->load(1)->get('username'));
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('thedate'));
 
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['date'], ['type' => 'date']);
+        $o->hasOne('user_id', ['theirModel' => $u])->addFields(['date'], ['type' => 'date']);
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('date'));
     }
 
@@ -219,7 +219,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
         $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
-        $i->hasMany('line', ['model' => $l]);
+        $i->hasMany('line', ['theirModel' => $l]);
 
         $i->addExpression('total_net', $i->refLink('line')->toQuery()->aggregate('sum', 'total_net'));
 
@@ -254,7 +254,7 @@ class ReferenceSqlTest extends Sql\TestCase
             ['total_vat', 'type' => 'money'],
             ['total_gross', 'type' => 'money'],
         ]);
-        $i->hasMany('line', ['model' => $l])
+        $i->hasMany('line', ['theirModel' => $l])
             ->addFields([
                 ['total_vat', 'aggregate' => 'sum', 'type' => 'money'],
                 ['total_net', 'aggregate' => 'sum'],
@@ -318,7 +318,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $l = (new Model($this->db, ['table' => 'list']))->addFields(['name']);
         $i = (new Model($this->db, ['table' => 'item']))->addFields(['list_id', 'name', 'code']);
-        $l->hasMany('Items', ['model' => $i])
+        $l->hasMany('Items', ['theirModel' => $i])
             ->addFields([
                 ['items_name', 'aggregate' => 'count', 'field' => 'name'],
                 ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
@@ -373,14 +373,14 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $company = (new Model($this->db, ['table' => 'company']))->addFields(['name']);
 
-        $user->hasOne('Company', ['model' => $company, 'ourKey' => 'company_id', 'theirKey' => 'id']);
+        $user->hasOne('Company', ['theirModel' => $company, 'ourKey' => 'company_id', 'theirKey' => 'id']);
 
         $order = new Model($this->db, ['table' => 'order']);
         $order->addField('company_id');
         $order->addField('description');
         $order->addField('amount', ['default' => 20, 'type' => 'float']);
 
-        $company->hasMany('Orders', ['model' => $order]);
+        $company->hasMany('Orders', ['theirModel' => $order]);
 
         $user = $user->load(1);
 
@@ -423,7 +423,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $c = (new Model($this->db, ['table' => 'contact']))->addFields(['address']);
 
-        $u->hasOne('contact_id', ['model' => $c])
+        $u->hasOne('contact_id', ['theirModel' => $c])
             ->addField('address');
 
         $uu = $u->load(1);
@@ -471,9 +471,9 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $s = (new Model($this->db, ['table' => 'stadium']));
         $s->addFields(['name']);
-        $s->hasOne('player_id', ['model' => $p]);
+        $s->hasOne('player_id', ['theirModel' => $p]);
 
-        $p->hasOne('Stadium', ['model' => $s, 'ourKey' => 'id', 'theirKey' => 'player_id']);
+        $p->hasOne('Stadium', ['theirModel' => $s, 'ourKey' => 'id', 'theirKey' => 'player_id']);
 
         $p = $p->load(2);
         $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
@@ -484,7 +484,7 @@ class ReferenceSqlTest extends Sql\TestCase
     public function testModelProperty(): void
     {
         $user = new Model($this->db, ['table' => 'user']);
-        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'theirKey' => 'id']);
+        $user->hasMany('Orders', ['theirModel' => [Model::class, 'table' => 'order'], 'theirKey' => 'id']);
         $o = $user->ref('Orders');
         $this->assertSame('order', $o->table);
     }
@@ -507,7 +507,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
 
         // by default not set
-        $o->hasOne('user_id', ['model' => $u]);
+        $o->hasOne('user_id', ['theirModel' => $u]);
         $this->assertSame($o->getField('user_id')->isVisible(), true);
 
         $o->getReference('user_id')->addTitle();
@@ -517,7 +517,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         // if it is set manually then it will not be changed
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u]);
+        $o->hasOne('user_id', ['theirModel' => $u]);
         $o->getField('user_id')->ui['visible'] = true;
         $o->getReference('user_id')->addTitle();
 
@@ -548,7 +548,7 @@ class ReferenceSqlTest extends Sql\TestCase
         // with default titleKey='name'
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('user_id', ['model' => $u])->addTitle();
+        $o->hasOne('user_id', ['theirModel' => $u])->addTitle();
 
         // change order user by changing titleKey value
         $o = $o->load(1);
@@ -565,7 +565,7 @@ class ReferenceSqlTest extends Sql\TestCase
         // with custom titleKey='last_name'
         $u = (new Model($this->db, ['table' => 'user', 'titleKey' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('user_id', ['model' => $u])->addTitle();
+        $o->hasOne('user_id', ['theirModel' => $u])->addTitle();
 
         // change order user by changing titleKey value
         $o = $o->load(1);
@@ -582,7 +582,7 @@ class ReferenceSqlTest extends Sql\TestCase
         // with custom titleKey='last_name' and custom link name
         $u = (new Model($this->db, ['table' => 'user', 'titleKey' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'ourKey' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['theirModel' => $u, 'ourKey' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o = $o->load(1);
@@ -599,7 +599,7 @@ class ReferenceSqlTest extends Sql\TestCase
         // with custom titleKey='last_name' and custom link name
         $u = (new Model($this->db, ['table' => 'user', 'titleKey' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'ourKey' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['theirModel' => $u, 'ourKey' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o = $o->load(1);
@@ -642,7 +642,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $this->assertSame('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $order_user_ref = $o->hasOne('my_user', ['model' => $u, 'ourKey' => 'user_id']);
+        $order_user_ref = $o->hasOne('my_user', ['theirModel' => $u, 'ourKey' => 'user_id']);
         $order_user_ref->addField('user_last_name', 'last_name');
 
         $referenced_caption = $o->getField('user_last_name')->getCaption();

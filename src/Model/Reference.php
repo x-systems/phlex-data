@@ -12,7 +12,7 @@ use Phlex\Data\Persistence;
 /**
  * Reference implements a link between one model and another. The basic components for
  * a reference is ability to generate the destination model, which is returned through
- * getModel() and that's pretty much it.
+ * createTheirModel() and that's pretty much it.
  *
  * It's possible to extend the basic reference with more meaningful references.
  *
@@ -46,12 +46,12 @@ class Reference
     /**
      * Definition of the destination their model, that can be either an object, a
      * callback or a string. This can be defined during initialization and
-     * then used inside getModel() to fully populate and associate with
+     * then used inside createTheirModel() to fully populate and associate with
      * persistence.
      *
      * @var Model|\Closure|array
      */
-    public $model;
+    public $theirModel;
 
     /**
      * This is an optional property which can be used by your implementation
@@ -144,17 +144,17 @@ class Reference
         // set table_alias
         $defaults['table_alias'] ??= $this->table_alias;
 
-        if (is_object($this->model)) {
-            if ($this->model instanceof \Closure) {
+        if (is_object($this->theirModel)) {
+            if ($this->theirModel instanceof \Closure) {
                 // if model is Closure, then call the closure which should return a model
-                $theirModel = ($this->model)($this->getOurModel(), $this, $defaults);
+                $theirModel = ($this->theirModel)($this->getOurModel(), $this, $defaults);
             } else {
                 // if model is set, then use clone of this model
-                $theirModel = clone $this->model;
+                $theirModel = clone $this->theirModel;
             }
         } else {
             // add model from seed
-            $modelDefaults = $this->model;
+            $modelDefaults = $this->theirModel;
             $theirModelSeed = [$modelDefaults[0]];
             unset($modelDefaults[0]);
             $defaults = array_merge($modelDefaults, $defaults);

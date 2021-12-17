@@ -23,7 +23,7 @@ class Line extends Model
     {
         parent::doInitialize();
 
-        $this->hasOne($this->key()->vat_rate_id, ['model' => [VatRate::class]]);
+        $this->hasOne($this->key()->vat_rate_id, ['theirModel' => [VatRate::class]]);
 
         $this->addField($this->key()->price, ['type' => 'money', 'required' => true]);
         $this->addField($this->key()->qty, ['type' => 'float', 'required' => true]);
@@ -32,7 +32,7 @@ class Line extends Model
         $this->addExpression($this->key()->total_gross, fn (self $m) => $m->price * $m->qty * (1 + $m->vat_rate_id->rate / 100));
 
         // each line can have multiple discounts and calculate total of these discounts
-        $this->containsMany($this->key()->discounts, ['model' => [Discount::class]]);
+        $this->containsMany($this->key()->discounts, ['theirModel' => [Discount::class]]);
 
         $this->addCalculatedField($this->key()->discounts_percent, function ($m) {
             $total = 0;

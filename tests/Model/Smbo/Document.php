@@ -15,8 +15,8 @@ class Document extends Model
         parent::doInitialize();
 
         // Documest is sent from one Contact to Another
-        $this->hasOne('contact_from_id', ['model' => [Contact::class]]);
-        $this->hasOne('contact_to_id', ['model' => [Contact::class]]);
+        $this->hasOne('contact_from_id', ['theirModel' => [Contact::class]]);
+        $this->hasOne('contact_to_id', ['theirModel' => [Contact::class]]);
 
         $this->addField('doc_type', ['type' => ['enum', 'values' => ['invoice', 'payment']]]);
 

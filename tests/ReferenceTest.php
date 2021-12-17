@@ -23,13 +23,13 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        $user->hasMany('Orders', ['theirModel' => $order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders')->createEntity();
 
         $this->assertSame(20, $o->get('amount'));
         $this->assertSame(1, $o->get('user_id'));
 
-        $user->hasMany('BigOrders', ['model' => function () {
+        $user->hasMany('BigOrders', ['theirModel' => function () {
             $m = new Model();
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id');
@@ -56,7 +56,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->hasMany('Orders', ['model' => $order, 'caption' => 'My Orders']);
+        $user->hasMany('Orders', ['theirModel' => $order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
         $this->assertSame('My Orders', $user->refModel('Orders')->getCaption());
@@ -69,7 +69,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $user = new Model($db, ['table' => 'user']);
         $user = $user->createEntity();
         $user->setId(1);
-        $user->hasOne('order_id', ['model' => [Model::class, 'table' => 'order']]);
+        $user->hasOne('order_id', ['theirModel' => [Model::class, 'table' => 'order']]);
         $o = $user->ref('order_id');
         $this->assertSame('order', $o->table);
     }
@@ -80,9 +80,9 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $order = new Model();
         $order->addField('user_id');
 
-        $user->hasMany('Orders', ['model' => $order]);
+        $user->hasMany('Orders', ['theirModel' => $order]);
         $this->expectException(Exception::class);
-        $user->hasMany('Orders', ['model' => $order]);
+        $user->hasMany('Orders', ['theirModel' => $order]);
     }
 
     public function testRefName2(): void
@@ -90,18 +90,18 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $order = new Model(null, ['table' => 'order']);
         $user = new Model(null, ['table' => 'user']);
 
-        $user->hasOne('user_id', ['model' => $user]);
+        $user->hasOne('user_id', ['theirModel' => $user]);
         $this->expectException(Exception::class);
-        $user->hasOne('user_id', ['model' => $user]);
+        $user->hasOne('user_id', ['theirModel' => $user]);
     }
 
     public function testRefName3(): void
     {
         $db = new Persistence\Array_();
         $order = new Model($db, ['table' => 'order']);
-        $order->addReference('archive', ['model' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
+        $order->addReference('archive', ['theirModel' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
         $this->expectException(Exception::class);
-        $order->addReference('archive', ['model' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
+        $order->addReference('archive', ['theirModel' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
     }
 
     public function testCustomRef(): void
@@ -109,7 +109,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $p = new Persistence\Array_();
 
         $m = new Model($p, ['table' => 'user']);
-        $m->addReference('archive', ['model' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
+        $m->addReference('archive', ['theirModel' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
 
         $this->assertSame('user_archive', $m->ref('archive')->table);
     }

@@ -798,7 +798,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $country->table = 'country';
         $country->addField('name');
 
-        $user->hasOne('country_id', ['model' => $country]);
+        $user->hasOne('country_id', ['theirModel' => $country]);
 
         $uu = $user->load(1);
         $this->assertSame('Latvia', $uu->ref('country_id')->get('name'));
@@ -832,8 +832,8 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $user->addField('name');
         $user->addField('surname');
 
-        $country->hasMany('Users', ['model' => $user]);
-        $user->hasOne('country_id', ['model' => $country]);
+        $country->hasMany('Users', ['theirModel' => $user]);
+        $user->hasOne('country_id', ['theirModel' => $country]);
 
         $cc = $country->load(1);
         $this->assertSame(2, $cc->ref('Users')->getCount());

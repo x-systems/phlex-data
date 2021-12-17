@@ -162,7 +162,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
     }
 
     /**
-     * Add a title of related entity as expression to our field.
+     * Add a title of related entity as expression to ourModel.
      *
      * $order->hasOne('user_id', 'User')->addTitle();
      *
@@ -221,7 +221,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
     }
 
     /**
-     * Add a title of related entity as expression to our field.
+     * Add a title of related entity as expression to ourModel.
      *
      * $order->hasOne('user_id', 'User')->addTitle();
      *

@@ -17,16 +17,16 @@ class StAccount extends Model
 
         $this->addField('name');
 
-        $this->hasMany('Transactions', ['model' => [StGenericTransaction::class]])
+        $this->hasMany('Transactions', ['theirModel' => [StGenericTransaction::class]])
             ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount']);
 
-        $this->hasMany('Transactions:Deposit', ['model' => [StTransaction_Deposit::class]]);
-        $this->hasMany('Transactions:Withdrawal', ['model' => [StTransaction_Withdrawal::class]]);
-        $this->hasMany('Transactions:Ob', ['model' => [StTransaction_Ob::class]])
+        $this->hasMany('Transactions:Deposit', ['theirModel' => [StTransaction_Deposit::class]]);
+        $this->hasMany('Transactions:Withdrawal', ['theirModel' => [StTransaction_Withdrawal::class]]);
+        $this->hasMany('Transactions:Ob', ['theirModel' => [StTransaction_Ob::class]])
             ->addField('opening_balance', ['aggregate' => 'sum', 'field' => 'amount']);
 
-        $this->hasMany('Transactions:TransferOut', ['model' => [StTransaction_TransferOut::class]]);
-        $this->hasMany('Transactions:TransferIn', ['model' => [StTransaction_TransferIn::class]]);
+        $this->hasMany('Transactions:TransferOut', ['theirModel' => [StTransaction_TransferOut::class]]);
+        $this->hasMany('Transactions:TransferIn', ['theirModel' => [StTransaction_TransferIn::class]]);
     }
 
     /**
@@ -79,7 +79,7 @@ class StGenericTransaction extends Model
     {
         parent::doInitialize();
 
-        $this->hasOne('account_id', ['model' => [StAccount::class]]);
+        $this->hasOne('account_id', ['theirModel' => [StAccount::class]]);
         $this->addField('type', ['type' => ['enum', 'values' => ['Ob', 'Deposit', 'Withdrawal', 'TransferOut', 'TransferIn']]]);
 
         if ($this->type) {
@@ -126,7 +126,7 @@ class StTransaction_TransferOut extends StGenericTransaction
     protected function doInitialize(): void
     {
         parent::doInitialize();
-        $this->hasOne('link_id', ['model' => [StTransaction_TransferIn::class]]);
+        $this->hasOne('link_id', ['theirModel' => [StTransaction_TransferIn::class]]);
 
         //$this->join('transaction','linked_transaction');
     }
@@ -139,7 +139,7 @@ class StTransaction_TransferIn extends StGenericTransaction
     protected function doInitialize(): void
     {
         parent::doInitialize();
-        $this->hasOne('link_id', ['model' => [StTransaction_TransferOut::class]]);
+        $this->hasOne('link_id', ['theirModel' => [StTransaction_TransferOut::class]]);
     }
 }
 

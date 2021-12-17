@@ -159,7 +159,7 @@ class ContainsManyTest extends Sql\TestCase
         $this->assertEquals($rows, $i->lines->export());
 
         // try hasOne reference
-        $v = $i->lines->load(4)->vat_rate_id;
+        $v = $i->lines->load(4)->vat_rate;
         $this->assertSame(15, $v->rate);
 
         // test expression fields

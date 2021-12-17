@@ -28,7 +28,7 @@ class Model_Item extends Model
     {
         parent::doInitialize();
         $this->addField('name');
-        $this->hasOne('parent_item_id', ['theirModel' => [self::class]])
+        $this->hasOne('parent_item', ['theirModel' => [self::class]])
             ->addTitle();
     }
 }
@@ -41,7 +41,7 @@ class Model_Item2 extends Model
         parent::doInitialize();
         $this->addField('name');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', ['theirModel' => [self::class]])
+        $i2->hasOne('parent_item', ['theirModel' => [self::class]])
             ->addTitle();
     }
 }
@@ -58,7 +58,7 @@ class Model_Item3 extends Model
         $this->addField('name');
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', ['theirModel' => $m, 'table_alias' => 'parent'])
+        $i2->hasOne('parent_item', ['theirModel' => $m, 'table_alias' => 'parent'])
             ->withTitle();
 
         $this->hasMany('Child', ['theirModel' => $m, 'theirKey' => 'parent_item_id', 'table_alias' => 'child'])
@@ -225,7 +225,7 @@ class RandomTest extends Sql\TestCase
         );
 
         $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->getCount());
-        $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
+        $this->assertSame('John', $m->load(2)->ref('parent_item', ['table_alias' => 'pp'])->get('name'));
     }
 
     public function testUpdateCondition(): void
@@ -318,7 +318,7 @@ class RandomTest extends Sql\TestCase
         $m = new Model_Item($this->db);
 
         $this->expectException(Exception::class);
-        $m->hasOne('foo', ['theirModel' => [Model_Item::class]])
+        $m->hasOne('foo', ['theirModel' => [Model_Item::class], 'ourKey' => 'foo'])
             ->addTitle(); // field foo already exists, so we can't add title with same name
     }
 
@@ -511,7 +511,7 @@ class RandomTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'db1.user']);
         $m->addField('name');
 
-        $d->hasOne('user_id', ['theirModel' => $m])->addTitle();
+        $d->hasOne('user', ['theirModel' => $m])->addTitle();
         $m->hasMany('Documents', ['theirModel' => $d]);
 
         $d->addCondition('user', 'Sarah');

@@ -69,8 +69,8 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $user = new Model($db, ['table' => 'user']);
         $user = $user->createEntity();
         $user->setId(1);
-        $user->hasOne('order_id', ['theirModel' => [Model::class, 'table' => 'order']]);
-        $o = $user->ref('order_id');
+        $user->hasOne('order', ['theirModel' => [Model::class, 'table' => 'order']]);
+        $o = $user->ref('order');
         $this->assertSame('order', $o->table);
     }
 
@@ -90,9 +90,9 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $order = new Model(null, ['table' => 'order']);
         $user = new Model(null, ['table' => 'user']);
 
-        $user->hasOne('user_id', ['theirModel' => $user]);
+        $user->hasOne('user', ['theirModel' => $user]);
         $this->expectException(Exception::class);
-        $user->hasOne('user_id', ['theirModel' => $user]);
+        $user->hasOne('user', ['theirModel' => $user]);
     }
 
     public function testRefName3(): void

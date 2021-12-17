@@ -9,7 +9,8 @@ use Phlex\Data\Model;
 /**
  * Address model.
  *
- * @property Country   $country_id @Phlex\RefOne()
+ * @property Country   $country    @Phlex\RefOne()
+ * @property int       $country_id @Phlex\Field()
  * @property string    $address    @Phlex\Field()
  * @property \DateTime $built_date @Phlex\Field()
  * @property string[]  $tags       @Phlex\Field()
@@ -21,7 +22,7 @@ class Address extends Model
     {
         parent::doInitialize();
 
-        $this->hasOne($this->key()->country_id, ['theirModel' => [Country::class], 'type' => 'integer']);
+        $this->hasOne($this->key()->country, ['theirModel' => [Country::class], 'type' => 'integer']);
 
         $this->addField($this->key()->address);
         $this->addField($this->key()->built_date, ['type' => 'datetime']);

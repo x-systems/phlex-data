@@ -18,7 +18,7 @@ class Folder extends Model
         $this->hasMany('SubFolder', ['theirModel' => [self::class], 'theirKey' => 'parent_id'])
             ->addField('count', ['aggregate' => 'count', 'field' => $this->persistence->expr('*')]);
 
-        $this->hasOne('parent_id', ['theirModel' => [self::class]])
+        $this->hasOne('parent', ['theirModel' => [self::class]])
             ->addTitle();
 
         $this->addField('is_deleted', ['type' => 'boolean']);

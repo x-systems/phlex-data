@@ -167,12 +167,12 @@ class Reference
         return $theirModel;
     }
 
-    protected function getOurField(): Model\Field
+    public function getOurField(): Model\Field
     {
         return $this->getOurModel()->getField($this->getOurKey());
     }
 
-    protected function getOurKey(): string
+    public function getOurKey(): string
     {
         return $this->ourKey ?: $this->getOurModel()->primaryKey;
     }

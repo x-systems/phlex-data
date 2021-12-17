@@ -236,7 +236,11 @@ class Condition extends AbstractScope
                         }
                     }
                 } else {
-                    $field = $model->getField($field);
+                    if ($model->hasField($field)) {
+                        $field = $model->getField($field);
+                    } else {
+                        $field = $model->getReference($field)->getOurField();
+                    }
                 }
             }
 

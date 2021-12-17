@@ -119,11 +119,9 @@ class ContainsOneTest extends Sql\TestCase
         $this->assertEquals(array_merge($row, [$i->addr->door_code->key()->code => 'DEF']), $i->addr->door_code->get());
 
         // try hasOne reference
-        $c = $i->addr->country_id;
-        $this->assertSame('Latvia', $c->name);
+        $this->assertSame('Latvia', $i->addr->country->name);
         $i->addr->set($i->addr->key()->country_id, 2)->save();
-        $c = $i->addr->country_id;
-        $this->assertSame('United Kingdom', $c->name);
+        $this->assertSame('United Kingdom', $i->addr->country->name);
 
         // let's test how it all looks in persistence without encoding
         $exp_addr = $i->getEntitySet()->setOrder('id')->export(null, null, false)[0][$i->key()->addr];

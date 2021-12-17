@@ -45,7 +45,7 @@ class SUser extends Model
         $this->addField('surname');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasOne('country_id', ['theirModel' => [SCountry::class]])
+        $this->hasOne('country', ['theirModel' => [SCountry::class]])
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
 
@@ -102,11 +102,11 @@ class ScopeTest extends Sql\TestCase
         $ticket = new STicket($this->db);
         $this->createMigrator($ticket)->dropIfExists()->create();
         $ticket->import([
-            ['number' => '001', 'venue' => 'Best Stadium', 'user' => 1],
-            ['number' => '002', 'venue' => 'Best Stadium', 'user' => 2],
-            ['number' => '003', 'venue' => 'Best Stadium', 'user' => 2],
-            ['number' => '004', 'venue' => 'Best Stadium', 'user' => 4],
-            ['number' => '005', 'venue' => 'Best Stadium', 'user' => 5],
+            ['number' => '001', 'venue' => 'Best Stadium', 'user_id' => 1],
+            ['number' => '002', 'venue' => 'Best Stadium', 'user_id' => 2],
+            ['number' => '003', 'venue' => 'Best Stadium', 'user_id' => 2],
+            ['number' => '004', 'venue' => 'Best Stadium', 'user_id' => 4],
+            ['number' => '005', 'venue' => 'Best Stadium', 'user_id' => 5],
         ]);
     }
 
@@ -131,9 +131,9 @@ class ScopeTest extends Sql\TestCase
 
         $this->assertEquals('expression \'false\'', $condition->toWords($user));
 
-        $condition = new Condition('country_id/code', 'US');
+        $condition = new Condition('country/code', 'US');
 
-        $this->assertEquals('User that has reference Country Id where Code is equal to \'US\'', $condition->toWords($user));
+        $this->assertEquals('User that has reference Country where Code is equal to \'US\'', $condition->toWords($user));
 
         $condition = new Condition('country_id', 2);
 
@@ -204,7 +204,7 @@ class ScopeTest extends Sql\TestCase
     {
         $user = new SUser($this->db);
 
-        $user->addCondition('country_id/code', 'LV');
+        $user->addCondition('country/code', 'LV');
 
         $this->assertEquals(1, $user->getCount());
 
@@ -278,14 +278,14 @@ class ScopeTest extends Sql\TestCase
         // test if a model can be referenced multiple times
         // and if generated query has no duplicate column names
         // because of counting/# field if added multiple times
-        $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
-        $user->addCondition('Tickets/user/country_id/Users/#', '>', 1);
-        $user->addCondition('Tickets/user/country_id/Users/#', '>=', 2);
-        $user->addCondition('Tickets/user/country_id/Users/country_id/Users/#', '>', 1);
+        $user->addCondition('Tickets/user/country/Users/#', '>', 1);
+        $user->addCondition('Tickets/user/country/Users/#', '>', 1);
+        $user->addCondition('Tickets/user/country/Users/#', '>=', 2);
+        $user->addCondition('Tickets/user/country/Users/country/Users/#', '>', 1);
         if (!$this->getDatabasePlatform() instanceof SqlitePlatform) {
             // not supported because of limitation/issue in Sqlite, the generated query fails
             // with error: "parser stack overflow"
-            $user->addCondition('Tickets/user/country_id/Users/country_id/Users/name', '!=', null); // should be always true
+            $user->addCondition('Tickets/user/country/Users/country/Users/name', '!=', null); // should be always true
         }
 
         $this->assertEquals(2, $user->getCount());

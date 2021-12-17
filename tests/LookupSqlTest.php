@@ -66,7 +66,7 @@ class LUser extends Model
         $this->addField('name');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasOne('country_id', ['theirModel' => [LCountry::class]])
+        $this->hasOne('country', ['theirModel' => [LCountry::class]])
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
 
@@ -97,9 +97,9 @@ class LFriend extends Model
     {
         parent::doInitialize();
 
-        $this->hasOne('user_id', ['theirModel' => [LUser::class]])
+        $this->hasOne('user', ['theirModel' => [LUser::class]])
             ->addField('my_name', 'name');
-        $this->hasOne('friend_id', ['theirModel' => [LUser::class]])
+        $this->hasOne('friend', ['theirModel' => [LUser::class]])
             ->addField('friend_name', 'name');
 
         // add or remove reverse friendships

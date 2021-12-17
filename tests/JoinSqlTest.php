@@ -548,7 +548,7 @@ class JoinSqlTest extends Sql\TestCase
         // hasOne phone model
         $m_p = new Model($this->db, ['table' => 'phone']);
         $m_p->addField('number');
-        $ref_one = $j->hasOne('phone_id', ['theirModel' => $m_p]); // hasOne on JOIN
+        $ref_one = $j->hasOne('phone', ['theirModel' => $m_p]); // hasOne on JOIN
         $ref_one->addField('number');
 
         $m_u2 = $m_u->load(1);

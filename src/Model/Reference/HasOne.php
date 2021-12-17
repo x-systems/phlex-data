@@ -116,7 +116,7 @@ class HasOne extends Model\Reference
         parent::doInitialize();
 
         if (!$this->ourKey) {
-            $this->ourKey = $this->link;
+            $this->ourKey = strtolower($this->link) . '_id';
         }
 
         $ourModel = $this->getOurModel();

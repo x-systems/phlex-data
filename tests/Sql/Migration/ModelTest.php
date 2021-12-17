@@ -173,7 +173,7 @@ class TestUser extends \Phlex\Data\Model
         $this->addField('is_admin', ['type' => 'boolean']);
         $this->addField('notes', ['type' => 'text']);
 
-        $this->hasOne('role_id', ['theirModel' => [TestRole::class], 'ourKey' => 'main_role_id', 'theirKey' => 'id']);
+        $this->hasOne('role', ['theirModel' => [TestRole::class], 'ourKey' => 'main_role_id', 'theirKey' => 'id']);
     }
 }
 

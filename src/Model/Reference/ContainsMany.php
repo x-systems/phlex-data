@@ -26,11 +26,8 @@ class ContainsMany extends ContainsOne
      */
     public function ref(array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
-
         // get model
         $theirModel = $this->createTheirModel(array_merge($defaults, [
-            'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
             'table' => $this->table_alias,
         ]));
 

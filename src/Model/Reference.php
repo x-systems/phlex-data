@@ -31,6 +31,15 @@ class Reference
     public const OPTION_MODEL_OWNER = self::class . '@model_owner';
 
     /**
+     * Option to use with Model to contain reference to the root model for "contained" references.
+     *
+     * Useful for containsOne/Many implementation in case of
+     * SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
+     * from Array persistence used in containsOne model
+     */
+    public const OPTION_ROOT_MODEL = self::class . '@root_model';
+
+    /**
      * Use this alias for related entity by default. This can help you
      * if you create sub-queries or joins to separate this from main
      * table. The table_alias will be uniquely generated.
@@ -245,14 +254,7 @@ class Reference
     {
         $ourModel = $this->getOurModel();
 
-        // this will be useful for containsOne/Many implementation in case when you have
-        // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
-        // from Array persistence used in containsOne model
-        if ($ourModel->contained_in_root_model && $ourModel->contained_in_root_model->persistence) {
-            return $ourModel->contained_in_root_model->persistence;
-        }
-
-        return $ourModel->persistence ?: false;
+        return $ourModel->getOption(self::OPTION_ROOT_MODEL, $ourModel)->persistence ?: false;
     }
 
     /**

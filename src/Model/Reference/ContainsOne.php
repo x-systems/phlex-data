@@ -86,10 +86,7 @@ class ContainsOne extends Model\Reference
      */
     public function ref(array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
-
         $theirModel = $this->createTheirModel(array_merge($defaults, [
-            'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
             'table' => $this->table_alias,
         ]));
 
@@ -103,5 +100,15 @@ class ContainsOne extends Model\Reference
 
         // try to load any (actually only one possible) record
         return $theirModel->tryLoadAny();
+    }
+
+    public function createTheirModel(array $defaults = []): Model
+    {
+        $ourModel = $this->getOurModel();
+        $theirModel = parent::createTheirModel($defaults);
+
+        $theirModel->setOption(self::OPTION_ROOT_MODEL, $ourModel->getOption(self::OPTION_ROOT_MODEL, $ourModel));
+
+        return $theirModel;
     }
 }

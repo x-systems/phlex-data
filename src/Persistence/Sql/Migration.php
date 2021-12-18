@@ -123,9 +123,9 @@ class Migration
 
             $referenceField = $referenceTheirField ?: $reference->getOwner()->primaryKey;
 
-            $modelSeed = is_array($reference->model)
-                ? $reference->model
-                : [get_class($reference->model)];
+            $modelSeed = is_array($reference->theirModel)
+                ? $reference->theirModel
+                : [get_class($reference->theirModel)];
             $referenceModel = Model::fromSeed($modelSeed, [Persistence\Sql::createFromConnection($this->persistence->connection)]);
 
             return $referenceModel->getField($referenceField);

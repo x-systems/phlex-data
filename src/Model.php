@@ -301,9 +301,6 @@ class Model implements \IteratorAggregate
      */
     public $contained_in_root_model;
 
-    /** @var Model\Reference|null Only for Reference class */
-    public $ownerReference;
-
     /**
      * Creation of the new model can be done in two ways:.
      *

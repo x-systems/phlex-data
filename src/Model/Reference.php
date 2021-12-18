@@ -26,6 +26,11 @@ class Reference
     use \Phlex\Core\TrackableTrait;
 
     /**
+     * Option to use for linking a model to this reference when it is theirModel.
+     */
+    public const OPTION_MODEL_OWNER = self::class . '@model_owner';
+
+    /**
      * Use this alias for related entity by default. This can help you
      * if you create sub-queries or joins to separate this from main
      * table. The table_alias will be uniquely generated.
@@ -97,15 +102,15 @@ class Reference
 
     protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        if ($model->ownerReference !== null && $model->ownerReference !== $this) {
+        $modelOwnerReference = $model->getOption(self::OPTION_MODEL_OWNER);
+        if ($modelOwnerReference !== null && $modelOwnerReference !== $this) {
             throw new Exception('Model owner reference unexpectedly already set');
         }
-        $model->ownerReference = $this;
-        $getThisFx = static fn (Model $model) => $model->ownerReference;
+        $model->setOption(self::OPTION_MODEL_OWNER, $this);
 
         return $model->onHookDynamic(
             $spot,
-            $getThisFx,
+            static fn (Model $model) => $model->getOption(self::OPTION_MODEL_OWNER),
             $fx,
             $args,
             $priority

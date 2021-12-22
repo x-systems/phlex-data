@@ -798,7 +798,7 @@ class Model implements \IteratorAggregate
         $currentValue = array_key_exists($key, $dataRef)
             ? $dataRef[$key]
             : (array_key_exists($key, $dirtyRef) ? $dirtyRef[$key] : $field->default);
-        if (!$value instanceof Sql\Expressionable && $field->compare($value, $currentValue)) {
+        if ($field->compare($value, $currentValue)) {
             return $this;
         }
 

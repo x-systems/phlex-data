@@ -13,6 +13,15 @@ use Phlex\Data\Persistence;
  */
 class Field extends Model\Field implements Expressionable
 {
+    public function compare($value, $value2 = null): bool
+    {
+        if ($value instanceof Expressionable) {
+            return false;
+        }
+
+        return parent::compare(...func_get_args());
+    }
+
     /**
      * SQL fields are allowed to have expressions inside of them.
      *
@@ -22,7 +31,7 @@ class Field extends Model\Field implements Expressionable
      */
     public function normalize($value)
     {
-        if ($value instanceof Expression || $value instanceof Expressionable) {
+        if ($value instanceof Expressionable) {
             return $value;
         }
 

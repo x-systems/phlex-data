@@ -27,9 +27,8 @@ trait ReferencesTrait
     {
         $seed = Utils::resolveFromRegistry($this->referenceSeeds, $referenceClass);
 
-        $defaults[0] = $link;
 
-        $reference = Reference::fromSeed($seed, $defaults);
+        $reference = Field\Reference::fromSeed($seed, $defaults);
 
         // if reference with such name already exists, then throw exception
         if ($this->hasElement($name = $reference->getDesiredName())) {
@@ -39,7 +38,7 @@ trait ReferencesTrait
                 ->addMoreInfo('defaults', $defaults);
         }
 
-        return $this->add($reference);
+        return $this->addField($link, $reference);
     }
 
     public function setReferenceSeeds(array $referenceSeeds)
@@ -52,7 +51,7 @@ trait ReferencesTrait
     /**
      * Add generic relation. Provide your own call-back that will return the model.
      */
-    public function addReference(string $link, array $defaults): Reference
+    public function addReference(string $link, array $defaults): Field\Reference
     {
         return $this->doAddReference(Reference::class, $link, $defaults);
     }
@@ -130,9 +129,9 @@ trait ReferencesTrait
     /**
      * Returns the reference.
      */
-    public function getReference(string $link): Reference
+    public function getReference(string $link): Field\Reference
     {
-        return $this->getElement('#ref_' . $link);
+        return $this->getField($link); //Element('#ref_' . $link);
     }
 
     /**
@@ -140,10 +139,18 @@ trait ReferencesTrait
      */
     public function getReferences(): array
     {
+//         $refs = [];
+//         foreach ($this->elements as $key => $val) {
+//             if (substr($key, 0, 5) === '#ref_') {
+//                 $refs[substr($key, 5)] = $val;
+//             }
+//         }
+
+//         return $refs;
         $refs = [];
-        foreach ($this->elements as $key => $val) {
-            if (substr($key, 0, 5) === '#ref_') {
-                $refs[substr($key, 5)] = $val;
+        foreach ($this->getFields() as $key => $val) {
+            if ($val instanceof Field\Reference) {
+                $refs[$key] = $val;
             }
         }
 
@@ -155,6 +162,8 @@ trait ReferencesTrait
      */
     public function hasReference(string $link): bool
     {
+        return $this->hasField($link);
+
         return $this->hasElement('#ref_' . $link);
     }
 }

@@ -23,7 +23,7 @@ trait JoinLinkTrait
         return $this->joinName !== null;
     }
 
-    public function setJoin(Join $join): self
+    public function setJoin(Join $join): Field
     {
         $this->joinName = $join->elementId;
 

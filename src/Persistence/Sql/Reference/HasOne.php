@@ -8,7 +8,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class HasOne extends \Phlex\Data\Model\Reference\HasOne
+class HasOne extends Model\Field\Reference\HasOne
 {
     /**
      * Creates expression which sub-selects a field inside related model.

@@ -98,7 +98,7 @@ trait MutatorTrait
             $key = $codec->getKey();
 
             if (array_key_exists($key, $row)) {
-                $result[$field->elementId] = $codec->decode($row[$key]);
+                $result[$field->getKey()] = $codec->decode($row[$key]);
             }
         }
 

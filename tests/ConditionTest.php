@@ -56,7 +56,7 @@ class ConditionTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
         $m->hasOne('gender', ['theirModel' => $gender]);
 
-        $this->assertFalse($m->getField('gender_id')->system);
-        $this->assertTrue($m->getField('gender_id')->isEditable());
+        $this->assertTrue($m->getField('gender_id')->system);
+        $this->assertFalse($m->getField('gender_id')->isEditable());
     }
 }

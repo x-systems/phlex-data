@@ -6,8 +6,8 @@ namespace Phlex\Data\Model;
 
 use Phlex\Core\InjectableTrait;
 use Phlex\Core\OptionsTrait;
-use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Core\TrackableTrait;
+use Phlex\Core\Utils;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\MutatorInterface;
@@ -22,7 +22,6 @@ class Field
     use JoinLinkTrait;
     use Model\ElementTrait;
     use OptionsTrait;
-    use ReadableCaptionTrait;
     use TrackableTrait;
 
     public const PERSIST_NONE = 0;
@@ -359,7 +358,7 @@ class Field
      */
     public function getCaption(): string
     {
-        return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption(preg_replace('~^atk_fp_\w+?__~', '', $this->getKey()));
+        return $this->caption ?? $this->ui['caption'] ?? Utils::getReadableCaption(preg_replace('~^atk_fp_\w+?__~', '', $this->getKey()));
     }
 
     // }}}

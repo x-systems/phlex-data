@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field;
 
-use Phlex\Core\Factory;
-use Phlex\Core\InjectableTrait;
+use Phlex\Core;
 use Phlex\Data;
 
 abstract class Type
 {
-    use InjectableTrait;
+    use Core\InjectableTrait;
 
     protected static $registry = [
         [Type\Generic::class],
@@ -106,27 +105,15 @@ abstract class Type
             $codecSeedMutator = static::resolveFromRegistry($mutator->getCodecs());
 
             // cache resolved codec
-            $codecSeed = $this->codecs[$mutatorClass] = Factory::factory(Factory::mergeSeeds((array) $this->codec, $codecSeedFieldType, $codecSeedMutator), [$mutator, $field]);
+            $codecSeed = $this->codecs[$mutatorClass] = Core\Factory::factory(Core\Factory::mergeSeeds((array) $this->codec, $codecSeedFieldType, $codecSeedMutator), [$mutator, $field]);
         }
 
-        return Factory::factory($codecSeed, (array) $this->codec);
+        return Core\Factory::factory($codecSeed, (array) $this->codec);
     }
 
     public static function resolveFromRegistry(array $registry, string $searchClass = null)
     {
-        $searchClass ??= static::class;
-
-        if (array_key_exists($searchClass, $registry)) {
-            return $registry[$searchClass];
-        }
-
-        foreach ($registry as $mapClass => $seed) {
-            if (is_string($mapClass) && is_a($searchClass, $mapClass, true)) {
-                return $seed;
-            }
-        }
-
-        return $registry[0] ?? null;
+        return Core\Utils::resolveFromRegistry($registry, $searchClass ?? static::class);
     }
 
     public function normalize($value)

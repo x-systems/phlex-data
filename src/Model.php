@@ -12,7 +12,7 @@ use Phlex\Core\HookTrait;
 use Phlex\Core\InitializerTrait;
 use Phlex\Core\InjectableTrait;
 use Phlex\Core\OptionsTrait;
-use Phlex\Core\ReadableCaptionTrait;
+use Phlex\Core\Utils;
 use Phlex\Data\Persistence\Sql;
 
 /**
@@ -40,7 +40,6 @@ class Model implements \IteratorAggregate
     use Model\ReferencesTrait;
     use Model\UserActionsTrait;
     use OptionsTrait;
-    use ReadableCaptionTrait;
 
     /** @const string */
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
@@ -914,7 +913,7 @@ class Model implements \IteratorAggregate
      */
     public function getCaption(): string
     {
-        return $this->caption ?: $this->readableCaption(
+        return $this->caption ?: Utils::getReadableCaption(
             (new \ReflectionClass(static::class))->isAnonymous() ? get_parent_class(static::class) : static::class
         );
     }

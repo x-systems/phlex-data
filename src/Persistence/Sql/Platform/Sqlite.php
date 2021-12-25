@@ -9,11 +9,13 @@ use Phlex\Data\Persistence;
 
 class Sqlite extends Persistence\Sql
 {
-    protected static $defaultCodecs = [
+    protected $seeds = [
+        Persistence\Sql\Statement::class => [Sqlite\Statement::class],
+    ];
+
+    protected $codecs = [
         [Sqlite\Codec\String_::class],
         Model\Field\Type\String_::class => [Sqlite\Codec\String_::class],
         Model\Field\Type\Text::class => [Sqlite\Codec\Text::class],
     ];
-
-    public $_default_seed_statement = [Sqlite\Statement::class];
 }

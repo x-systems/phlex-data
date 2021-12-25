@@ -22,56 +22,25 @@ abstract class Sql extends Persistence
      */
     public $connection;
 
-    /**
-     * Default class when adding new field.
-     *
-     * @var array
-     */
-    public $_default_seed_addField = [Sql\Field::class];
+    protected $modelDefaults = [
+        'seeds' => [
+            Model\Field::class => [Sql\Field::class],
+            Model\Field\Expression::class => [Sql\Field\Expression::class],
+            Model\Join::class => [Sql\Join::class],
+        ],
+        'referenceSeeds' => [
+            Model\Reference\HasOne::class => [Sql\Reference\HasOne::class],
+            //             Model\Reference\HasMany::class => null,
+        ],
+        'joinSeed' => [Sql\Join::class],
+    ];
 
-    /**
-     * Default class when adding hasOne field.
-     *
-     * @var array
-     */
-    public $_default_seed_hasOne = [Sql\Reference\HasOne::class];
+    protected $seeds = [
+        Sql\Statement::class => [Sql\Statement::class],
+        Sql\Migration::class => [Sql\Migration::class],
+    ];
 
-    /**
-     * Default class when adding hasMany field.
-     *
-     * @var array
-     */
-    public $_default_seed_hasMany; // [Sql\Reference\HasMany::class];
-
-    /**
-     * Default class when adding Expression field.
-     *
-     * @var array
-     */
-    public $_default_seed_addExpression = [Sql\Field\Expression::class];
-
-    /**
-     * Default class when adding join.
-     *
-     * @var array
-     */
-    public $_default_seed_join = [Sql\Join::class];
-
-    /**
-     * Default class when creating statement.
-     *
-     * @var array
-     */
-    public $_default_seed_statement = [Sql\Statement::class];
-
-    /**
-     * Default class when creating migration.
-     *
-     * @var array
-     */
-    public $_default_seed_migration = [Sql\Migration::class];
-
-    protected static $defaultCodecs = [
+    protected $codecs = [
         [Sql\Codec\String_::class],
         Model\Field\Type\Selectable::class => [Sql\Codec\Selectable::class],
         Model\Field\Type\Array_::class => [Sql\Codec\Array_::class],
@@ -222,6 +191,8 @@ abstract class Sql extends Persistence
      */
     public function __construct($connection, $user = null, $password = null, $options = [])
     {
+        parent::__construct(...func_get_args());
+
         if ($connection instanceof DBAL\Connection) {
             $this->connection = $connection;
 
@@ -282,7 +253,7 @@ abstract class Sql extends Persistence
 
     public function statement($defaults = []): Sql\Statement
     {
-        return Factory::factory($this->_default_seed_statement, array_merge(
+        return Factory::factory($this->getSeed(Sql\Statement::class), array_merge(
             $defaults,
             [
                 'persistence' => $this,
@@ -295,16 +266,6 @@ abstract class Sql extends Persistence
 
     public function add(Model $model, array $defaults = []): Model
     {
-        // Use our own classes for fields, references and expressions unless
-        // $defaults specify them otherwise.
-        $defaults = array_merge([
-            '_default_seed_addField' => $this->_default_seed_addField,
-            '_default_seed_hasOne' => $this->_default_seed_hasOne,
-            '_default_seed_hasMany' => $this->_default_seed_hasMany,
-            '_default_seed_addExpression' => $this->_default_seed_addExpression,
-            '_default_seed_join' => $this->_default_seed_join,
-        ], $defaults);
-
         $model = parent::add($model, $defaults);
 
         if (!isset($model->table) || (!is_string($model->table) && $model->table !== false)) {
@@ -516,7 +477,7 @@ abstract class Sql extends Persistence
 
     public function createMigrator(Model $model = null): Sql\Migration
     {
-        return Factory::factory(Factory::mergeSeeds($this->_default_seed_migration, ['source' => $model ?: $this->connection]));
+        return Factory::factory($this->getSeed(Sql\Migration::class, ['source' => $model ?: $this->connection]));
     }
 
     /**

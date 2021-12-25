@@ -15,7 +15,7 @@ trait UserActionsTrait
      *
      * @var string|array
      */
-    public $_default_seed_action = [Model\UserAction::class];
+    public $actionSeed = [Model\UserAction::class];
 
     /**
      * @var array Collection of user actions - using key as action system name
@@ -40,7 +40,7 @@ trait UserActionsTrait
         }
 
         /** @var Model\UserAction $action */
-        $action = Factory::factory($this->_default_seed_action, $defaults);
+        $action = Factory::factory($this->actionSeed, $defaults);
 
         $this->_addIntoCollection($name, $action, 'userActions');
 

@@ -16,6 +16,7 @@ abstract class Persistence implements MutatorInterface
     use \Phlex\Core\HookTrait;
     use \Phlex\Core\InjectableTrait;
     use \Phlex\Core\NameTrait;
+    use \Phlex\Core\SeedRegistryTrait;
 
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
@@ -26,19 +27,44 @@ abstract class Persistence implements MutatorInterface
     public const ID_LOAD_ANY = self::class . '@idLoadAny';
 
     /**
+     * Model defaults injected when a model is added to this persistence.
+     *
+     * Useful for setting up persistence specific seeds
+     *
+     * @var array
+     */
+    protected $modelDefaults = [];
+
+    /**
+     * Seed registry to resolve seeds for persistence specific handling.
+     *
+     * @var array
+     */
+    protected $seeds = [];
+
+    /**
      * Stores class default codec resolution array.
      *
      * @var array|null
      */
-    protected static $defaultCodecs = [
+    protected $codecs = [
         [Persistence\Codec::class],
     ];
+
+    public function __construct()
+    {
+        $this->inheritRegistry('modelDefaults');
+        $this->inheritRegistry('seeds');
+        $this->inheritRegistry('codecs');
+    }
 
     /**
      * Associate model with the data driver.
      */
     public function add(Model $model, array $defaults = []): Model
     {
+        $defaults = array_replace_recursive($this->modelDefaults, $defaults);
+
         $model = Factory::factory($model, $defaults);
 
         if ($model->persistence) {

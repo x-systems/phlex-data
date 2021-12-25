@@ -11,11 +11,12 @@ use Phlex\Data\Persistence;
 
 class Oracle extends Persistence\Sql
 {
-    public $_default_seed_statement = [Oracle\Statement::class];
+    protected $seeds = [
+        Persistence\Sql\Statement::class => [Oracle\Statement::class],
+        Persistence\Sql\Migration::class => [Oracle\Migration::class],
+    ];
 
-    public $_default_seed_migration = [Oracle\Migration::class];
-
-    protected static $defaultCodecs = [
+    protected $codecs = [
         Model\Field\Type\Object_::class => [Oracle\Codec\Object_::class],
         Model\Field\Type\Array_::class => [Oracle\Codec\Array_::class],
     ];

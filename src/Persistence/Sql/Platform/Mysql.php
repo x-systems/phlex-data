@@ -8,5 +8,7 @@ use Phlex\Data\Persistence;
 
 class Mysql extends Persistence\Sql
 {
-    public $_default_seed_statement = [Mysql\Statement::class];
+    protected $seeds = [
+        Persistence\Sql\Statement::class => [Mysql\Statement::class],
+    ];
 }

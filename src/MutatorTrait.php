@@ -4,31 +4,25 @@ declare(strict_types=1);
 
 namespace Phlex\Data;
 
+use Phlex\Core\InheritableRegistryTrait;
+
 trait MutatorTrait
 {
+    use InheritableRegistryTrait;
+
     /**
      * Stores object custom codec resolution array.
      *
      * @var array
      */
-    protected $codecs = [];
-
-    /**
-     * Retrieve the default codecs for the persistence class.
-     */
-    public static function getDefaultCodecs(): array
-    {
-        $parentClass = get_parent_class(static::class);
-
-        return (static::$defaultCodecs ?? []) + ($parentClass && method_exists($parentClass, 'getDefaultCodecs') ? $parentClass::getDefaultCodecs() : []);
-    }
+    // protected $codecs = [];
 
     /**
      * Retrieve the active codecs for the persistence object.
      */
     public function getCodecs(): array
     {
-        return (array) $this->codecs + $this->getDefaultCodecs();
+        return (array) $this->codecs;
     }
 
     /**
@@ -38,7 +32,7 @@ trait MutatorTrait
      */
     public function setCodecs(array $codecs)
     {
-        $this->codecs = $codecs;
+        $this->codecs = $codecs + $this->codecs;
 
         return $this;
     }

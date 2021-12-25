@@ -10,7 +10,7 @@ use Phlex\Data\Model;
 /**
  * Evaluate php expression after load.
  */
-class Callback extends Model\Field
+class Callback extends Expression
 {
     use InitializerTrait;
 

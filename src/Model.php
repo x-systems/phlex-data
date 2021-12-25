@@ -12,6 +12,7 @@ use Phlex\Core\HookTrait;
 use Phlex\Core\InitializerTrait;
 use Phlex\Core\InjectableTrait;
 use Phlex\Core\OptionsTrait;
+use Phlex\Core\SeedRegistryTrait;
 use Phlex\Core\Utils;
 use Phlex\Data\Persistence\Sql;
 
@@ -40,6 +41,7 @@ class Model implements \IteratorAggregate
     use Model\ReferencesTrait;
     use Model\UserActionsTrait;
     use OptionsTrait;
+    use SeedRegistryTrait;
 
     /** @const string */
     public const HOOK_BEFORE_LOAD = self::class . '@beforeLoad';
@@ -136,23 +138,10 @@ class Model implements \IteratorAggregate
      */
     private $dirty = [];
 
-    /**
-     * The class used by addField() method.
-     *
-     * @todo use Field::class here and refactor addField() method to not use namespace prefixes.
-     *       but because that's backward incompatible change, then we can do that only in next
-     *       major version.
-     *
-     * @var string|array
-     */
-    public $_default_seed_addField = [Model\Field::class];
-
-    /**
-     * The class used by addExpression() method.
-     *
-     * @var string|array
-     */
-    public $_default_seed_addExpression = [Model\Field\Callback::class];
+    protected $seeds = [
+        Model\Field::class => [Model\Field::class],
+        Model\Field\Expression::class => [Model\Field\Callback::class],
+    ];
 
     /**
      * @var array Collection containing Field Objects - using key as the field system name
@@ -570,8 +559,7 @@ class Model implements \IteratorAggregate
     {
         $seed = Factory::mergeSeeds(
             $seed,
-            $this->_default_seed_addField,
-            $this->persistence ? ($this->persistence->_default_seed_addField ?? null) : null
+            $this->getSeed(Model\Field::class),
         );
 
         return Model\Field::fromSeed($seed);
@@ -1877,7 +1865,7 @@ class Model implements \IteratorAggregate
         }
 
         /** @var Model\Field\Callback */
-        $field = Model\Field::fromSeed($this->_default_seed_addExpression, $expression);
+        $field = Model\Field::fromSeed($this->getSeed(Model\Field\Expression::class), $expression);
 
         $this->addField($key, $field);
 

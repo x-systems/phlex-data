@@ -8,5 +8,7 @@ use Phlex\Data\Persistence;
 
 class Mssql extends Persistence\Sql
 {
-    public $_default_seed_statement = [Mssql\Statement::class];
+    protected $seeds = [
+        Persistence\Sql\Statement::class => [Mssql\Statement::class],
+    ];
 }

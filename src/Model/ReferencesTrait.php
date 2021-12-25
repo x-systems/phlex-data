@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
+use Phlex\Core\Utils;
 use Phlex\Data\Exception;
 
 /**
@@ -11,46 +12,21 @@ use Phlex\Data\Exception;
  */
 trait ReferencesTrait
 {
-    /**
-     * The seed used by addReference() method.
-     *
-     * @var array
-     */
-    public $_default_seed_addReference = [Reference::class];
-
-    /**
-     * The seed used by hasOne() method.
-     *
-     * @var array
-     */
-    public $_default_seed_hasOne = [Reference\HasOne::class];
-
-    /**
-     * The seed used by hasMany() method.
-     *
-     * @var array
-     */
-    public $_default_seed_hasMany = [Reference\HasMany::class];
-
-    /**
-     * The seed used by containsOne() method.
-     *
-     * @var array
-     */
-    public $_default_seed_containsOne = [Reference\ContainsOne::class];
-
-    /**
-     * The seed used by containsMany() method.
-     *
-     * @var array
-     */
-    public $_default_seed_containsMany = [Reference\ContainsMany::class];
+    public $referenceSeeds = [
+        [Reference::class],
+        Reference\HasOne::class => [Reference\HasOne::class],
+        Reference\HasMany::class => [Reference\HasMany::class],
+        Reference\ContainsOne::class => [Reference\ContainsOne::class],
+        Reference\ContainsMany::class => [Reference\ContainsMany::class],
+    ];
 
     /**
      * @param array<string, mixed> $defaults Properties which we will pass to Reference object constructor
      */
-    protected function doAddReference(array $seed, string $link, array $defaults = []): Reference
+    protected function doAddReference(string $referenceClass, string $link, array $defaults = []): Reference
     {
+        $seed = Utils::resolveFromRegistry($this->referenceSeeds, $referenceClass);
+
         $defaults[0] = $link;
 
         $reference = Reference::fromSeed($seed, $defaults);
@@ -66,12 +42,19 @@ trait ReferencesTrait
         return $this->add($reference);
     }
 
+    public function setReferenceSeeds(array $referenceSeeds)
+    {
+        $this->referenceSeeds = $referenceSeeds + $this->referenceSeeds;
+
+        return $this;
+    }
+
     /**
      * Add generic relation. Provide your own call-back that will return the model.
      */
     public function addReference(string $link, array $defaults): Reference
     {
-        return $this->doAddReference($this->_default_seed_addReference, $link, $defaults);
+        return $this->doAddReference(Reference::class, $link, $defaults);
     }
 
     /**
@@ -81,7 +64,7 @@ trait ReferencesTrait
      */
     public function hasOne(string $link, array $defaults = []) //: Reference
     {
-        return $this->doAddReference($this->_default_seed_hasOne, $link, $defaults); // @phpstan-ignore-line
+        return $this->doAddReference(Reference\HasOne::class, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -91,7 +74,7 @@ trait ReferencesTrait
      */
     public function hasMany(string $link, array $defaults = []) //: Reference
     {
-        return $this->doAddReference($this->_default_seed_hasMany, $link, $defaults); // @phpstan-ignore-line
+        return $this->doAddReference(Reference\HasMany::class, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -101,7 +84,7 @@ trait ReferencesTrait
      */
     public function containsOne(string $link, array $defaults = []) //: Reference
     {
-        return $this->doAddReference($this->_default_seed_containsOne, $link, $defaults); // @phpstan-ignore-line
+        return $this->doAddReference(Reference\ContainsOne::class, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**
@@ -111,7 +94,7 @@ trait ReferencesTrait
      */
     public function containsMany(string $link, array $defaults = []) //: Reference
     {
-        return $this->doAddReference($this->_default_seed_containsMany, $link, $defaults); // @phpstan-ignore-line
+        return $this->doAddReference(Reference\ContainsMany::class, $link, $defaults); // @phpstan-ignore-line
     }
 
     /**

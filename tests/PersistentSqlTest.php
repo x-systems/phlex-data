@@ -14,6 +14,10 @@ class PersistentSqlTest extends Sql\TestCase
         $persistence = (new \ReflectionClass(Persistence\Sql\Platform\Oracle::class))
             ->newInstanceWithoutConstructor();
 
+        \Closure::bind(function () {
+            $this->inheritRegistry('codecs');
+        }, $persistence, Persistence\Sql\Platform\Oracle::class)();
+
         $this->assertSame([
             Model\Field\Type\Object_::class => [Persistence\Sql\Platform\Oracle\Codec\Object_::class],
             Model\Field\Type\Array_::class => [Persistence\Sql\Platform\Oracle\Codec\Array_::class],

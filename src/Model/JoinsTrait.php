@@ -14,7 +14,7 @@ trait JoinsTrait
      *
      * @var array
      */
-    public $_default_seed_join = [Join::class];
+    public $joinSeed = [Join::class];
 
     /**
      * Creates an objects that describes relationship between multiple tables (or collections).
@@ -29,7 +29,7 @@ trait JoinsTrait
     {
         $defaults[0] = $foreignTable;
 
-        return $this->add(Join::fromSeed($this->_default_seed_join, $defaults));
+        return $this->add(Join::fromSeed($this->joinSeed, $defaults));
     }
 
     /**

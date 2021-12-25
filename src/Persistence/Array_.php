@@ -15,6 +15,10 @@ use Phlex\Data\Persistence;
  */
 class Array_ extends Persistence
 {
+    protected $modelDefaults = [
+        'joinSeed' => [Array_\Join::class],
+    ];
+
     /** @var array */
     public $data;
 
@@ -105,10 +109,6 @@ class Array_ extends Persistence
             $model->table = $defaults[0];
             unset($defaults[0]);
         }
-
-        $defaults = array_merge([
-            '_default_seed_join' => [Array_\Join::class],
-        ], $defaults);
 
         $model = parent::add($model, $defaults);
 

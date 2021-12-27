@@ -105,7 +105,7 @@ class Query extends Persistence\Query implements Expressionable
                 }
             }
         } else {
-            foreach ($this->model->getFields() as $key => $field) {
+            foreach ($this->model->getFields(Model::FIELD_FILTER_NOT_REFERENCE) as $key => $field) {
                 if (!$field->loadsFromPersistence()) {
                     continue;
                 }

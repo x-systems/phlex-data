@@ -52,7 +52,7 @@ class ContainsOne extends Model\Field\Reference
         parent::doInitialize();
 
         if (!$this->ourKey) {
-            $this->ourKey = $this->getKey() . '_id';
+            $this->ourKey = $this->getKey() . '_data';
         }
 
         $ourModel = $this->getOurModel();

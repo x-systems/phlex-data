@@ -12,6 +12,7 @@ use Phlex\Data\Model;
  * @property string $ref_no              @Phlex\Field()
  * @property float  $amount              @Phlex\Field()
  * @property Line   $lines               @Phlex\RefOne()
+ * @property array  $lines_data          @Phlex\Field()
  * @property string $total_gross         @Phlex\Field()
  * @property float  $discounts_total_sum @Phlex\Field()
  */

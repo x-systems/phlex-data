@@ -47,14 +47,6 @@ class Field
     public $default;
 
     /**
-     * If value of this field is defined by a model, this property
-     * will contain reference link.
-     *
-     * @var string|null
-     */
-    protected $referenceLink;
-
-    /**
      * Actual field name.
      *
      * @var string|null
@@ -294,11 +286,9 @@ class Field
         return $typecastFunc($value) === $typecastFunc($value2);
     }
 
-    public function getReference(): ?Reference
+    public function getQueryArguments($operator, $value): array
     {
-        return $this->referenceLink !== null
-            ? $this->getOwner()->getReference($this->referenceLink)
-            : null;
+        return $this->getCodec()->getQueryArguments($operator, $value);
     }
 
     public function getCodec(MutatorInterface $mutator = null): Field\Codec

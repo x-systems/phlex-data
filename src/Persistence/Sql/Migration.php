@@ -118,8 +118,8 @@ class Migration
     protected function getReferenceField(Model\Field $field): ?Model\Field
     {
         $reference = $field->getReference();
-        if ($reference instanceof Model\Reference\HasOne) {
-            $referenceTheirField = \Closure::bind(fn () => $reference->theirKey, null, Model\Reference::class)();
+        if ($reference instanceof Model\Field\Reference\HasOne) {
+            $referenceTheirField = \Closure::bind(fn () => $reference->theirKey, null, Model\Field\Reference::class)();
 
             $referenceField = $referenceTheirField ?: $reference->getOwner()->primaryKey;
 

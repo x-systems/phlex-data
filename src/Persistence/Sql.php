@@ -26,11 +26,9 @@ abstract class Sql extends Persistence
         'seeds' => [
             Model\Field::class => [Sql\Field::class],
             Model\Field\Expression::class => [Sql\Field\Expression::class],
-            Model\Join::class => [Sql\Join::class],
         ],
         'referenceSeeds' => [
-            Model\Reference\HasOne::class => [Sql\Reference\HasOne::class],
-            //             Model\Reference\HasMany::class => null,
+            Model\Field\Reference\HasOne::class => [Sql\Reference\HasOne::class],
         ],
         'joinSeed' => [Sql\Join::class],
     ];

@@ -403,9 +403,9 @@ class FieldTest extends Sql\TestCase
         $m = $m->load(1);
 
         $this->assertSame('John', $m->get('name'));
-        $this->assertSame('Programmer', $m->get('category'));
+        $this->assertSame('Programmer', $m->get('category_name'));
 
-        $m->insert(['name' => 'Peter', 'category' => 'Sales']);
+        $m->insert(['name' => 'Peter', 'category_name' => 'Sales']);
 
         $this->assertEquals([
             'user' => [

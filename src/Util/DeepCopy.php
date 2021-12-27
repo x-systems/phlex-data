@@ -183,11 +183,11 @@ class DeepCopy
         try {
             // Perhaps source was already copied, then simply load destination model and return
             if (isset($this->mapping[$source->table]) && isset($this->mapping[$source->table][$source->getId()])) {
-                $this->debug('Skipping ' . get_class($source));
+                $this->debug('Skipping ' . $source->getCaption());
 
                 $destination = $destination->load($this->mapping[$source->table][$source->getId()]);
             } else {
-                $this->debug('Copying ' . get_class($source));
+                $this->debug('Copying ' . $source->getCaption() . ' into ' . $destination->getCaption());
 
                 $data = $source->get();
 
@@ -212,18 +212,26 @@ class DeepCopy
                 // Copy fields as they are
                 $destination = $destination->createEntity();
                 foreach ($data as $key => $val) {
+                    if ($destination->hasReference($key)) {
+                        $ref = $destination->getReference($key);
+                        $destination->set($ref->getOurKey(), $val);
+
+                        continue;
+                    }
+                    // @todo fix check for editable to copy ref system field values e.g client_id
                     if ($destination->hasField($key) && $destination->getField($key)->isEditable()) {
                         $destination->set($key, $val);
                     }
                 }
             }
+
             $destination->hook(self::HOOK_AFTER_COPY, [$source]);
 
             // Look for hasOne references that needs to be mapped. Make sure records can be mapped, or copy them
             foreach ($this->extractKeys($references) as $refLink => $ref_val) {
                 $this->debug("Considering {$refLink}");
 
-                if ($source->hasReference($refLink) && ($ref = $source->getReference($refLink)) instanceof Model\Reference\HasOne) {
+                if ($source->hasReference($refLink) && ($ref = $source->getReference($refLink)) instanceof Model\Field\Reference\HasOne) {
                     $this->debug("Proceeding with {$refLink}");
 
                     // load destination model through $source
@@ -274,12 +282,12 @@ class DeepCopy
 
             // Store mapping
             $this->mapping[$source->table][$source->getId()] = $destination->getId();
-            $this->debug(' .. copied ' . get_class($source) . ' ' . $source->getId() . ' ' . $destination->getId());
+            $this->debug(' .. copied entity with primaryKey ' . $source->getId() . ' into entity with primaryKey ' . $destination->getId());
 
             // Next look for hasMany relationships and copy those too
 
             foreach ($this->extractKeys($references) as $refLink => $ref_val) {
-                if ($source->hasReference($refLink) && ($ref = $source->getReference($refLink)) instanceof Model\Reference\HasMany) {
+                if ($source->hasReference($refLink) && ($ref = $source->getReference($refLink)) instanceof Model\Field\Reference\HasMany) {
                     // No mapping, will always copy
                     foreach ($source->ref($refLink) as $ref_model) {
                         $this->doCopy(

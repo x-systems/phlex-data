@@ -13,6 +13,8 @@ class DcClient extends Model
 {
     public $table = 'client';
 
+    public $caption = 'Client';
+
     protected function doInitialize(): void
     {
         parent::doInitialize();
@@ -28,6 +30,8 @@ class DcClient extends Model
 class DcInvoice extends Model
 {
     public $table = 'invoice';
+
+    public $caption = 'Invoice';
 
     protected function doInitialize(): void
     {
@@ -59,6 +63,8 @@ class DcQuote extends Model
 {
     public $table = 'quote';
 
+    public $caption = 'Quote';
+
     protected function doInitialize(): void
     {
         parent::doInitialize();
@@ -76,6 +82,8 @@ class DcQuote extends Model
 class DcInvoiceLine extends Model
 {
     public $table = 'line';
+
+    public $caption = 'Invoice Line';
 
     protected function doInitialize(): void
     {
@@ -99,6 +107,8 @@ class DcInvoiceLine extends Model
 class DcQuoteLine extends Model
 {
     public $table = 'line';
+
+    public $caption = 'Quote Line';
 
     protected function doInitialize(): void
     {

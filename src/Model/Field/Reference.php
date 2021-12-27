@@ -28,6 +28,8 @@ class Reference extends Model\Field
      */
     public const OPTION_ROOT_MODEL = self::class . '@root_model';
 
+    public $access = self::ACCESS_GET;
+
     public $persist = self::PERSIST_NONE;
 
     /**
@@ -71,7 +73,7 @@ class Reference extends Model\Field
 
         return $model->onHookDynamic(
             $spot,
-            static fn (Model $model) => $model->getElement($name),
+            static fn (Model $model) => $model->getField($name),
             $fx,
             $args,
             $priority
@@ -97,6 +99,8 @@ class Reference extends Model\Field
 
     protected function doInitialize(): void
     {
+        $this->initTableAlias();
+
         $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, function () {
             $this->getOurModel()->getDataRef()[$this->getKey()] = $this->getTheirEntity();
         });
@@ -229,6 +233,11 @@ class Reference extends Model\Field
     public function getTheirEntity(array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
+    }
+
+    public function getQueryArguments($operator, $value): array
+    {
+        return $this->getOurField()->getCodec()->getQueryArguments($operator, $value);
     }
 
     // {{{ Debug Methods

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Model\Reference;
+namespace Phlex\Data\Model\Field\Reference;
 
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class HasManyPolymorphic extends Model\Reference
+class HasManyPolymorphic extends Model\Field\Reference
 {
     use Model\JoinLinkTrait;
 
@@ -158,7 +158,6 @@ class HasManyPolymorphic extends Model\Reference
         if (!$ourModel->hasField($this->ourKey)) {
             $ourModel->addField($this->ourKey, [
                 'type' => $this->type,
-                'referenceLink' => $this->link,
                 'system' => $this->system,
                 'joinName' => $this->joinName,
                 'default' => $this->default,

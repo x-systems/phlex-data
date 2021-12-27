@@ -90,7 +90,7 @@ class ContainsManyTest extends Sql\TestCase
                 $l->key()->vat_rate_id => 1,
                 $l->key()->price => 10,
                 $l->key()->qty => 2,
-                $l->key()->discounts => null,
+                $l->key()->discounts_data => null,
                 $l->key()->add_date => new \DateTime('2019-01-01'),
             ],
             2 => [
@@ -98,7 +98,7 @@ class ContainsManyTest extends Sql\TestCase
                 $l->key()->vat_rate_id => 2,
                 $l->key()->price => 15,
                 $l->key()->qty => 5,
-                $l->key()->discounts => null,
+                $l->key()->discounts_data => null,
                 $l->key()->add_date => new \DateTime('2019-01-01'),
             ],
             3 => [
@@ -106,7 +106,7 @@ class ContainsManyTest extends Sql\TestCase
                 $l->key()->vat_rate_id => 1,
                 $l->key()->price => 40,
                 $l->key()->qty => 1,
-                $l->key()->discounts => null,
+                $l->key()->discounts_data => null,
                 $l->key()->add_date => new \DateTime('2019-01-01'),
             ],
         ];
@@ -127,7 +127,7 @@ class ContainsManyTest extends Sql\TestCase
                 $l->key()->vat_rate_id => 2,
                 $l->key()->price => 50,
                 $l->key()->qty => 3,
-                $l->key()->discounts => null,
+                $l->key()->discounts_data => null,
                 $l->key()->add_date => new \DateTime('2019-01-01'),
             ]);
         $rows = [
@@ -136,7 +136,7 @@ class ContainsManyTest extends Sql\TestCase
                 $l->key()->vat_rate_id => 1,
                 $l->key()->price => 10,
                 $l->key()->qty => 2,
-                $l->key()->discounts => null,
+                $l->key()->discounts_data => null,
                 $l->key()->add_date => new \DateTime('2019-01-01'),
             ],
             3 => [
@@ -144,7 +144,7 @@ class ContainsManyTest extends Sql\TestCase
                 $l->key()->vat_rate_id => 1,
                 $l->key()->price => 40,
                 $l->key()->qty => 1,
-                $l->key()->discounts => null,
+                $l->key()->discounts_data => null,
                 $l->key()->add_date => new \DateTime('2019-01-01'),
             ],
             4 => [
@@ -152,7 +152,7 @@ class ContainsManyTest extends Sql\TestCase
                 $l->key()->vat_rate_id => 2,
                 $l->key()->price => 50,
                 $l->key()->qty => 3,
-                $l->key()->discounts => null,
+                $l->key()->discounts_data => null,
                 $l->key()->add_date => new \DateTime('2019-01-01'),
             ],
         ];
@@ -255,7 +255,7 @@ class ContainsManyTest extends Sql\TestCase
         $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without encoding
-        $exp_lines = $i->getEntitySet()->setOrder($i->key()->id)->export(null, null, false)[0][$i->key()->lines];
+        $exp_lines = $i->getEntitySet()->setOrder($i->key()->id)->export(null, null, false)[0][$i->key()->lines_data];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
@@ -269,7 +269,7 @@ class ContainsManyTest extends Sql\TestCase
                     $i->lines->key()->price => 10,
                     $i->lines->key()->qty => 2,
                     $i->lines->key()->add_date => $formatDtForCompareFunc(new \DateTime('2019-06-01')),
-                    $i->lines->key()->discounts => json_encode([
+                    $i->lines->key()->discounts_data => json_encode([
                         1 => [
                             $i->lines->discounts->key()->id => 1,
                             $i->lines->discounts->key()->percent => 5,
@@ -288,7 +288,7 @@ class ContainsManyTest extends Sql\TestCase
                     $i->lines->key()->price => 15,
                     $i->lines->key()->qty => 5,
                     $i->lines->key()->add_date => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
-                    $i->lines->key()->discounts => json_encode([
+                    $i->lines->key()->discounts_data => json_encode([
                         1 => [
                             $i->lines->discounts->key()->id => 1,
                             $i->lines->discounts->key()->percent => 20,

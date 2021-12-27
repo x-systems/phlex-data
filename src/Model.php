@@ -87,6 +87,10 @@ class Model implements \IteratorAggregate
     /** @const string */
     public const FIELD_FILTER_NOT_SYSTEM = 'not system';
     /** @const string */
+    public const FIELD_FILTER_REFERENCE = 'reference';
+    /** @const string */
+    public const FIELD_FILTER_NOT_REFERENCE = 'not reference';
+    /** @const string */
     public const FIELD_FILTER_VISIBLE = 'visible';
     /** @const string */
     public const FIELD_FILTER_EDITABLE = 'editable';
@@ -737,6 +741,10 @@ class Model implements \IteratorAggregate
                 return $field->system;
             case self::FIELD_FILTER_NOT_SYSTEM:
                 return !$field->system;
+            case self::FIELD_FILTER_REFERENCE:
+                return $field instanceof Model\Field\Reference;
+            case self::FIELD_FILTER_NOT_REFERENCE:
+                return !$field instanceof Model\Field\Reference;
             case self::FIELD_FILTER_EDITABLE:
                 return $field->isEditable();
             case self::FIELD_FILTER_VISIBLE:
@@ -848,7 +856,7 @@ class Model implements \IteratorAggregate
         if ($key === null) {
             // Collect list of eligible fields
             $data = [];
-            foreach ($this->only_fields ?: array_keys($this->getFields()) as $key) {
+            foreach ($this->only_fields ?: array_keys($this->getFields(self::FIELD_FILTER_NOT_REFERENCE)) as $key) {
                 $data[$key] = $this->get($key);
             }
 

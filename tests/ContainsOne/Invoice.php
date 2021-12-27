@@ -9,8 +9,9 @@ use Phlex\Data\Model;
 /**
  * Invoice model.
  *
- * @property string  $ref_no @Phlex\Field()
- * @property Address $addr   @Phlex\RefOne()
+ * @property string  $ref_no    @Phlex\Field()
+ * @property Address $addr      @Phlex\RefOne()
+ * @property array   $addr_data @Phlex\Field()
  */
 class Invoice extends Model
 {

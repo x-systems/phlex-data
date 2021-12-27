@@ -14,7 +14,7 @@ class Contact extends Model
     {
         parent::doInitialize();
 
-        $this->addField('type', ['enum' => ['client', 'supplier']]);
+        $this->addField('type', ['type' => ['enum', 'values' => ['client', 'supplier']]]);
 
         $this->addField('name');
     }

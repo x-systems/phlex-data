@@ -151,12 +151,12 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
         $m->addField('surname');
         $m->onlyFields(['surname']);
-        $m = $m->createEntity();
+        $e = $m->createEntity();
 
         $m->allFields();
 
-        $m->set('name', 5);
-        $this->assertSame(5, $m->get('name'));
+        $e->set('name', 5);
+        $this->assertSame(5, $e->get('name'));
     }
 
     /**

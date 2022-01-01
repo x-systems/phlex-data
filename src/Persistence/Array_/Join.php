@@ -29,14 +29,14 @@ class Join extends Model\Join
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->onHookShortToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
+            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
+            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
         } else {
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']));
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookShortToOwner(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-            $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 

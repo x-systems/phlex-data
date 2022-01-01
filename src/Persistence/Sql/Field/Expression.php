@@ -55,7 +55,7 @@ class Expression extends Sql\Field
         }
 
         if ($this->concat) {
-            $this->onHookShortToOwner(Model::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_SAVE, \Closure::fromCallable([$this, 'afterSave']));
         }
     }
 

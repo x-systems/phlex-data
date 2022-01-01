@@ -80,7 +80,7 @@ class ContainsOneTest extends Sql\TestCase
         $i = $i->loadBy($i->key()->ref_no, 'A1');
 
         // check do we have address set
-        $a = $i->addr;
+        $a = $i->ref('addr')->tryLoadAny();
         $this->assertFalse($a->isLoaded());
 
         // now store some address
@@ -100,7 +100,7 @@ class ContainsOneTest extends Sql\TestCase
         $this->assertEquals($row, $i->addr->get());
 
         // now try to change some field in address
-        $i->addr->set($i->addr->key()->address, 'bar')->save();
+        $i->ref('addr')->set($i->addr->key()->address, 'bar')->save();
         $this->assertSame('bar', $i->addr->address);
 
         // now add nested containsOne - DoorCode

@@ -53,9 +53,9 @@ class ConditionSqlTest extends Sql\TestCase
     {
         $m = new Model($this->db, ['table' => 'user']);
         $scope = $m->scope();
-        $this->assertSame($scope, $m->createEntity()->getEntitySet()->scope());
-        $this->expectException(\Phlex\Data\Exception::class);
-        $m->createEntity()->scope();
+        $this->assertSame($scope, $m->createEntity()->getModel()->scope());
+//         $this->expectException(\Phlex\Data\Exception::class);
+//         $m->createEntity()->scope();
     }
 
     public function testEntityReloadWithDifferentIdException()
@@ -70,14 +70,14 @@ class ConditionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
-        $m = $m->tryLoad(1);
-        $this->assertSame('John', $m->get('name'));
-        \Closure::bind(function () use ($m) {
-            $m->entityId = 2;
+        $e = $m->tryLoad(1);
+        $this->assertSame('John', $e->get('name'));
+        \Closure::bind(function () use ($e) {
+            $e->id = 2;
         }, null, Model::class)();
         $this->expectException(\Phlex\Data\Exception::class);
         $this->expectExceptionMessageMatches('~entity.+different~');
-        $m->reload();
+        $e->reload();
     }
 
     public function testNull()

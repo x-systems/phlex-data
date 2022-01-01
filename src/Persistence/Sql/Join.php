@@ -71,10 +71,10 @@ class Join extends Model\Join implements Expressionable
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->onHookShortToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
-            $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         } else {
             // Master field indicates ID of the joined item. In the past it had to be
             // defined as a physical field in the main table. Now it is a model field
@@ -91,10 +91,10 @@ class Join extends Model\Join implements Expressionable
                 }
             }
 
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
-            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookShortToOwner(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-            $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']), [], -5);
+            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 

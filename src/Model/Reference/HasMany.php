@@ -34,23 +34,6 @@ class HasMany extends Model\Reference
     }
 
     /**
-     * Returns our field value or id.
-     *
-     * @return mixed
-     */
-    protected function getOurFieldValue()
-    {
-        $ourModel = $this->getOurModel();
-
-        if ($ourModel->isLoaded()) {
-            return $ourModel->get($this->getOurKey());
-        }
-
-        // create expression based on existing conditions
-        return $ourModel->toQuery()->field($this->getOurKey());
-    }
-
-    /**
      * Returns our field or id field.
      */
     protected function referenceOurValue(): Model\Field
@@ -69,7 +52,7 @@ class HasMany extends Model\Reference
 
         return $theirModel->addCondition(
             $this->getTheirKey($theirModel),
-            $this->getOurFieldValue()
+            $this->getOurModel()->toQuery()->field($this->getOurKey())
         );
     }
 

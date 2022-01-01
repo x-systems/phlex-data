@@ -83,7 +83,7 @@ class ContainsManyTest extends Sql\TestCase
         $i = $i->loadBy($i->key()->ref_no, 'A1');
 
         // now let's add some lines
-        $l = $i->lines;
+        $l = $i->ref('lines');
         $rows = [
             1 => [
                 $l->key()->id => 1,
@@ -116,9 +116,9 @@ class ContainsManyTest extends Sql\TestCase
         }
 
         // reload invoice just in case
-        $this->assertEquals($rows, $i->lines->export());
+        $this->assertEquals($rows, $i->ref('lines')->export());
         $i->reload();
-        $this->assertEquals($rows, $i->lines->export());
+        $this->assertEquals($rows, $i->ref('lines')->export());
 
         // now let's delete line with id=2 and add one more line
         $i->lines
@@ -192,7 +192,7 @@ class ContainsManyTest extends Sql\TestCase
         $i = $i->loadBy($i->key()->ref_no, 'A1');
 
         // now let's add some lines
-        $l = $i->lines;
+        $l = $i->ref('lines');
 
         $rows = [
             1 => [

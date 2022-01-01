@@ -99,7 +99,7 @@ class ContainsOne extends Model\Reference
         }
 
         // try to load any (actually only one possible) record
-        return $theirModel->tryLoadAny();
+        return $theirModel;//->tryLoadAny();
     }
 
     public function createTheirModel(array $defaults = []): Model

@@ -27,8 +27,6 @@ trait ReferencesTrait
     {
         $seed = Utils::resolveFromRegistry($this->referenceSeeds, $referenceClass);
 
-
-
         $reference = Reference::fromSeed($seed, $defaults);
 
         // if reference with such name already exists, then throw exception
@@ -40,13 +38,6 @@ trait ReferencesTrait
 //         }
 
         return $this->addField($link, $reference);
-    }
-
-    public function setReferenceSeeds(array $referenceSeeds)
-    {
-        $this->referenceSeeds = $referenceSeeds + $this->referenceSeeds;
-
-        return $this;
     }
 
     public function setReferenceSeeds(array $referenceSeeds)

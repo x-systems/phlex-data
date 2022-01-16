@@ -218,7 +218,7 @@ class DeepCopy
 
                         continue;
                     }
-                    // @todo fix check for editable to copy ref system field values e.g client_id
+                    // @todo GH fix check for editable to copy ref system field values e.g client_id
                     if ($destination->hasField($key) && $destination->getField($key)->isEditable()) {
                         $destination->set($key, $val);
                     }

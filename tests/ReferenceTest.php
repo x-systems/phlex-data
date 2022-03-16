@@ -16,7 +16,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $user->addField('id');
         $user->addField('name');
         $user = $user->createEntity();
-        $user->setId(1);
+        $user->setId(1)->save();
 
         $order = new Model();
         $order->addField('id');
@@ -49,7 +49,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $user->addField('id');
         $user->addField('name');
         $user = $user->createEntity();
-        $user->setId(1);
+        $user->setId(1)->save();
 
         $order = new Model();
         $order->addField('id');

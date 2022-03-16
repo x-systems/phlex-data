@@ -68,16 +68,6 @@ class IteratorTest extends Sql\TestCase
     {
         $m = new Model();
         $this->expectException(Exception::class);
-        $m->save();
-    }
-
-    /**
-     * Model is not associated with any database - persistence should be set.
-     */
-    public function testException7(): void
-    {
-        $m = new Model();
-        $this->expectException(Exception::class);
         $m->toQuery()->insert(['a', 'b']);
     }
 

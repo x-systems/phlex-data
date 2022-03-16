@@ -54,55 +54,52 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
     {
         $m = new Model();
         $m->addField('name');
-        $m = $m->createEntity();
-        $dataRef = &$m->getDataRef();
-        $dirtyRef = &$m->getDirtyRef();
-        $dataRef = ['name' => 5];
+        $m = $m->createEntity(['name' => 5]);
+
         $m->set('name', 5);
-        $this->assertSame([], $m->getDirtyRef());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         $m->set('name', 10);
-        $this->assertSame(['name' => 5], $m->getDirtyRef());
+        $this->assertSame(['name' => 5], $m->getEntry()->getLoaded());
 
         $m->set('name', 15);
-        $this->assertSame(['name' => 5], $m->getDirtyRef());
+        $this->assertSame(['name' => 5], $m->getEntry()->getLoaded());
 
         $m->set('name', 5);
-        $this->assertSame([], $m->getDirtyRef());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         $m->set('name', '5');
-        $this->assertSame([], $m->getDirtyRef());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         $m->set('name', '6');
-        $this->assertSame(['name' => 5], $m->getDirtyRef());
+        $this->assertSame(['name' => 5], $m->getEntry()->getLoaded());
         $m->set('name', '5');
-        $this->assertSame([], $m->getDirtyRef());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         $m->set('name', '5.0');
-        $this->assertSame(['name' => '5'], $m->getDirtyRef());
+        $this->assertSame(['name' => 5], $m->getEntry()->getLoaded());
 
-        $dirtyRef = [];
-        $dataRef = ['name' => ''];
+        $m = $m->createEntity(['name' => '']);
         $m->set('name', '');
-        $this->assertSame([], $m->getDirtyRef());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
-        $dataRef = ['name' => '5'];
+        $m = $m->createEntity(['name' => '5']);
         $m->set('name', 5);
-        $this->assertSame([], $m->getDirtyRef());
+        $this->assertSame([], $m->getEntry()->getDirty());
         $m->set('name', 6);
-        $this->assertSame(['name' => '5'], $m->getDirtyRef());
+        $this->assertSame(['name' => '5'], $m->getEntry()->getLoaded());
         $m->set('name', 5);
-        $this->assertSame([], $m->getDirtyRef());
+        $this->assertSame([], $m->getEntry()->getDirty());
         $m->set('name', '5');
-        $this->assertSame([], $m->getDirtyRef());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
-        $dataRef = ['name' => 4.28];
+        $m = $m->createEntity(['name' => 4.28]);
         $m->set('name', '4.28');
-        $this->assertSame([], $m->getDirtyRef());
+        $this->assertSame([], $m->getEntry()->getDirty());
         $m->set('name', '5.28');
-        $this->assertSame(['name' => 4.28], $m->getDirtyRef());
+        $this->assertSame(['name' => 4.28], $m->getEntry()->getLoaded());
         $m->set('name', 4.28);
-        $this->assertSame([], $m->getDirtyRef());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         // now with defaults
         $m = new Model();
@@ -113,11 +110,11 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame('John', $m->get('name'));
 
         $m->set('name', null);
-        $this->assertSame(['name' => 'John'], $m->getDirtyRef());
-        $this->assertSame(['name' => null], $m->getDataRef());
+        $this->assertSame([], $m->getEntry()->getLoaded());
+        $this->assertSame(['name' => null], $m->getEntry()->getDirty());
         $this->assertNull($m->get('name'));
 
-        $m->_unset('name');
+        $m->reset('name');
         $this->assertSame('John', $m->get('name'));
     }
 
@@ -125,11 +122,10 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
     {
         $p = new Persistence\Array_();
         $m = new Model($p);
-        $m = $m->createEntity();
+        $m = $m->createEntity(['id' => 20]);
 
         $this->assertNotNull($m->getField('id'));
 
-        $m->set('id', 20);
         $this->assertEquals(20, $m->getId());
     }
 
@@ -151,12 +147,12 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m->addField('name');
         $m->addField('surname');
         $m->onlyFields(['surname']);
-        $m = $m->createEntity();
+        $e = $m->createEntity();
 
-        $m->allFields();
+        $e->allFields();
 
-        $m->set('name', 5);
-        $this->assertSame(5, $m->get('name'));
+        $e->set('name', 5);
+        $this->assertSame(5, $e->get('name'));
     }
 
     /**
@@ -182,7 +178,7 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model();
         $m = $m->createEntity();
         $this->expectException(\Error::class);
-        $m->set(0, 'foo'); // @phpstan-ignore-line
+        $m->set(0, 'foo');
     }
 
     public function testException2a(): void
@@ -243,20 +239,19 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m = $m->createEntity();
 
         $this->assertSame(1000, $m->get('salary'));
-        $this->assertFalse($m->_isset('salary'));
+        $this->assertFalse($m->isDirty('salary'));
 
         // Next we load record from $db
-        $dataRef = &$m->getDataRef();
-        $dataRef = ['salary' => 2000];
+        $m = $m->createEntity(['salary' => 2000]);
         $this->assertSame(2000, $m->get('salary'));
-        $this->assertFalse($m->_isset('salary'));
+        $this->assertFalse($m->isDirty('salary'));
 
         $m->set('salary', 3000);
         $this->assertSame(3000, $m->get('salary'));
-        $this->assertTrue($m->_isset('salary'));
+        $this->assertTrue($m->isDirty('salary'));
 
-        $m->_unset('salary');
+        $m->reset('salary');
         $this->assertSame(2000, $m->get('salary'));
-        $this->assertFalse($m->_isset('salary'));
+        $this->assertFalse($m->isDirty('salary'));
     }
 }

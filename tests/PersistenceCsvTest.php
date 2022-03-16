@@ -154,7 +154,7 @@ class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
         $m2 = $m->withPersistence($p2);
 
         foreach ($m as $row) {
-            $m2->createEntity()->save($row->get());
+            $m2->insert($row->get());
         }
 
         $this->file->fseek(0);

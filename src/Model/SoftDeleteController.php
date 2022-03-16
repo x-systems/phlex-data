@@ -129,8 +129,6 @@ class SoftDeleteController
 
     public static function isActive(Model $model): bool
     {
-        $model->assertIsEntity();
-
         return (bool) $model->get($model->getElement(self::TRACKABLE_ID)->useFieldName);
     }
 

@@ -48,8 +48,6 @@ abstract class Query implements \IteratorAggregate
     {
         $this->model = $model;
 
-        $model = $model->getEntitySet(true);
-
         $this->scope = clone $model->scope();
 
         $this->order = $model->order;

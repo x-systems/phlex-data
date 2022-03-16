@@ -76,9 +76,9 @@ abstract class Persistence implements MutatorInterface
      *
      * @return mixed
      */
-    public function atomic(\Closure $fx)
+    public function atomic(\Closure $fx, ...$args)
     {
-        return $fx();
+        return $fx(...$args);
     }
 
     public function getRow(Model $model, $id = null)
@@ -135,13 +135,6 @@ abstract class Persistence implements MutatorInterface
     public function update(Model $model, $id, array $data)
     {
         $data = $this->encodeRow($model, $data);
-
-        $model->onHook(Persistence\Query::HOOK_AFTER_UPDATE, function (Model $model, Persistence\Query $query, $result) use ($data) {
-            if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->getDirtyRef()[$model->primaryKey]) {
-                // ID was changed
-                $model->id = $data[$model->primaryKey];
-            }
-        }, [], -1000);
 
         return $this->query($model)->whereId($id)->update($data)->execute();
     }

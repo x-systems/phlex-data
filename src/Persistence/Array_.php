@@ -51,7 +51,7 @@ class Array_ extends Persistence
             unset($row[$primaryKeyColumnName]);
         }
 
-        $this->data[$model->table][$id] = $row; //array_intersect_key($row, $rowWithId);
+        $this->data[$model->table][$id] = $row; // array_intersect_key($row, $rowWithId);
 
         return $id;
     }

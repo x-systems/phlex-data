@@ -402,11 +402,13 @@ class JoinSqlTest extends Sql\TestCase
                 20 => ['id' => 20, 'name' => 'Peter', 'contact_id' => 100],
                 30 => ['id' => 30, 'name' => 'XX', 'contact_id' => 200],
                 40 => ['id' => 40, 'name' => 'YYY', 'contact_id' => 300],
-            ], 'contact' => [
+            ],
+            'contact' => [
                 100 => ['id' => 100, 'contact_phone' => '+555', 'country_id' => 1],
                 200 => ['id' => 200, 'contact_phone' => '+999', 'country_id' => 2],
                 300 => ['id' => 300, 'contact_phone' => '+777', 'country_id' => 5],
-            ], 'country' => [
+            ],
+            'country' => [
                 1 => ['id' => 1, 'name' => 'UK'],
                 2 => ['id' => 2, 'name' => 'US'],
                 3 => ['id' => 3, 'name' => 'India'],
@@ -434,7 +436,7 @@ class JoinSqlTest extends Sql\TestCase
 
         $this->assertSame($m_u2->getField('country_id')->getJoin(), $m_u2->getField('contact_phone')->getJoin());
 
-        $m_u->createEntity()->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
+        $m_u->save(['name' => 'new', 'contact_phone' => '+000', 'country_name' => 'LV']);
 
         $this->assertEquals(
             [
@@ -596,7 +598,7 @@ class JoinSqlTest extends Sql\TestCase
         $m_user = new Model($this->db, ['table' => 'user']);
         $m_user->addField('name');
         $j = $m_user->join('detail.my_user_id', [
-            //'reverse' => true, // this will be reverse join by default
+            // 'reverse' => true, // this will be reverse join by default
             // also no need to set these (will be done automatically), but still let's do that for test sake
             'master_field' => 'id',
             'foreign_field' => 'my_user_id',
@@ -615,7 +617,7 @@ class JoinSqlTest extends Sql\TestCase
         $this->assertEquals(['id' => 20, 'name' => 'Mark', 'notes' => '2nd note'], $m->get());
 
         // insert new record
-        $m = $m_user->createEntity()->save(['name' => 'Emily', 'notes' => '3rd note']);
+        $m = $m_user->save(['name' => 'Emily', 'notes' => '3rd note']);
         $m = $m_user->tryLoad(21);
         $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 21, 'name' => 'Emily', 'notes' => '3rd note'], $m->get());
@@ -630,7 +632,7 @@ class JoinSqlTest extends Sql\TestCase
         $j->addField('notes');
 
         // insert new record
-        $m = $m_user->createEntity()->save(['name' => 'Olaf', 'notes' => '4th note']);
+        $m = $m_user->save(['name' => 'Olaf', 'notes' => '4th note']);
         $m = $m_user->tryLoad(22);
         $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 22, 'name' => 'Olaf', 'notes' => '4th note'], $m->get());
@@ -646,7 +648,7 @@ class JoinSqlTest extends Sql\TestCase
         $j->addField('notes');
 
         // insert new record
-        $m = $m_user->createEntity()->save(['name' => 'Chris', 'notes' => '5th note']);
+        $m = $m_user->save(['name' => 'Chris', 'notes' => '5th note']);
         $m = $m_user->tryLoad(23);
         $this->assertTrue($m->isLoaded());
         $this->assertEquals(['id' => 23, 'name' => 'Chris', 'notes' => '5th note'], $m->get());
@@ -707,7 +709,7 @@ class JoinSqlTest extends Sql\TestCase
         );
 
         // insert
-        $m_u3 = $m_u->createEntity()->unload();
+        $m_u3 = $m_u->createEntity();
         $m_u3->set('name', 'Marvin');
         $m_u3->set('j1_phone', '+999');
         $m_u3->set('j2_salary', 222);

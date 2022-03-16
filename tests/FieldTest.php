@@ -54,10 +54,10 @@ class FieldTest extends Sql\TestCase
         $this->assertTrue($m->isDirty('foo'));
 
         $m->set('foo', 'abc');
-        $this->assertFalse($m->isDirty('foo'));
+        $this->assertTrue($m->isDirty('foo'));
 
         // set initial data
-        $m->getDataRef()['foo'] = 'xx';
+        $m = $m->createEntity(['foo' => 'xx']);
         $this->assertFalse($m->isDirty('foo'));
 
         $m->set('foo', 'abc');
@@ -74,13 +74,13 @@ class FieldTest extends Sql\TestCase
     {
         $m = new Model();
         $m->addField('foo', ['default' => 'abc']);
-        $m = $m->createEntity();
+        $entity = $m->createEntity();
 
-        $this->assertTrue($m->compare('foo', 'abc'));
-        $m->set('foo', 'zzz');
+        $this->assertTrue($entity->compare('foo', 'abc'));
+        $entity->set('foo', 'zzz');
 
-        $this->assertFalse($m->compare('foo', 'abc'));
-        $this->assertTrue($m->compare('foo', 'zzz'));
+        $this->assertFalse($entity->compare('foo', 'abc'));
+        $this->assertTrue($entity->compare('foo', 'zzz'));
     }
 
     public function testMandatory1(): void
@@ -355,10 +355,10 @@ class FieldTest extends Sql\TestCase
         $m->onHook(Model::HOOK_BEFORE_SAVE, static function ($m) {
             if ($m->isDirty('name')) {
                 $m->set('surname', $m->get('name'));
-                $m->_unset('name');
+                $m->reset('name');
             } elseif ($m->isDirty('surname')) {
                 $m->set('name', $m->get('surname'));
-                $m->_unset('surname');
+                $m->reset('surname');
             }
         });
 
@@ -542,7 +542,7 @@ class FieldTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true]);
         $m->addField('secret', [
-            //'password'  => 'bonkers',
+            // 'password'  => 'bonkers',
             'type' => ['string', 'codec' => [Persistence\Sql\Codec\Dynamic::class, 'encodeFx' => $encrypt, 'decodeFx' => $decrypt]],
         ]);
 
@@ -809,22 +809,22 @@ class FieldTest extends Sql\TestCase
         $model->addField('visible', ['ui' => ['visible' => true]]);
         $model->addField('visible_system', ['ui' => ['visible' => true], 'system' => true]);
         $model->addField('not_editable', ['ui' => ['editable' => false]]);
-        $model = $model->createEntity();
+        $entity = $model->createEntity();
 
-        $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
-        $this->assertSame(['system', 'editable_system', 'visible_system'], array_keys($model->getFields(Model::FIELD_FILTER_SYSTEM)));
-        $this->assertSame(['editable', 'visible', 'not_editable'], array_keys($model->getFields(Model::FIELD_FILTER_NOT_SYSTEM)));
-        $this->assertSame(['editable', 'editable_system', 'visible'], array_keys($model->getFields(Model::FIELD_FILTER_EDITABLE)));
-        $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields(Model::FIELD_FILTER_VISIBLE)));
-        $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields([Model::FIELD_FILTER_EDITABLE, Model::FIELD_FILTER_VISIBLE])));
+        $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields()));
+        $this->assertSame(['system', 'editable_system', 'visible_system'], array_keys($entity->getFields(Model::FIELD_FILTER_SYSTEM)));
+        $this->assertSame(['editable', 'visible', 'not_editable'], array_keys($entity->getFields(Model::FIELD_FILTER_NOT_SYSTEM)));
+        $this->assertSame(['editable', 'editable_system', 'visible'], array_keys($entity->getFields(Model::FIELD_FILTER_EDITABLE)));
+        $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields(Model::FIELD_FILTER_VISIBLE)));
+        $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields([Model::FIELD_FILTER_EDITABLE, Model::FIELD_FILTER_VISIBLE])));
 
-        $model->onlyFields(['system', 'visible', 'not_editable']);
+        $entity->onlyFields(['system', 'visible', 'not_editable']);
 
         // getFields() is unaffected by only_fields, will always return all fields
-        $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($model->getFields()));
+        $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields()));
 
         // only return subset of only_fields
-        $this->assertSame(['visible', 'not_editable'], array_keys($model->getFields(Model::FIELD_FILTER_VISIBLE)));
+        $this->assertSame(['visible', 'not_editable'], array_keys($entity->getFields(Model::FIELD_FILTER_VISIBLE)));
 
         $this->expectExceptionMessage('not supported');
         $model->getFields('foo');
@@ -836,31 +836,31 @@ class FieldTest extends Sql\TestCase
         $model->addField('date', ['type' => 'date']);
         $model->addField('time', ['type' => 'time']);
         $model->addField('datetime', ['type' => 'datetime']);
-        $model = $model->createEntity();
+        $entity = $model->createEntity();
 
-        $this->assertSame('', $model->getField('date')->toString());
-        $this->assertSame('', $model->getField('time')->toString());
-        $this->assertSame('', $model->getField('datetime')->toString());
+        $this->assertSame('', $entity->getField('date')->toString());
+        $this->assertSame('', $entity->getField('time')->toString());
+        $this->assertSame('', $entity->getField('datetime')->toString());
 
         // datetime without microseconds
         $dt = new \DateTime('2020-01-21 21:09:42');
-        $model->set('date', $dt);
-        $model->set('time', $dt);
-        $model->set('datetime', $dt);
+        $entity->set('date', $dt);
+        $entity->set('time', $dt);
+        $entity->set('datetime', $dt);
 
-        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertSame($dt->format('H:i:s'), $model->getField('time')->toString());
-        $this->assertSame($dt->format('c'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('Y-m-d'), $entity->getField('date')->toString());
+        $this->assertSame($dt->format('H:i:s'), $entity->getField('time')->toString());
+        $this->assertSame($dt->format('c'), $entity->getField('datetime')->toString());
 
         // datetime with microseconds
         $dt = new \DateTime('2020-01-21 21:09:42.895623');
-        $model->set('date', $dt);
-        $model->set('time', $dt);
-        $model->set('datetime', $dt);
+        $entity->set('date', $dt);
+        $entity->set('time', $dt);
+        $entity->set('datetime', $dt);
 
-        $this->assertSame($dt->format('Y-m-d'), $model->getField('date')->toString());
-        $this->assertSame($dt->format('H:i:s.u'), $model->getField('time')->toString());
-        $this->assertSame($dt->format('Y-m-d\TH:i:s.uP'), $model->getField('datetime')->toString());
+        $this->assertSame($dt->format('Y-m-d'), $entity->getField('date')->toString());
+        $this->assertSame($dt->format('H:i:s.u'), $entity->getField('time')->toString());
+        $this->assertSame($dt->format('Y-m-d\TH:i:s.uP'), $entity->getField('datetime')->toString());
     }
 
     public function testSetNull(): void

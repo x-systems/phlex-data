@@ -64,7 +64,7 @@ class TransactionTest extends Sql\TestCase
         $m->onHookShort(Model::HOOK_BEFORE_SAVE, static function (bool $isUpdate) use ($testCase) {
             $testCase->assertFalse($isUpdate);
         });
-        $m->createEntity()->save(['name' => 'Foo']);
+        $m->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($this->db, ['table' => 'item']);
@@ -90,7 +90,7 @@ class TransactionTest extends Sql\TestCase
         $m->onHookShort(Model::HOOK_AFTER_SAVE, static function (bool $isUpdate) use ($testCase) {
             $testCase->assertFalse($isUpdate);
         });
-        $m->createEntity()->save(['name' => 'Foo']);
+        $m->save(['name' => 'Foo']);
 
         // test update
         $m = new Model($this->db, ['table' => 'item']);

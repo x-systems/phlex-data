@@ -49,13 +49,13 @@ class ConditionSqlTest extends Sql\TestCase
         $this->assertSame('Sue', $mm2->get('name'));
     }
 
-    public function testEntityNoScopeCloning()
+    public function testEntityScopeCloning()
     {
         $m = new Model($this->db, ['table' => 'user']);
         $scope = $m->scope();
-        $this->assertSame($scope, $m->createEntity()->getEntitySet()->scope());
-        $this->expectException(\Phlex\Data\Exception::class);
-        $m->createEntity()->scope();
+        $this->assertNotSame($scope, $m->createEntity()->scope());
+//         $this->expectException(\Phlex\Data\Exception::class);
+//         $m->createEntity()->scope();
     }
 
     public function testEntityReloadWithDifferentIdException()
@@ -70,14 +70,12 @@ class ConditionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addFields(['name', 'gender']);
 
-        $m = $m->tryLoad(1);
-        $this->assertSame('John', $m->get('name'));
-        \Closure::bind(function () use ($m) {
-            $m->entityId = 2;
-        }, null, Model::class)();
+        $e = $m->tryLoad(1);
+        $this->assertSame('John', $e->get('name'));
+
         $this->expectException(\Phlex\Data\Exception::class);
-        $this->expectExceptionMessageMatches('~entity.+different~');
-        $m->reload();
+        $this->expectExceptionMessageMatches('~access field without permission~');
+        $e->set('id', 2);
     }
 
     public function testNull()

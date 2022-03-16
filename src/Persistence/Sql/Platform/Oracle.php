@@ -53,7 +53,7 @@ class Oracle extends Persistence\Sql
                     $backtrace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS);
                     foreach ($backtrace as $frame) {
                         if ($this === ($frame['object'] ?? null)
-                                && $targetMethodName === ($frame['function'] ?? null)) {
+                                && $targetMethodName === $frame['function']) {
                             throw new Exception('Long CLOB/TEXT (4000+ bytes) is not supported for Oracle');
                         }
                     }

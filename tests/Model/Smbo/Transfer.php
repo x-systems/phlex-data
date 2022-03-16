@@ -32,11 +32,9 @@ class Transfer extends Payment
                 $m2->set('account_id', $m2->get('destination_account_id'));
                 $m2->set('amount', -$m2->get('amount'));
 
-                $m2->_unset('destination_account_id');
+                $m2->reset('destination_account_id');
 
-                $m2->reloadAfterSave = false; // avoid check
-
-                $this->set('transfer_document_id', $m2->save()->getId());
+                $this->set('transfer_document_id', $m2->saveWithoutReloading()->getId());
             }
         });
 

@@ -67,7 +67,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
 
                 $theirModel->addCondition($theirKey, $ourModel->get($ourKey));
                 $ourModel->set($this->getOurKey(), $theirModel->toQuery()->field($theirModel->primaryKey));
-                $ourModel->_unset($ourKey);
+                $ourModel->reset($ourKey);
             }
         }, [], 21);
 
@@ -147,16 +147,14 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         // example - $model->load(1)->ref('refLink')->import($rows);
         if ($ourModel->isLoaded() && !$theirModel->isLoaded()) {
             if ($ourField->isPrimaryKey()) {
-                return $theirModel->getEntitySet()
-                    ->addCondition($theirKey, $this->getOurFieldValue());
+                return $theirModel->addCondition($theirKey, $this->getOurFieldValue());
             }
         }
 
         // handles the deep traversal using an expression
         $ourFieldExpression = $ourModel->toQuery()->field($ourField);
 
-        $theirModel->getEntitySet(true)
-            ->addCondition($theirKey, $ourFieldExpression);
+        $theirModel->addCondition($theirKey, $ourFieldExpression);
 
         return $theirModel;
     }

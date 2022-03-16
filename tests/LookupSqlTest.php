@@ -159,10 +159,10 @@ class LookupSqlTest extends Sql\TestCase
         $results = [];
 
         // should be OK, will set country name, rest of fields will be null
-        $c->createEntity()->saveAndUnload(['name' => 'Canada']);
+        $c->saveWithoutReloading(['name' => 'Canada']);
 
         // adds another country, but with more fields
-        $c->createEntity()->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
+        $c->saveWithoutReloading(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
 
         // setting field prior will affect save()
         $cc = $c->createEntity();
@@ -299,7 +299,7 @@ class LookupSqlTest extends Sql\TestCase
         $u->import([
             ['name' => 'Alain', 'country_code' => 'CA'],
             ['name' => 'Imants', 'country_code' => 'LV'],
-            //'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
+            // 'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
         ]);
 
         $this->assertSame([

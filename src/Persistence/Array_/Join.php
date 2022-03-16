@@ -58,7 +58,7 @@ class Join extends Model\Join
         $model = $this->getOwner();
 
         // we need to collect ID
-        $this->id = $model->getDataRef()[$this->master_field];
+        $this->id = $model->getEntry()->get($this->master_field);
         if (!$this->id) {
             return;
         }
@@ -70,8 +70,8 @@ class Join extends Model\Join
                 ->addMoreInfo('table', $this->foreign_table)
                 ->addMoreInfo('id', $this->id);
         }
-        $dataRef = &$model->getDataRef();
-        $dataRef = array_merge($data, $model->getDataRef());
+
+        $model->getEntry()->setMulti(array_merge($data, $model->getEntry()->getAll()));
     }
 
     /**
@@ -97,7 +97,7 @@ class Join extends Model\Join
 
         $data[$this->master_field] = $this->id;
 
-        //$this->getOwner()->set($this->master_field, $this->id);
+        // $this->getOwner()->set($this->master_field, $this->id);
     }
 
     /**

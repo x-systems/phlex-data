@@ -80,12 +80,11 @@ class ContainsOneTest extends Sql\TestCase
         $i = $i->loadBy($i->key()->ref_no, 'A1');
 
         // check do we have address set
-        $a = $i->ref('addr')->tryLoadAny();
+        $a = $i->addr->tryLoadAny();
         $this->assertFalse($a->isLoaded());
 
         // now store some address
         $a->setMulti($row = [
-            $a->key()->id => 1,
             $a->key()->country_id => 1,
             $a->key()->address => 'foo',
             $a->key()->built_date => new \DateTime('2019-01-01'),
@@ -95,9 +94,9 @@ class ContainsOneTest extends Sql\TestCase
         $a->save();
 
         // now reload invoice and see if it is saved
-        $this->assertEquals($row, $i->addr->get());
+        $this->assertEquals($row, array_intersect_key($i->addr->get(), $row));
         $i->reload();
-        $this->assertEquals($row, $i->addr->get());
+        $this->assertEquals($row, array_intersect_key($i->addr->get(), $row));
 
         // now try to change some field in address
         $i->ref('addr')->set($i->addr->key()->address, 'bar')->save();
@@ -106,17 +105,16 @@ class ContainsOneTest extends Sql\TestCase
         // now add nested containsOne - DoorCode
         $c = $i->addr->door_code;
         $c->setMulti($row = [
-            $c->key()->id => 1,
             $c->key()->code => 'ABC',
             $c->key()->valid_till => new \DateTime('2019-07-01'),
         ]);
         $c->save();
-        $this->assertEquals($row, $i->addr->door_code->get());
+        $this->assertEquals($row, array_intersect_key($i->addr->door_code->get(), $row));
 
         // update DoorCode
         $i->reload();
         $i->addr->door_code->save([$i->addr->door_code->key()->code => 'DEF']);
-        $this->assertEquals(array_merge($row, [$i->addr->door_code->key()->code => 'DEF']), $i->addr->door_code->get());
+        $this->assertEquals(array_merge($row, [$i->addr->door_code->key()->code => 'DEF']), array_intersect_key($i->addr->door_code->get(), $row));
 
         // try hasOne reference
         $this->assertSame('Latvia', $i->addr->country->name);
@@ -124,7 +122,7 @@ class ContainsOneTest extends Sql\TestCase
         $this->assertSame('United Kingdom', $i->addr->country->name);
 
         // let's test how it all looks in persistence without encoding
-        $exp_addr = $i->getEntitySet()->setOrder('id')->export(null, null, false)[0][$i->key()->addr];
+        $exp_addr = $i->setOrder('id')->export(null, null, false)[0][$i->key()->addr];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
@@ -170,7 +168,6 @@ class ContainsOneTest extends Sql\TestCase
         // with address
         $a = $i->addr;
         $a->setMulti($row = [
-            $a->key()->id => 1,
             $a->key()->country_id => 1,
             $a->key()->address => 'foo',
             $a->key()->built_date => new \DateTime('2019-01-01'),
@@ -184,7 +181,9 @@ class ContainsOneTest extends Sql\TestCase
         $a->set('post_index', 'LV-1234');
         $a->save();
 
-        $this->assertEquals(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
+        $rowWithField = array_merge($row, ['post_index' => 'LV-1234']);
+
+        $this->assertEquals($rowWithField, array_intersect_key($a->get(), $rowWithField));
 
         // now this one is a bit tricky
         // each time you call ref() it returns you new model object so it will not have post_index field
@@ -195,7 +194,7 @@ class ContainsOneTest extends Sql\TestCase
 
         // and it references to same old Address model without post_index field - no errors
         $a = $i->addr;
-        $this->assertEquals($row, $a->get());
+        $this->assertEquals($row, array_intersect_key($a->get(), $row));
     }
 
     /*

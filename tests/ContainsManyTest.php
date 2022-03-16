@@ -83,7 +83,7 @@ class ContainsManyTest extends Sql\TestCase
         $i = $i->loadBy($i->key()->ref_no, 'A1');
 
         // now let's add some lines
-        $l = $i->ref('lines');
+        $l = $i->lines;
         $rows = [
             1 => [
                 $l->key()->id => 1,
@@ -192,7 +192,7 @@ class ContainsManyTest extends Sql\TestCase
         $i = $i->loadBy($i->key()->ref_no, 'A1');
 
         // now let's add some lines
-        $l = $i->ref('lines');
+        $l = $i->lines;
 
         $rows = [
             1 => [
@@ -255,7 +255,7 @@ class ContainsManyTest extends Sql\TestCase
         $this->assertSame(24.2 * 15 / 100 + 86.25 * 20 / 100, $i->discounts_total_sum); // =20.88
 
         // let's test how it all looks in persistence without encoding
-        $exp_lines = $i->getEntitySet()->setOrder($i->key()->id)->export(null, null, false)[0][$i->key()->lines];
+        $exp_lines = $i->setOrder($i->key()->id)->export(null, null, false)[0][$i->key()->lines];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 

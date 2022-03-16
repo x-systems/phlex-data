@@ -29,14 +29,14 @@ class Join extends Model\Join
 
         // Add necessary hooks
         if ($this->reverse) {
-            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
-            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
-            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
+            $this->onHookShortToOwner(Model::HOOK_AFTER_INSERT, \Closure::fromCallable([$this, 'afterInsert']), [], -5);
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']), [], -5);
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_DELETE, \Closure::fromCallable([$this, 'doDelete']), [], -5);
         } else {
-            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']));
-            $this->onHookShortToOwner(Model\Entity::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
-            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
-            $this->onHookShortToOwner(Model\Entity::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_INSERT, \Closure::fromCallable([$this, 'beforeInsert']));
+            $this->onHookShortToOwner(Model::HOOK_BEFORE_UPDATE, \Closure::fromCallable([$this, 'beforeUpdate']));
+            $this->onHookShortToOwner(Model::HOOK_AFTER_DELETE, \Closure::fromCallable([$this, 'doDelete']));
+            $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, \Closure::fromCallable([$this, 'afterLoad']));
         }
     }
 
@@ -58,7 +58,7 @@ class Join extends Model\Join
         $model = $this->getOwner();
 
         // we need to collect ID
-        $this->id = $model->getDataRef()[$this->master_field];
+        $this->id = $model->getEntity()->get($this->master_field);
         if (!$this->id) {
             return;
         }
@@ -70,8 +70,8 @@ class Join extends Model\Join
                 ->addMoreInfo('table', $this->foreign_table)
                 ->addMoreInfo('id', $this->id);
         }
-        $dataRef = &$model->getDataRef();
-        $dataRef = array_merge($data, $model->getDataRef());
+
+        $model->getEntity()->setMulti(array_merge($data, $model->getEntity()->getAll()));
     }
 
     /**

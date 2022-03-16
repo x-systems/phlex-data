@@ -191,32 +191,32 @@ class Field
      *
      * @return mixed
      */
-//     public function get()
-//     {
-//         return $this->getOwner()->get($this->getKey());
-//     }
+    public function get()
+    {
+        return $this->getOwner()->get($this->getKey());
+    }
 
-//     /**
-//      * Sets field value.
-//      *
-//      * @param mixed $value
-//      */
-//     public function set($value): self
-//     {
-//         $this->getOwner()->set($this->getKey(), $value);
+    /**
+     * Sets field value.
+     *
+     * @param mixed $value
+     */
+    public function set($value): self
+    {
+        $this->getOwner()->set($this->getKey(), $value);
 
-//         return $this;
-//     }
+        return $this;
+    }
 
-//     /**
-//      * Unset field value even if null value is not allowed.
-//      */
-//     public function setNull(): self
-//     {
-//         $this->getOwner()->setNull($this->getKey());
+    /**
+     * Unset field value even if null value is not allowed.
+     */
+    public function setNull(): self
+    {
+        $this->getOwner()->setNull($this->getKey());
 
-//         return $this;
-//     }
+        return $this;
+    }
 
     public function getKey(): string
     {
@@ -236,6 +236,7 @@ class Field
         $model->primaryKey = $this->getKey();
         $this->required = true;
         $this->system = true;
+        $this->access = self::ACCESS_GET;
 
         return $this;
     }

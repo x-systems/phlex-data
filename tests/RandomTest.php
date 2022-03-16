@@ -307,7 +307,7 @@ class RandomTest extends Sql\TestCase
         $m->set('name', 'john');
         $m->save();
 
-        $m = $m->getEntitySet()->load(3);
+        $m = $m->load(3);
         $this->assertSame('rec #3', $m->get('name'));
 
         $m->delete();
@@ -393,9 +393,6 @@ class RandomTest extends Sql\TestCase
         $m->titleKey = 'my_name';
         $mm = $m->load(2);
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
-
-        $this->expectException(Exception::class);
-        $mm->getTitles();
     }
 
     /**

@@ -203,7 +203,7 @@ class ListsMany extends Model\Reference
             $this->getOurField()->setNull();
         });
 
-        if ($this->getOurModel()->isEntity()) {
+        if ($this->getOurModel()->isLoaded()) {
             if ($ourValue = $this->getOurFieldValue()) {
                 // if our model is loaded, then try to load referenced model
                 $theirModel = $theirModel->tryLoadBy($this->getTheirKey($theirModel), $ourValue);

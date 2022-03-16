@@ -82,7 +82,7 @@ class ReadOnlyModeTest extends Sql\TestCase
     {
         $m = $this->m->tryLoadAny();
         $this->expectException(Exception::class);
-        $m->saveAndUnload();
+        $m->saveWithoutReloading();
     }
 
     /**

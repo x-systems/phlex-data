@@ -125,12 +125,12 @@ class UserAction
 
         // Verify that model fields wouldn't be too dirty
         if (is_array($this->fields)) {
-            $tooDirty = array_diff(array_keys($this->getEntity()->getDirtyRef()), $this->fields);
+            $tooDirty = array_diff(array_keys($this->getEntity()->getEntity()->getDirty()), $this->fields);
 
             if ($tooDirty) {
                 throw (new Exception('Calling user action on a Model with dirty fields that are not allowed by this action.'))
                     ->addMoreInfo('too_dirty', $tooDirty)
-                    ->addMoreInfo('dirty', array_keys($this->getEntity()->getDirtyRef()))
+                    ->addMoreInfo('dirty', array_keys($this->getEntity()->getEntity()->getDirty()))
                     ->addMoreInfo('permitted', $this->fields);
             }
         } elseif (!is_bool($this->fields)) {
@@ -215,12 +215,12 @@ class UserAction
      */
     public function getEntitySet(): Model
     {
-        return $this->getOwner()->getEntitySet(true); // @phpstan-ignore-line
+        return $this->getOwner(); // @phpstan-ignore-line
     }
 
     public function getEntity(): Model
     {
-        if ($this->getOwner()->isEntity()) { // @phpstan-ignore-line
+        if ($this->getOwner()->isLoaded()) { // @phpstan-ignore-line
             return $this->getOwner(); // @phpstan-ignore-line
         }
 

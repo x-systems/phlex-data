@@ -75,7 +75,7 @@ class ContainsOne extends Model\Reference
     protected function getDefaultPersistence(Model $theirModel)
     {
         $persistence = new Persistence\Array_([
-            $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],
+            $this->table_alias => $this->getOurModel()->isLoaded() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],
         ]);
 
         return $persistence->setCodecs($this->getPersistence()->getCodecs());
@@ -99,7 +99,7 @@ class ContainsOne extends Model\Reference
         }
 
         // try to load any (actually only one possible) record
-        return $theirModel;//->tryLoadAny();
+        return $theirModel->tryLoadAny();
     }
 
     public function createTheirModel(array $defaults = []): Model

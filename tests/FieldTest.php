@@ -54,10 +54,10 @@ class FieldTest extends Sql\TestCase
         $this->assertTrue($m->isDirty('foo'));
 
         $m->set('foo', 'abc');
-        $this->assertFalse($m->isDirty('foo'));
+        $this->assertTrue($m->isDirty('foo'));
 
         // set initial data
-        $m->getDataRef()['foo'] = 'xx';
+        $m = $m->createEntity(['foo' => 'xx']);
         $this->assertFalse($m->isDirty('foo'));
 
         $m->set('foo', 'abc');
@@ -355,10 +355,10 @@ class FieldTest extends Sql\TestCase
         $m->onHook(Model::HOOK_BEFORE_SAVE, static function ($m) {
             if ($m->isDirty('name')) {
                 $m->set('surname', $m->get('name'));
-                $m->_unset('name');
+                $m->reset('name');
             } elseif ($m->isDirty('surname')) {
                 $m->set('name', $m->get('surname'));
-                $m->_unset('surname');
+                $m->reset('surname');
             }
         });
 
@@ -818,7 +818,7 @@ class FieldTest extends Sql\TestCase
         $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields(Model::FIELD_FILTER_VISIBLE)));
         $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields([Model::FIELD_FILTER_EDITABLE, Model::FIELD_FILTER_VISIBLE])));
 
-        $model->onlyFields(['system', 'visible', 'not_editable']);
+        $entity->onlyFields(['system', 'visible', 'not_editable']);
 
         // getFields() is unaffected by only_fields, will always return all fields
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields()));

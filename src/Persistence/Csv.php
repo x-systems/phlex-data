@@ -217,7 +217,7 @@ class Csv extends Persistence
 
     public function lastInsertId(Model $model = null): string
     {
-        return $this->lastInsertId;
+        return (string) $this->lastInsertId;
     }
 
     public function query(Model $model): Persistence\Query

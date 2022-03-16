@@ -6,7 +6,6 @@ namespace Phlex\Data\Model\Reference;
 
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
-use Phlex\Data\Model\Entity;
 
 class HasOne extends Model\Reference
 {
@@ -166,12 +165,12 @@ class HasOne extends Model\Reference
             $this->getOurField()->setNull();
         });
 
-        if ($this->getOurModel()->isEntity()) {
+        if ($this->getOurModel()->isLoaded()) {
             if ($ourValue = $this->getOurFieldValue()) {
                 // if our model is loaded, then try to load referenced model
                 $theirModel = $theirModel->tryLoadBy($this->getTheirKey($theirModel), $ourValue);
             } else {
-                $theirModel = $theirModel->createEntity();
+                $theirModel->toEntity();
             }
         }
 
@@ -190,32 +189,25 @@ class HasOne extends Model\Reference
 
         return $theirModel;
     }
-    
-    public function getTheirEntities(Entity $ourEntity): Model
-    {
-        $this->
-        
-        parent::getTheirEntities($ourEntity);
-    }
-    
-    public function setTheirModelHooks(Model $theirModel): void 
+
+    public function setTheirModelHooks(Model $theirModel): void
     {
         // add hook to set ourKey = null when record of referenced model is deleted
         $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) {
             $this->getOurField()->setNull();
         });
-            
-            // their model will be reloaded after saving our model to reflect changes in referenced fields
-            $theirModel->reloadAfterSave = false;
-            
-            $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) {
-                $theirFieldValue = $this->getTheirFieldValue($theirModel);
-                
-                if ($this->getOurFieldValue() !== $theirFieldValue) {
-                    $this->getOurField()->set($theirFieldValue)->getOwner()->save();
-                }
-                
-                $theirModel->reload();
-            });
+
+        // their model will be reloaded after saving our model to reflect changes in referenced fields
+        $theirModel->reloadAfterSave = false;
+
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) {
+            $theirFieldValue = $this->getTheirFieldValue($theirModel);
+
+            if ($this->getOurFieldValue() !== $theirFieldValue) {
+                $this->getOurField()->set($theirFieldValue)->getOwner()->save();
+            }
+
+            $theirModel->reload();
+        });
     }
 }

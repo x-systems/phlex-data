@@ -121,16 +121,12 @@ class Query extends Persistence\Query implements Expressionable
 
     protected function initInsert(array $data): void
     {
-        if ($data) {
-            $this->statement->mode('insert')->set($data);
-        }
+        $this->statement->mode('insert')->set($data);
     }
 
     protected function initUpdate(array $data): void
     {
-        if ($data) {
-            $this->statement->mode('update')->set($data);
-        }
+        $this->statement->mode('update')->set($data);
     }
 
     protected function initDelete(): void

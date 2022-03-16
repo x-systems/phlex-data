@@ -180,15 +180,6 @@ class Reference
 
         return $theirModel;
     }
-    
-    public function getTheirEntities(Entity $ourEntity): Model
-    {
-        $ourEntity->assertModelIs($this->getOurModel());
-        
-        $theirModel = $this->createTheirModel(/* $this->table_alias ? ['table_alias' => $this->table_alias] : [] */);
-        
-        return $theirModel->addCondition($this->getTheirKey($theirModel), $ourEntity->get($this->getOurKey()));
-    }
 
     public function getOurField(): Model\Field
     {
@@ -209,6 +200,14 @@ class Reference
         $theirModel ??= $this->createTheirModel();
 
         return $theirModel->primaryKey;
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function getOurFieldValue()
+    {
+        return $this->getOurField()->get();
     }
 
     public function getTheirFieldValue(Model $theirModel = null)

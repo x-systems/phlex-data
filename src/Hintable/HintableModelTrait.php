@@ -142,7 +142,7 @@ trait HintableModelTrait
                 \Closure::bind(function () use ($model) {
                     $model->entityId = '_atk__data__hintable_magic__refMany';
                 }, null, Model::class)();
-                $model->onHookShort(Model\Entity::HOOK_AFTER_LOAD, \Closure::bind(function () {
+                $model->onHookShort(Model::HOOK_AFTER_LOAD, \Closure::bind(function () {
                     if ($this->entityId === '_atk__data__hintable_magic__refMany') {
                         $backtrace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS, 4);
                         if (

@@ -158,10 +158,12 @@ class DeepCopyTest extends Sql\TestCase
 
         $quote = new DcQuote($this->db);
 
-        $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
-            ['name' => 'tools', 'qty' => 5, 'price' => 10],
-            ['name' => 'work', 'qty' => 1, 'price' => 40],
-        ]]);
+        $quote->insert([
+            'ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
+                ['name' => 'tools', 'qty' => 5, 'price' => 10],
+                ['name' => 'work', 'qty' => 1, 'price' => 40],
+            ],
+        ]);
         $quote = $quote->loadAny();
 
         // total price should match

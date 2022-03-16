@@ -39,7 +39,7 @@ class StAccount extends Model
         $m->save(['name' => $name]);
 
         if ($amount) {
-            $m->ref('Transactions:Ob')->createEntity()->save(['amount' => $amount]);
+            $m->ref('Transactions:Ob')->save(['amount' => $amount]);
         }
 
         return $m;
@@ -47,12 +47,12 @@ class StAccount extends Model
 
     public function deposit(float $amount): Model
     {
-        return $this->ref('Transactions:Deposit')->createEntity()->save(['amount' => $amount]);
+        return $this->ref('Transactions:Deposit')->save(['amount' => $amount]);
     }
 
     public function withdraw(float $amount): Model
     {
-        return $this->ref('Transactions:Withdrawal')->createEntity()->save(['amount' => $amount]);
+        return $this->ref('Transactions:Withdrawal')->save(['amount' => $amount]);
     }
 
     /**
@@ -60,8 +60,8 @@ class StAccount extends Model
      */
     public function transferTo(self $account, float $amount): array
     {
-        $out = $this->ref('Transactions:TransferOut')->createEntity()->save(['amount' => $amount]);
-        $in = $account->ref('Transactions:TransferIn')->createEntity()->save(['amount' => $amount, 'link_id' => $out->getId()]);
+        $out = $this->ref('Transactions:TransferOut')->save(['amount' => $amount]);
+        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->getId()]);
         $out->set('link_id', $in->getId());
         $out->save();
 

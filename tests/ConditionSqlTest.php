@@ -49,11 +49,11 @@ class ConditionSqlTest extends Sql\TestCase
         $this->assertSame('Sue', $mm2->get('name'));
     }
 
-    public function testEntityNoScopeCloning()
+    public function testEntityScopeCloning()
     {
         $m = new Model($this->db, ['table' => 'user']);
         $scope = $m->scope();
-        $this->assertSame($scope, $m->createEntity()->getModel()->scope());
+        $this->assertNotSame($scope, $m->createEntity()->scope());
 //         $this->expectException(\Phlex\Data\Exception::class);
 //         $m->createEntity()->scope();
     }
@@ -72,12 +72,10 @@ class ConditionSqlTest extends Sql\TestCase
 
         $e = $m->tryLoad(1);
         $this->assertSame('John', $e->get('name'));
-        \Closure::bind(function () use ($e) {
-            $e->id = 2;
-        }, null, Model::class)();
+
         $this->expectException(\Phlex\Data\Exception::class);
-        $this->expectExceptionMessageMatches('~entity.+different~');
-        $e->reload();
+        $this->expectExceptionMessageMatches('~access field without permission~');
+        $e->set('id', 2);
     }
 
     public function testNull()

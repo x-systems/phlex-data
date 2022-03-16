@@ -63,8 +63,8 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m = $m->load(1);
         $this->assertTrue($m->isLoaded());
         $m->set('gender', 'F');
-        $m->saveAndUnload();
-        $this->assertFalse($m->isLoaded());
+        $m->saveWithoutReloading();
+        $this->assertTrue($m->isLoaded());
 
         $m = new Female($p, ['table' => 'user']);
         $m = $m->load(1);

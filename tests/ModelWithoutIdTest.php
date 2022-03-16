@@ -95,7 +95,7 @@ class ModelWithoutIdTest extends Sql\TestCase
         }
 
         $m = $this->m->tryLoadAny();
-        $m->saveAndUnload();
+        $m->saveWithoutReloading();
 
         $this->assertEquals(3, $this->m->getCount());
     }

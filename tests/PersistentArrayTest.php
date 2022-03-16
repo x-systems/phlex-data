@@ -7,8 +7,8 @@ namespace Phlex\Data\Tests;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
-use Phlex\Data\Tests\Model\Female as Female;
-use Phlex\Data\Tests\Model\Male as Male;
+use Phlex\Data\Tests\Model\Female;
+use Phlex\Data\Tests\Model\Male;
 
 class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
 {

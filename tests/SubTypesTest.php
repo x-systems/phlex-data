@@ -128,7 +128,7 @@ class StTransaction_TransferOut extends StGenericTransaction
         parent::doInitialize();
         $this->hasOne('link', ['theirModel' => [StTransaction_TransferIn::class]]);
 
-        //$this->join('transaction','linked_transaction');
+        // $this->join('transaction','linked_transaction');
     }
 }
 

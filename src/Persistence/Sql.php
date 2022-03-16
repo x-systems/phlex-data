@@ -316,9 +316,9 @@ abstract class Sql extends Persistence
         if ($model->table === false) {
             $model->removeField($model->primaryKey);
             $model->addExpression($model->primaryKey, '1');
-            //} else {
+            // } else {
             // SQL databases use ID of int by default
-            //$m->getField($m->primaryKey)->type = 'integer';
+            // $m->getField($m->primaryKey)->type = 'integer';
         }
 
         // Sequence support

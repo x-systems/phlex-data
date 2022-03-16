@@ -99,8 +99,8 @@ class Model implements \IteratorAggregate
     /** @var Model\Scope\RootScope|null */
     private $scope;
 
-    /** @var Model\Entity|null */
-    private $entity;
+    /** @var Model\Entry|null */
+    private $entry;
 
     /**
      * The class used by addField() method.
@@ -312,7 +312,7 @@ class Model implements \IteratorAggregate
      */
     public function toEntity($data = [])
     {
-        $this->entity = new Model\Entity($data);
+        $this->entry = new Model\Entry($data);
 
         return $this;
     }
@@ -324,7 +324,7 @@ class Model implements \IteratorAggregate
     {
         $this->scope = (clone $this->scope)->setModel($this);
         if ($this->isEntity()) {
-            $this->entity = clone $this->entity;
+            $this->entry = clone $this->entry;
         }
         $this->_cloneCollection('elements');
         $this->_cloneCollection('fields');
@@ -374,7 +374,7 @@ class Model implements \IteratorAggregate
         ]);
 
         $this->addUserAction('validate', [
-            //'appliesTo'=> any!
+            // 'appliesTo'=> any!
             'description' => 'Provided with modified values will validate them but will not save',
             'modifier' => Model\UserAction::MODIFIER_READ,
             'fields' => true,
@@ -526,7 +526,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertHasPrimaryKey();
 
-        return $this->entity->get($this->primaryKey);
+        return $this->entry->get($this->primaryKey);
     }
 
     private function assertHasPrimaryKey(): void
@@ -840,7 +840,7 @@ class Model implements \IteratorAggregate
 
         $this->checkOnlyFieldsField($key);
 
-        return $this->entity->get($key, $this->getField($key)->default);
+        return $this->entry->get($key, $this->getField($key)->default);
     }
 
     /**
@@ -871,7 +871,7 @@ class Model implements \IteratorAggregate
             $this->toEntity();
         }
 
-        $this->entity->set($this->primaryKey, $this->getPrimaryKeyField()->normalize($id));
+        $this->entry->set($this->primaryKey, $this->getPrimaryKeyField()->normalize($id));
 
         return $this;
     }
@@ -894,7 +894,7 @@ class Model implements \IteratorAggregate
         }
 
         // do nothing when value has not changed
-        $currentValue = $this->entity->get($key, $field->default);
+        $currentValue = $this->entry->get($key, $field->default);
         if ($field->compare($value, $currentValue)) {
             return $this;
         }
@@ -902,10 +902,10 @@ class Model implements \IteratorAggregate
         $field->assertSetAccess();
 
         // if value is same as loaded remove the dirty value, otherwise set
-        if ($field->compare($value, $this->entity->getLoaded($key, $currentValue))) {
-            $this->entity->reset($key, $currentValue);
+        if ($field->compare($value, $this->entry->getLoaded($key, $currentValue))) {
+            $this->entry->reset($key, $currentValue);
         } else {
-            $this->entity->set($key, $value);
+            $this->entry->set($key, $value);
         }
 
         return $this;
@@ -917,7 +917,7 @@ class Model implements \IteratorAggregate
 
         $this->checkOnlyFieldsField($key);
 
-        $this->entity->reset($key);
+        $this->entry->reset($key);
 
         return $this;
     }
@@ -926,7 +926,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->entity->set($key, null);
+        $this->entry->set($key, null);
 
         return $this;
     }
@@ -937,7 +937,7 @@ class Model implements \IteratorAggregate
 
         $this->checkOnlyFieldsField($key);
 
-        return $this->entity->isset($key);
+        return $this->entry->isset($key);
     }
 
     /**
@@ -956,24 +956,24 @@ class Model implements \IteratorAggregate
 
     public function isLoaded(): bool
     {
-        return $this->isEntity() && $this->primaryKey && $this->entity->isLoaded($this->primaryKey);
+        return $this->isEntity() && $this->primaryKey && $this->entry->isLoaded($this->primaryKey);
     }
 
     public function isEntity(): bool
     {
-        return $this->entity !== null;
+        return $this->entry !== null;
     }
 
-    public function getEntity()
+    public function getEntry()
     {
-        return $this->entity;
+        return $this->entry;
     }
 
     public function isDirty($key): bool
     {
         $this->assertIsEntity();
 
-        return $this->entity->isDirty($key);
+        return $this->entry->isDirty($key);
     }
 
     public function compare(string $name, $value): bool
@@ -989,7 +989,7 @@ class Model implements \IteratorAggregate
     public function unload()
     {
         $this->hook(self::HOOK_BEFORE_UNLOAD);
-        $this->entity = null;
+        $this->entry = null;
         $this->hook(self::HOOK_AFTER_UNLOAD);
 
         return $this;
@@ -1162,7 +1162,7 @@ class Model implements \IteratorAggregate
 
         $duplicate->assertIsEntity();
 
-        $duplicate->entity->unset($duplicate->primaryKey);
+        $duplicate->entry->unset($duplicate->primaryKey);
 
         return $duplicate;
     }
@@ -1194,8 +1194,8 @@ class Model implements \IteratorAggregate
     {
         $model = $this->newInstance($class, $options);
 
-        if ($this->entity) {
-            $model->entity = clone $this->entity;
+        if ($this->entry) {
+            $model->entry = clone $this->entry;
         }
 
         return $model;
@@ -1246,7 +1246,7 @@ class Model implements \IteratorAggregate
 //         }
 
         if ($this->isEntity()) {
-            $model->entity = clone $this->entity;
+            $model->entry = clone $this->entry;
         }
 
         if ($this->primaryKey && $id !== null) {
@@ -1286,7 +1286,7 @@ class Model implements \IteratorAggregate
 
         // if no persistence just commit entity
         if (!$this->persistence) {
-            $this->entity->commit();
+            $this->entry->commit();
 
             return $this;
         }
@@ -1303,7 +1303,7 @@ class Model implements \IteratorAggregate
 
             $result = 0;
             $dirty_join = false;
-            $dirty = $isUpdate ? $this->entity->getDirty() : $this->get();
+            $dirty = $isUpdate ? $this->entry->getDirty() : $this->get();
 
             $data = [];
             foreach ($dirty as $key => $value) {
@@ -1367,7 +1367,7 @@ class Model implements \IteratorAggregate
                 $this->reload();
             }
 
-            $this->entity->commit();
+            $this->entry->commit();
 
             $this->hook(self::HOOK_AFTER_SAVE, [$isUpdate]);
 

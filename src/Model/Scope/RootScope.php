@@ -44,7 +44,7 @@ class RootScope extends Model\Scope
     }
 
     /**
-     * @return static
+     * @return Model\Scope
      */
     public static function createAnd(...$conditions)
     {
@@ -52,7 +52,7 @@ class RootScope extends Model\Scope
     }
 
     /**
-     * @return static
+     * @return Model\Scope
      */
     public static function createOr(...$conditions)
     {

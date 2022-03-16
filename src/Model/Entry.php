@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
-class Entity
+class Entry
 {
     private $data = [];
 

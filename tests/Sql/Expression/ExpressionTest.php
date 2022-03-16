@@ -377,7 +377,7 @@ class ExpressionTest extends PHPUnit\TestCase
     public function testRenderException2()
     {
         $this->expectException(\Error::class);
-        $this->callProtected($this->e(), 'consume', new \StdClass());
+        $this->callProtected($this->e(), 'consume', new \stdClass());
     }
 
     public function testArrayAccess()

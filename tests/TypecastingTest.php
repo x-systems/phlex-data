@@ -207,7 +207,7 @@ class TypecastingTest extends Sql\TestCase
         $this->assertNull($mm->get('array'));
         $this->assertNull($mm->get('object'));
         if (!$this->getDatabasePlatform() instanceof OraclePlatform) { // @TODO IMPORTANT we probably want to cast to string for Oracle on our own, so dirty array stay clean!
-            $this->assertSame([], $mm->getEntity()->getDirty());
+            $this->assertSame([], $mm->getEntry()->getDirty());
         }
 
         $mm->save();
@@ -513,35 +513,35 @@ class TypecastingTest extends Sql\TestCase
         $m->addField('i', ['type' => 'integer']);
         $m = $m->createEntity(['i' => 1]);
 
-        $this->assertSame([], $m->getEntity()->getDirty());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->getEntity()->getDirty());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         $m->set('i', '2');
-        $this->assertSame(['i' => 2], $m->getEntity()->getDirty());
+        $this->assertSame(['i' => 2], $m->getEntry()->getDirty());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->getEntity()->getDirty());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         // same test without type integer
         $m = new Model($this->db, ['table' => 'types']);
         $m->addField('i');
         $m = $m->createEntity(['i' => 1]);
 
-        $this->assertSame([], $m->getEntity()->getDirty());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->getEntity()->getDirty());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         $m->set('i', '2');
-        $this->assertSame(['i' => '2'], $m->getEntity()->getDirty());
+        $this->assertSame(['i' => '2'], $m->getEntry()->getDirty());
 
         $m->set('i', '1');
-        $this->assertSame([], $m->getEntity()->getDirty());
+        $this->assertSame([], $m->getEntry()->getDirty());
 
         $m->set('i', 1);
-        $this->assertSame([], $m->getEntity()->getDirty());
+        $this->assertSame([], $m->getEntry()->getDirty());
     }
 
     public function testDirtyTime(): void

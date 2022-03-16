@@ -58,7 +58,7 @@ class Join extends Model\Join
         $model = $this->getOwner();
 
         // we need to collect ID
-        $this->id = $model->getEntity()->get($this->master_field);
+        $this->id = $model->getEntry()->get($this->master_field);
         if (!$this->id) {
             return;
         }
@@ -71,7 +71,7 @@ class Join extends Model\Join
                 ->addMoreInfo('id', $this->id);
         }
 
-        $model->getEntity()->setMulti(array_merge($data, $model->getEntity()->getAll()));
+        $model->getEntry()->setMulti(array_merge($data, $model->getEntry()->getAll()));
     }
 
     /**
@@ -97,7 +97,7 @@ class Join extends Model\Join
 
         $data[$this->master_field] = $this->id;
 
-        //$this->getOwner()->set($this->master_field, $this->id);
+        // $this->getOwner()->set($this->master_field, $this->id);
     }
 
     /**

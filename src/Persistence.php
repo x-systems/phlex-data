@@ -136,13 +136,6 @@ abstract class Persistence implements MutatorInterface
     {
         $data = $this->encodeRow($model, $data);
 
-//         $model->onHook(Persistence\Query::HOOK_AFTER_UPDATE, function (Model $model, Persistence\Query $query, $result) use ($data) {
-//             if ($model->primaryKey && isset($data[$model->primaryKey]) && $model->getEntity()->getDirtyRef()[$model->primaryKey]) {
-//                 // ID was changed
-//                 $model->id = $data[$model->primaryKey];
-//             }
-//         }, [], -1000);
-
         return $this->query($model)->whereId($id)->update($data)->execute();
     }
 

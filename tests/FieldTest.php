@@ -542,7 +542,7 @@ class FieldTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $m->addField('name', ['mandatory' => true]);
         $m->addField('secret', [
-            //'password'  => 'bonkers',
+            // 'password'  => 'bonkers',
             'type' => ['string', 'codec' => [Persistence\Sql\Codec\Dynamic::class, 'encodeFx' => $encrypt, 'decodeFx' => $decrypt]],
         ]);
 

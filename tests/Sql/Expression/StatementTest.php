@@ -202,7 +202,7 @@ class StatementTest extends PHPUnit\TestCase
      */
     public function testTableException3()
     {
-        //$this->expectException(Exception::class); // no more
+        // $this->expectException(Exception::class); // no more
         $this->q()->table($this->q()->expr('test'));
     }
 
@@ -453,7 +453,7 @@ class StatementTest extends PHPUnit\TestCase
         $q2 = $this->q()->table('customer');
 
         $this->assertSame(
-            //this way it would be more correct: 'select "e"."name","c"."name" from (select * from "employee") "e",(select * from "customer") "c" where "e"."last_name" = "c"."last_name"',
+            // this way it would be more correct: 'select "e"."name","c"."name" from (select * from "employee") "e",(select * from "customer") "c" where "e"."last_name" = "c"."last_name"',
             'select "e"."name","c"."name" from (select * from "employee") "e",(select * from "customer") "c" where "e"."last_name" = c.last_name',
             $this->q()
                 ->field('e.name')
@@ -1508,7 +1508,7 @@ class StatementTest extends PHPUnit\TestCase
      */
     public function testCaseExprException1()
     {
-        //$this->expectException(Exception::class);
+        // $this->expectException(Exception::class);
         $this->q()->case()
             ->when(['status'], 't2.expose_new')
             ->render();

@@ -86,7 +86,7 @@ class SmboTransferTest extends Sql\TestCase
             ['amount' => 10],
             ['amount' => 20],
             ['amount' => 30],
-            //['amount' => 40], // will not select this because it is not related to any Account
+            // ['amount' => 40], // will not select this because it is not related to any Account
         ], $data);
 
         // Account is loaded, will dump all Payments related to that particular Account

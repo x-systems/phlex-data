@@ -19,7 +19,7 @@ class StaticPersistenceTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame('world', $m->get('name'));
 
         // custom title field and try loading from same static twice
-        $m = new Model($p); //, ['titleKey' => 'foo']);
+        $m = new Model($p); // , ['titleKey' => 'foo']);
         $m = $m->load(1);
         $this->assertSame('world', $m->get('name')); // still 'name' here not 'foo'
     }

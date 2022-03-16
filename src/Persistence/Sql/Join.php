@@ -157,9 +157,9 @@ class Join extends Model\Join implements Expressionable
         $model = $this->getOwner();
 
         // we need to collect ID
-        if ($model->getEntity()->isLoaded($this->elementId)) {
-            $this->id = $model->getEntity()->get($this->elementId);
-            $model->getEntity()->unset($this->elementId);
+        if ($model->getEntry()->isLoaded($this->elementId)) {
+            $this->id = $model->getEntry()->get($this->elementId);
+            $model->getEntry()->unset($this->elementId);
         }
     }
 

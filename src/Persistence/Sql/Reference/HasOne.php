@@ -8,7 +8,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class HasOne extends \Phlex\Data\Model\Reference\HasOne
+class HasOne extends Model\Field\Reference\HasOne
 {
     /**
      * Creates expression which sub-selects a field inside related model.
@@ -38,7 +38,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         $ourModel = $this->getOurModel();
 
         // if caption is not defined in $defaults -> get it directly from the linked model field $theirKey
-        $defaults['caption'] ??= $ourModel->refModel($this->link)->getField($theirKey)->getCaption();
+        $defaults['caption'] ??= $ourModel->refModel($this->elementId)->getField($theirKey)->getCaption();
 
         /** @var Persistence\Sql\Field\Expression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourKey, array_merge(
@@ -46,7 +46,7 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
                 function (Model $ourModel) use ($theirKey) {
                     // remove order if we just select one field from hasOne model
                     // that is mandatory for Oracle
-                    return $ourModel->refLink($this->link)->toQuery()->field($theirKey)->reset('order');
+                    return $ourModel->refLink($this->elementId)->toQuery()->field($theirKey)->reset('order');
                 },
             ],
             $defaults,
@@ -129,9 +129,9 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
     /**
      * Navigate to referenced model.
      */
-    public function ref(array $defaults = []): Model
+    public function getTheirEntity(array $defaults = []): Model
     {
-        $theirModel = parent::ref($defaults);
+        $theirModel = parent::getTheirEntity($defaults);
         $ourModel = $this->getOurModel();
 
         if (!isset($ourModel->persistence) || !($ourModel->persistence instanceof Persistence\Sql)) {
@@ -172,18 +172,20 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
     {
         $ourModel = $this->getOurModel();
 
-        $key = $defaults['field'] ?? preg_replace('~_(' . preg_quote($ourModel->primaryKey, '~') . '|id)$~', '', $this->link);
+        $key = $defaults['key'] ?? $this->getKey() . '_name';
+
+        unset($defaults['key']);
 
         if ($ourModel->hasField($key)) {
-            throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'field\'=>\'field_name\'])'))
-                ->addMoreInfo('field', $key);
+            throw (new Exception('Field with this name already exists. Please set title field name manually addTitle([\'key\'=>\'field_name\'])'))
+                ->addMoreInfo('key', $key);
         }
 
         /** @var Persistence\Sql\Field\Expression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($key, array_replace_recursive(
             [
                 function (Model $ourModel) {
-                    $theirModel = $ourModel->refLink($this->link);
+                    $theirModel = $ourModel->refLink($this->getKey());
 
                     return $theirModel->toQuery()->field($theirModel->titleKey)->reset('order');
                 },
@@ -211,9 +213,9 @@ class HasOne extends \Phlex\Data\Model\Reference\HasOne
         }, [], 20);
 
         // Set ourField as not visible in grid by default
-        if (!array_key_exists('visible', $this->getOurField()->ui)) {
-            $this->getOurField()->ui['visible'] = false;
-        }
+//         if (!array_key_exists('visible', $this->getOurField()->ui)) {
+//             $this->getOurField()->ui['visible'] = false;
+//         }
 
         return $fieldExpression;
     }

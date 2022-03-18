@@ -16,6 +16,7 @@ use Phlex\Data\Model;
  * @property \DateTime $add_date          @Phlex\Field()
  * @property string    $total_gross       @Phlex\Field()
  * @property Discount  $discounts         @Phlex\RefOne()
+ * @property array     $discounts_data    @Phlex\Field()
  * @property float     $discounts_percent @Phlex\Field()
  */
 class Line extends Model

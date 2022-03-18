@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Model\Reference;
+namespace Phlex\Data\Model\Field\Reference;
 
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
@@ -11,7 +11,7 @@ use Phlex\Data\Persistence;
 /**
  * Reference\HasMany class.
  */
-class HasMany extends Model\Reference
+class HasMany extends Model\Field\Reference
 {
     public function getTheirKey(Model $theirModel = null): string
     {
@@ -63,7 +63,7 @@ class HasMany extends Model\Reference
     /**
      * Returns referenced model with condition set.
      */
-    public function ref(array $defaults = []): Model
+    public function getTheirEntity(array $defaults = []): Model
     {
         $theirModel = $this->createTheirModel($defaults);
 

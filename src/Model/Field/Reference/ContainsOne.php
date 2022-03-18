@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Model\Reference;
+namespace Phlex\Data\Model\Field\Reference;
 
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
@@ -10,7 +10,7 @@ use Phlex\Data\Persistence;
 /**
  * ContainsOne reference.
  */
-class ContainsOne extends Model\Reference
+class ContainsOne extends Model\Field\Reference
 {
     /**
      * Field type.
@@ -52,7 +52,7 @@ class ContainsOne extends Model\Reference
         parent::doInitialize();
 
         if (!$this->ourKey) {
-            $this->ourKey = $this->link;
+            $this->ourKey = $this->getKey() . '_data';
         }
 
         $ourModel = $this->getOurModel();
@@ -61,7 +61,6 @@ class ContainsOne extends Model\Reference
         if (!$ourModel->hasElement($ourKey)) {
             $ourModel->addField($ourKey, [
                 'type' => $this->type,
-                'referenceLink' => $this->link,
                 'system' => $this->system,
                 'caption' => $this->caption, // it's ref models caption, but we can use it here for field too
                 'ui' => array_merge([
@@ -84,7 +83,7 @@ class ContainsOne extends Model\Reference
     /**
      * Returns referenced model with loaded data record.
      */
-    public function ref(array $defaults = []): Model
+    public function getTheirEntity(array $defaults = []): Model
     {
         $theirModel = $this->createTheirModel(array_merge($defaults, [
             'table' => $this->table_alias,

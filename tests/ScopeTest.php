@@ -135,9 +135,9 @@ class ScopeTest extends Sql\TestCase
 
         $this->assertEquals('User that has reference Country where Code is equal to \'US\'', $condition->toWords($user));
 
-        $condition = new Condition('country_id', 2);
+        $condition = new Condition('country', 2);
 
-        $this->assertEquals('Country Id is equal to 2 (\'Latvia\')', $condition->toWords($user));
+        $this->assertEquals('Country is equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $condition = new Condition('name', $user->expr('[surname]')); // @phpstan-ignore-line
@@ -145,17 +145,17 @@ class ScopeTest extends Sql\TestCase
             $this->assertEquals('Name is equal to expression \'"user"."surname"\'', $condition->toWords($user));
         }
 
-        $condition = new Condition('country_id', null);
+        $condition = new Condition('country', null);
 
-        $this->assertEquals('Country Id is equal to empty', $condition->toWords($user));
+        $this->assertEquals('Country is equal to empty', $condition->toWords($user));
 
         $condition = new Condition('name', '>', 'Test');
 
         $this->assertEquals('Name is greater than \'Test\'', $condition->toWords($user));
 
-        $condition = (new Condition('country_id', 2))->negate();
+        $condition = (new Condition('country', 2))->negate();
 
-        $this->assertEquals('Country Id is not equal to 2 (\'Latvia\')', $condition->toWords($user));
+        $this->assertEquals('Country is not equal to 2 (\'Latvia\')', $condition->toWords($user));
 
         $condition = new Condition($user->getField('surname'), $user->getField('name')); // @phpstan-ignore-line
 

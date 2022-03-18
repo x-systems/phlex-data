@@ -282,7 +282,7 @@ class Join
     /**
      * Creates reference based on a field from the join.
      *
-     * @return Reference\HasOne
+     * @return Field\Reference\HasOne
      */
     public function hasOne(string $link, array $defaults = [])
     {
@@ -294,7 +294,7 @@ class Join
     /**
      * Creates reference based on the field from the join.
      *
-     * @return Reference\HasMany
+     * @return Field\Reference\HasMany
      */
     public function hasMany(string $link, array $defaults = [])
     {

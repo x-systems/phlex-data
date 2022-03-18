@@ -51,7 +51,7 @@ class FolderTest extends Sql\TestCase
             'name' => 'My Projects',
             'count' => 3,
             'parent_id' => 1,
-            'parent' => 'Desktop',
+            'parent_name' => 'Desktop',
             'is_deleted' => 0,
         ], $f->get());
     }

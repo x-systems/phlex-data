@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Model\Reference;
+namespace Phlex\Data\Model\Field\Reference;
 
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
@@ -24,7 +24,7 @@ class ContainsMany extends ContainsOne
     /**
      * Returns referenced model.
      */
-    public function ref(array $defaults = []): Model
+    public function getTheirEntity(array $defaults = []): Model
     {
         // get model
         $theirModel = $this->createTheirModel(array_merge($defaults, [

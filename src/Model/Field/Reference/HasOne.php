@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Model\Reference;
+namespace Phlex\Data\Model\Field\Reference;
 
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class ListsMany extends Model\Reference
+class HasOne extends Model\Field\Reference
 {
-    use Model\JoinLinkTrait;
-
     /**
      * Field type.
      *
@@ -105,41 +103,7 @@ class ListsMany extends Model\Reference
      */
     public $serialize;
 
-    /**
-     * Persisting format for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, for date it can be 'Y-m-d', for datetime - 'Y-m-d H:i:s.u' etc.
-     *
-     * @var string
-     */
-    public $persist_format;
-
-    /**
-     * Persisting timezone for type = 'date', 'datetime', 'time' fields.
-     *
-     * For example, 'IST', 'UTC', 'Europe/Riga' etc.
-     *
-     * @var string
-     */
-    public $persist_timezone = 'UTC';
-
-    /**
-     * DateTime class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTime', 'Carbon' etc.
-     *
-     * @var string
-     */
-    public $dateTimeClass = \DateTime::class;
-
-    /**
-     * Timezone class used for type = 'data', 'datetime', 'time' fields.
-     *
-     * For example, 'DateTimeZone', 'Carbon' etc.
-     *
-     * @var string
-     */
-    public $dateTimeZoneClass = \DateTimeZone::class;
+    public $options;
 
     /**
      * Reference\HasOne will also add a field corresponding
@@ -150,7 +114,7 @@ class ListsMany extends Model\Reference
         parent::doInitialize();
 
         if (!$this->ourKey) {
-            $this->ourKey = $this->link;
+            $this->ourKey = $this->getKey() . '_id';
         }
 
         $ourModel = $this->getOurModel();
@@ -158,7 +122,6 @@ class ListsMany extends Model\Reference
         if (!$ourModel->hasField($this->ourKey)) {
             $ourModel->addField($this->ourKey, [
                 'type' => $this->type,
-                'referenceLink' => $this->link,
                 'system' => $this->system,
                 'joinName' => $this->joinName,
                 'default' => $this->default,
@@ -168,12 +131,8 @@ class ListsMany extends Model\Reference
                 'ui' => $this->ui,
                 'mandatory' => $this->mandatory,
                 'required' => $this->required,
-                'typecast' => $this->typecast,
                 'serialize' => $this->serialize,
-                'persist_format' => $this->persist_format,
-                'persist_timezone' => $this->persist_timezone,
-                'dateTimeClass' => $this->dateTimeClass,
-                'dateTimeZoneClass' => $this->dateTimeZoneClass,
+                'options' => $this->options,
             ]);
         }
     }
@@ -194,7 +153,7 @@ class ListsMany extends Model\Reference
      * If our model is not loaded, then return their model with condition set.
      * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
      */
-    public function ref(array $defaults = []): Model
+    public function getTheirEntity(array $defaults = []): Model
     {
         $theirModel = $this->createTheirModel($defaults);
 
@@ -208,7 +167,7 @@ class ListsMany extends Model\Reference
                 // if our model is loaded, then try to load referenced model
                 $theirModel = $theirModel->tryLoadBy($this->getTheirKey($theirModel), $ourValue);
             } else {
-                $theirModel = $theirModel->createEntity();
+                $theirModel->toEntity();
             }
         }
 
@@ -226,5 +185,38 @@ class ListsMany extends Model\Reference
         });
 
         return $theirModel;
+    }
+
+    public function setTheirModelHooks(Model $theirModel): void
+    {
+        // add hook to set ourKey = null when record of referenced model is deleted
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) {
+            $this->getOurField()->setNull();
+        });
+
+        // their model will be reloaded after saving our model to reflect changes in referenced fields
+        $theirModel->reloadAfterSave = false;
+
+        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) {
+            $theirFieldValue = $this->getTheirFieldValue($theirModel);
+
+            if ($this->getOurFieldValue() !== $theirFieldValue) {
+                $this->getOurField()->set($theirFieldValue)->getOwner()->save();
+            }
+
+            $theirModel->reload();
+        });
+    }
+
+    public function set($value): self
+    {
+        // @todo GH check that class is same as theirModel class
+        if ($value instanceof Model) {
+            $value = $value->getId();
+        }
+
+        $this->getOwner()->getEntry()->set($this->getOurKey(), $value);
+
+        return $this;
     }
 }

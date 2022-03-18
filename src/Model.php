@@ -85,6 +85,10 @@ class Model implements \IteratorAggregate
     /** @const string */
     public const FIELD_FILTER_NOT_SYSTEM = 'not system';
     /** @const string */
+    public const FIELD_FILTER_REFERENCE = 'reference';
+    /** @const string */
+    public const FIELD_FILTER_NOT_REFERENCE = 'not reference';
+    /** @const string */
     public const FIELD_FILTER_VISIBLE = 'visible';
     /** @const string */
     public const FIELD_FILTER_EDITABLE = 'editable';
@@ -630,6 +634,10 @@ class Model implements \IteratorAggregate
                 return $field->system;
             case self::FIELD_FILTER_NOT_SYSTEM:
                 return !$field->system;
+            case self::FIELD_FILTER_REFERENCE:
+                return $field instanceof Model\Field\Reference;
+            case self::FIELD_FILTER_NOT_REFERENCE:
+                return !$field instanceof Model\Field\Reference;
             case self::FIELD_FILTER_EDITABLE:
                 return $field->isEditable();
             case self::FIELD_FILTER_VISIBLE:
@@ -831,7 +839,7 @@ class Model implements \IteratorAggregate
         if ($key === null) {
             // Collect list of eligible fields
             $data = [];
-            foreach ($this->only_fields ?: array_keys($this->getFields()) as $key) {
+            foreach ($this->only_fields ?: array_keys($this->getFields(self::FIELD_FILTER_NOT_REFERENCE)) as $key) {
                 $data[$key] = $this->get($key);
             }
 
@@ -840,7 +848,7 @@ class Model implements \IteratorAggregate
 
         $this->checkOnlyFieldsField($key);
 
-        return $this->entry->get($key, $this->getField($key)->default);
+        return $this->getField($key)->get();
     }
 
     /**
@@ -882,31 +890,7 @@ class Model implements \IteratorAggregate
 
         $this->checkOnlyFieldsField($key);
 
-        $field = $this->getField($key);
-
-        try {
-            $value = $field->normalize($value);
-        } catch (Exception $e) {
-            throw $e
-                ->addMoreInfo('key', $key)
-                ->addMoreInfo('value', $value)
-                ->addMoreInfo('field', $field);
-        }
-
-        // do nothing when value has not changed
-        $currentValue = $this->entry->get($key, $field->default);
-        if ($field->compare($value, $currentValue)) {
-            return $this;
-        }
-
-        $field->assertSetAccess();
-
-        // if value is same as loaded remove the dirty value, otherwise set
-        if ($field->compare($value, $this->entry->getLoaded($key, $currentValue))) {
-            $this->entry->reset($key, $currentValue);
-        } else {
-            $this->entry->set($key, $value);
-        }
+        $this->getField($key)->set($value);
 
         return $this;
     }
@@ -925,6 +909,8 @@ class Model implements \IteratorAggregate
     public function setNull($key)
     {
         $this->assertIsEntity();
+
+        $this->checkOnlyFieldsField($key);
 
         $this->entry->set($key, null);
 
@@ -972,6 +958,8 @@ class Model implements \IteratorAggregate
     public function isDirty($key): bool
     {
         $this->assertIsEntity();
+
+        $this->checkOnlyFieldsField($key);
 
         return $this->entry->isDirty($key);
     }
@@ -1241,9 +1229,6 @@ class Model implements \IteratorAggregate
 
         /** @var self $model */
         $model = new $class($persistence, ['table' => $this->table]);
-//         if ($this->isEntity()) { // TODO should this method work with entity at all?
-//             $model = $model->createEntity();
-//         }
 
         if ($this->isEntity()) {
             $model->entry = clone $this->entry;
@@ -1284,7 +1269,7 @@ class Model implements \IteratorAggregate
 
         $this->setMulti($data);
 
-        // if no persistence just commit entity
+        // if no persistence just commit entry
         if (!$this->persistence) {
             $this->entry->commit();
 
@@ -1499,7 +1484,7 @@ class Model implements \IteratorAggregate
     }
 
     /**
-     * Returns entity values as array encoded for the $mutator.
+     * Returns entry values as array encoded for the $mutator.
      *
      * @return \Traversable<static>
      */
@@ -1517,10 +1502,6 @@ class Model implements \IteratorAggregate
     {
         foreach ($this->toQuery() as $data) {
             $entity = $this->createEntity($this->persistence->decodeRow($this, $data));
-
-//             if ($this->primaryKey) {
-//                 $this->setId($dataRef[$this->primaryKey] ?? null);
-//             }
 
             // you can return false in afterLoad hook to prevent to yield this data row
             // use it like this:

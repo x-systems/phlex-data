@@ -471,14 +471,14 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $s = (new Model($this->db, ['table' => 'stadium']));
         $s->addFields(['name']);
-        $s->hasOne('Player', ['theirModel' => $p]);
+        $s->hasOne('player', ['theirModel' => $p]);
 
-        $p->hasOne('Stadium', ['theirModel' => $s, 'ourKey' => 'id', 'theirKey' => 'player_id']);
+        $p->hasOne('stadium', ['theirModel' => $s, 'ourKey' => 'id', 'theirKey' => 'player_id']);
 
         $p = $p->load(2);
-        $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
-        $this->assertSame('Nou camp nou', $p->ref('Stadium')->get('name'));
-        $this->assertSame(2, $p->ref('Stadium')->get('player_id'));
+        $p->ref('stadium')->import([['name' => 'Nou camp nou']]);
+        $this->assertSame('Nou camp nou', $p->ref('stadium')->get('name'));
+        $this->assertSame(2, $p->ref('stadium')->get('player_id'));
     }
 
     public function testModelProperty(): void
@@ -508,12 +508,11 @@ class ReferenceSqlTest extends Sql\TestCase
 
         // by default not set
         $o->hasOne('user', ['theirModel' => $u]);
-        $this->assertSame($o->getField('user_id')->isVisible(), true);
+        $this->assertSame($o->getField('user')->isVisible(), true);
 
         $o->getReference('user')->addTitle();
-        $this->assertTrue($o->hasField('user'));
-        $this->assertSame($o->getField('user')->isVisible(), true);
-        $this->assertSame($o->getField('user_id')->isVisible(), false);
+        $this->assertTrue($o->hasField('user_name'));
+        $this->assertSame($o->getField('user_name')->isVisible(), true);
 
         // if it is set manually then it will not be changed
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
@@ -552,7 +551,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         // change order user by changing titleKey value
         $o = $o->load(1);
-        $o->set('user', 'Peter');
+        $o->set('user_name', 'Peter');
         $this->assertEquals(1, $o->get('user_id'));
         $o->save();
         $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
@@ -569,7 +568,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         // change order user by changing titleKey value
         $o = $o->load(1);
-        $o->set('user', 'Foo');
+        $o->set('user_name', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
         $o->save();
         $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
@@ -586,7 +585,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         // change order user by changing ref field value
         $o = $o->load(1);
-        $o->set('my_user', 'Foo');
+        $o->set('my_user_name', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
         $o->save();
         $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
@@ -603,7 +602,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         // change order user by changing ref field value
         $o = $o->load(1);
-        $o->set('my_user', 'Foo'); // user_id=2
+        $o->set('my_user_name', 'Foo'); // user_id=2
         $o->set('user_id', 3);     // user_id=3 (this will take precedence)
         $this->assertEquals(3, $o->get('user_id'));
         $o->save();

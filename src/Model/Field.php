@@ -47,14 +47,6 @@ class Field
     public $default;
 
     /**
-     * If value of this field is defined by a model, this property
-     * will contain reference link.
-     *
-     * @var string|null
-     */
-    protected $referenceLink;
-
-    /**
      * Actual field name.
      *
      * @var string|null
@@ -193,7 +185,7 @@ class Field
      */
     public function get()
     {
-        return $this->getOwner()->get($this->getKey());
+        return $this->getOwner()->getEntry()->get($this->getKey(), $this->default);
     }
 
     /**
@@ -203,7 +195,33 @@ class Field
      */
     public function set($value): self
     {
-        $this->getOwner()->set($this->getKey(), $value);
+        $key = $this->getKey();
+
+        try {
+            $value = $this->normalize($value);
+        } catch (Exception $e) {
+            throw $e
+                ->addMoreInfo('key', $key)
+                ->addMoreInfo('value', $value)
+                ->addMoreInfo('field', $this);
+        }
+
+        $entry = $this->getOwner()->getEntry();
+
+        // do nothing when value has not changed
+        $currentValue = $entry->get($key, $this->default);
+        if ($this->compare($value, $currentValue)) {
+            return $this;
+        }
+
+        $this->assertSetAccess();
+
+        // if value is same as loaded remove the dirty value, otherwise set
+        if ($this->compare($value, $entry->getLoaded($key, $currentValue))) {
+            $entry->reset($key, $currentValue);
+        } else {
+            $entry->set($key, $value);
+        }
 
         return $this;
     }
@@ -295,11 +313,9 @@ class Field
         return $typecastFunc($value) === $typecastFunc($value2);
     }
 
-    public function getReference(): ?Reference
+    public function getQueryArguments($operator, $value): array
     {
-        return $this->referenceLink !== null
-            ? $this->getOwner()->getReference($this->referenceLink)
-            : null;
+        return $this->getCodec()->getQueryArguments($operator, $value);
     }
 
     public function getCodec(MutatorInterface $mutator = null): Field\Codec

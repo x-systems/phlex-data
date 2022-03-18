@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Model;
+namespace Phlex\Data\Model\Field;
 
 use Phlex\Core\Factory;
 use Phlex\Data\Exception;
@@ -18,12 +18,9 @@ use Phlex\Data\Persistence;
  *
  * @method Model getOwner() our model
  */
-class Reference
+class Reference extends Model\Field
 {
-    use Model\ElementTrait;
     use \Phlex\Core\InitializerTrait;
-    use \Phlex\Core\InjectableTrait;
-    use \Phlex\Core\TrackableTrait;
 
     /**
      * Option to use for linking a model to this reference when it is theirModel.
@@ -39,6 +36,10 @@ class Reference
      */
     public const OPTION_ROOT_MODEL = self::class . '@root_model';
 
+    public $access = self::ACCESS_GET;
+
+    public $persist = self::PERSIST_NONE;
+
     /**
      * Use this alias for related entity by default. This can help you
      * if you create sub-queries or joins to separate this from main
@@ -47,15 +48,6 @@ class Reference
      * @var string
      */
     protected $table_alias;
-
-    /**
-     * What should we pass into owner->ref() to get through to this reference.
-     * Each reference has a unique identifier, although it's stored
-     * in Model's elements as '#ref-xx'.
-     *
-     * @var string
-     */
-    public $link;
 
     /**
      * Definition of the destination their model, that can be either an object, a
@@ -91,18 +83,13 @@ class Reference
      */
     public $caption;
 
-    public function __construct(string $link)
-    {
-        $this->link = $link;
-    }
-
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->elementId; // use static function to allow this object to be GCed
 
         return $model->onHookDynamic(
             $spot,
-            static fn (Model $model) => $model->getElement($name),
+            static fn (Model $model) => $model->getField($name),
             $fx,
             $args,
             $priority
@@ -126,20 +113,9 @@ class Reference
         );
     }
 
-    /**
-     * Initialization.
-     */
     protected function doInitialize(): void
     {
         $this->initTableAlias();
-    }
-
-    /**
-     * Will use #ref_<link>.
-     */
-    public function getDesiredName(): string
-    {
-        return '#ref_' . $this->link;
     }
 
     public function getOurModel(): Model
@@ -222,7 +198,7 @@ class Reference
         if (!$this->table_alias) {
             $ourModel = $this->getOurModel();
 
-            $aliasFull = $this->link;
+            $aliasFull = $this->getKey();
             $alias = preg_replace('~_(' . preg_quote($ourModel->primaryKey, '~') . '|id)$~', '', $aliasFull);
             $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
             if (isset($ourModel->table_alias)) {
@@ -258,12 +234,22 @@ class Reference
     }
 
     /**
-     * Returns referenced model without any extra conditions. However other
-     * relationship types may override this to imply conditions.
+     * Returns referenced entity, in this case without any extra conditions.
+     * However descendant relationship types may override this to imply conditions.
      */
-    public function ref(array $defaults = []): Model
+    public function getTheirEntity(array $defaults = []): Model
     {
         return $this->createTheirModel($defaults);
+    }
+
+    public function getQueryArguments($operator, $value): array
+    {
+        return $this->getOurField()->getCodec()->getQueryArguments($operator, $value);
+    }
+
+    public function get()
+    {
+        return $this->getTheirEntity();
     }
 
     // {{{ Debug Methods

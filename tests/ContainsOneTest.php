@@ -89,7 +89,7 @@ class ContainsOneTest extends Sql\TestCase
             $a->key()->address => 'foo',
             $a->key()->built_date => new \DateTime('2019-01-01'),
             $a->key()->tags => ['foo', 'bar'],
-            $a->key()->door_code => null,
+            $a->key()->door_code_data => null,
         ]);
         $a->save();
 
@@ -122,7 +122,7 @@ class ContainsOneTest extends Sql\TestCase
         $this->assertSame('United Kingdom', $i->addr->country->name);
 
         // let's test how it all looks in persistence without encoding
-        $exp_addr = $i->setOrder('id')->export(null, null, false)[0][$i->key()->addr];
+        $exp_addr = $i->setOrder('id')->export(null, null, false)[0][$i->key()->addr_data];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
@@ -135,7 +135,7 @@ class ContainsOneTest extends Sql\TestCase
                 $i->addr->key()->address => 'bar',
                 $i->addr->key()->built_date => $formatDtForCompareFunc(new \DateTime('2019-01-01')),
                 $i->addr->key()->tags => json_encode(['foo', 'bar']),
-                $i->addr->key()->door_code => json_encode([
+                $i->addr->key()->door_code_data => json_encode([
                     $i->addr->door_code->key()->id => 1,
                     $i->addr->door_code->key()->code => 'DEF',
                     $i->addr->door_code->key()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
@@ -146,12 +146,12 @@ class ContainsOneTest extends Sql\TestCase
 
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
-        $this->assertNull($i->addr->get($i->addr->key()->door_code));
+        $this->assertNull($i->addr->get($i->addr->key()->door_code_data));
         $this->assertFalse($i->addr->door_code->isLoaded());
 
         // and now delete address
         $i->addr->delete();
-        $this->assertNull($i->get($i->key()->addr));
+        $this->assertNull($i->get($i->key()->addr_data));
         $this->assertFalse($i->addr->isLoaded());
 
         // var_dump($i->export(), $i->export(null, null, false));
@@ -172,7 +172,7 @@ class ContainsOneTest extends Sql\TestCase
             $a->key()->address => 'foo',
             $a->key()->built_date => new \DateTime('2019-01-01'),
             $a->key()->tags => [],
-            $a->key()->door_code => null,
+            $a->key()->door_code_data => null,
         ]);
         $a->save();
 

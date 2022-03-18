@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
-use Phlex\Data\Exception;
+use Phlex\Data\Model\Field\Reference;
 
 /**
  * Provides native Model methods for manipulating model references.
@@ -51,19 +51,9 @@ trait ReferencesTrait
      */
     protected function doAddReference(array $seed, string $link, array $defaults = []): Reference
     {
-        $defaults[0] = $link;
+        $reference = Field\Reference::fromSeed($seed, $defaults);
 
-        $reference = Reference::fromSeed($seed, $defaults);
-
-        // if reference with such name already exists, then throw exception
-        if ($this->hasElement($name = $reference->getDesiredName())) {
-            throw (new Exception('Reference with such name already exists'))
-                ->addMoreInfo('name', $name)
-                ->addMoreInfo('link', $link)
-                ->addMoreInfo('defaults', $defaults);
-        }
-
-        return $this->add($reference);
+        return $this->addField($link, $reference);
     }
 
     /**
@@ -121,7 +111,7 @@ trait ReferencesTrait
      */
     public function ref(string $link, array $defaults = []): self
     {
-        return $this->getReference($link)->ref($defaults);
+        return $this->getReference($link)->getTheirEntity($defaults);
     }
 
     /**
@@ -149,7 +139,7 @@ trait ReferencesTrait
      */
     public function getReference(string $link): Reference
     {
-        return $this->getElement('#ref_' . $link);
+        return $this->getField($link);
     }
 
     /**
@@ -158,9 +148,9 @@ trait ReferencesTrait
     public function getReferences(): array
     {
         $refs = [];
-        foreach ($this->elements as $key => $val) {
-            if (substr($key, 0, 5) === '#ref_') {
-                $refs[substr($key, 5)] = $val;
+        foreach ($this->getFields() as $key => $val) {
+            if ($val instanceof Field\Reference) {
+                $refs[$key] = $val;
             }
         }
 
@@ -172,6 +162,6 @@ trait ReferencesTrait
      */
     public function hasReference(string $link): bool
     {
-        return $this->hasElement('#ref_' . $link);
+        return $this->hasField($link) && ($this->getField($link) instanceof Reference);
     }
 }

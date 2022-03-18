@@ -234,17 +234,13 @@ class Condition extends AbstractScope
                         }
                     }
                 } else {
-                    if ($model->hasField($field)) {
-                        $field = $model->getField($field);
-                    } else {
-                        $field = $model->getReference($field)->getOurField();
-                    }
+                    $field = $model->getField($field);
                 }
             }
 
             // handle the query arguments using field
             if ($field instanceof Model\Field) {
-                [$field, $operator, $value] = $field->getCodec()->getQueryArguments($operator, $value); // @phpstan-ignore-line
+                [$field, $operator, $value] = $field->getQueryArguments($operator, $value);
             }
 
             // only expression contained in $field
@@ -406,12 +402,12 @@ class Condition extends AbstractScope
 
         // use the referenced model title if such exists
         $title = null;
-        if ($field instanceof Model\Field && $field->getReference() !== null) {
+        if ($field instanceof Model\Field\Reference) {
             // make sure we set the value in the Model and fake it as loaded
-            $model->toEntity(['id' => 0, $field->elementId => $value]);
+            $model->toEntity([$model->primaryKey => 0, $field->getOurKey() => $value]);
 
             // then take the title
-            $title = $model->getReference($field->getReference()->link)->ref()->getTitle();
+            $title = $model->get($field->getKey())->getTitle();
             if ($title === $value) {
                 $title = null;
             }

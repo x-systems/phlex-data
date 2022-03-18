@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
-use Phlex\Data\Exception;
+use Phlex\Core\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 

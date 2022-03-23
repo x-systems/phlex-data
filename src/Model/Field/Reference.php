@@ -252,6 +252,22 @@ class Reference extends Model\Field
         return $this->getTheirEntity();
     }
 
+    public function getConditionValueTitle($value): ?string
+    {
+        $model = $this->getOwner();
+
+        // make sure we set the value in the Model and fake it as loaded
+        $model->toEntity([$model->primaryKey => 0, $this->getOurKey() => $value]);
+
+        // then take the title
+        $title = $model->get($this->getKey())->getTitle();
+        if ($title === $value) {
+            $title = null;
+        }
+
+        return $title;
+    }
+
     // {{{ Debug Methods
 
     /**

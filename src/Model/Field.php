@@ -476,6 +476,11 @@ class Field
         return (bool) ($this->persist & $action);
     }
 
+    public function getConditionValueTitle($value): ?string
+    {
+        return null;
+    }
+
     // {{{ Debug Methods
 
     /**

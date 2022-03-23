@@ -400,17 +400,10 @@ class Condition extends AbstractScope
             }
         }
 
-        // use the referenced model title if such exists
+        // use a title if defined for the value (generally reference field model title)
         $title = null;
-        if ($field instanceof Model\Field\Reference) {
-            // make sure we set the value in the Model and fake it as loaded
-            $model->toEntity([$model->primaryKey => 0, $field->getOurKey() => $value]);
-
-            // then take the title
-            $title = $model->get($field->getKey())->getTitle();
-            if ($title === $value) {
-                $title = null;
-            }
+        if ($field instanceof Model\Field) {
+            $title = $field->getConditionValueTitle($value);
         }
 
         if (is_bool($value)) {

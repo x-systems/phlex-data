@@ -579,7 +579,7 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    public function checkOnlyFieldsField(string $key)
+    protected function assertOnlyField(string $key)
     {
         $this->getField($key); // test if field exists
 
@@ -592,7 +592,7 @@ class Model implements \IteratorAggregate
         }
     }
 
-    public function isOnlyFieldsField(string $key): bool
+    public function isOnlyField(string $key): bool
     {
         return !$this->only_fields || in_array($key, $this->only_fields, true);
     }
@@ -613,7 +613,7 @@ class Model implements \IteratorAggregate
         $onlyFields ??= true;
 
         return array_filter($this->fields, function (Model\Field $field, $name) use ($filters, $onlyFields) {
-            if ($onlyFields && !$this->isOnlyFieldsField($field->elementId)) {
+            if ($onlyFields && !$this->isOnlyField($field->elementId)) {
                 return false;
             }
 
@@ -643,13 +643,13 @@ class Model implements \IteratorAggregate
             case self::FIELD_FILTER_VISIBLE:
                 return $field->isVisible();
             case self::FIELD_FILTER_ONLY_FIELDS:
-                return $this->isOnlyFieldsField($field->elementId);
+                return $this->isOnlyField($field->elementId);
             case self::FIELD_FILTER_PERSIST:
                 if (!$field->interactsWithPersistence()) {
                     return false;
                 }
 
-                return $field->system || $this->isOnlyFieldsField($field->elementId);
+                return $field->system || $this->isOnlyField($field->elementId);
             default:
                 throw (new Exception('Filter is not supported'))
                     ->addMoreInfo('filter', $filter);
@@ -846,7 +846,7 @@ class Model implements \IteratorAggregate
             return $data;
         }
 
-        $this->checkOnlyFieldsField($key);
+        $this->assertOnlyField($key);
 
         return $this->getField($key)->get();
     }
@@ -888,7 +888,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->checkOnlyFieldsField($key);
+        $this->assertOnlyField($key);
 
         $this->getField($key)->set($value);
 
@@ -899,7 +899,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->checkOnlyFieldsField($key);
+        $this->assertOnlyField($key);
 
         $this->entry->reset($key);
 
@@ -910,7 +910,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->checkOnlyFieldsField($key);
+        $this->assertOnlyField($key);
 
         $this->entry->set($key, null);
 
@@ -921,7 +921,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->checkOnlyFieldsField($key);
+        $this->assertOnlyField($key);
 
         return $this->entry->isset($key);
     }
@@ -959,7 +959,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->checkOnlyFieldsField($key);
+        $this->assertOnlyField($key);
 
         return $this->entry->isDirty($key);
     }

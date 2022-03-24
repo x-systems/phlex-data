@@ -87,7 +87,6 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
 
     public function testRefName2(): void
     {
-        $order = new Model(null, ['table' => 'order']);
         $user = new Model(null, ['table' => 'user']);
 
         $user->hasOne('user', ['theirModel' => $user]);
@@ -99,9 +98,9 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
     {
         $db = new Persistence\Array_();
         $order = new Model($db, ['table' => 'order']);
-        $order->addReference('archive', ['theirModel' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
+        $order->addReference('archive', ['theirModel' => fn () => new $order(null, ['table' => $order->table . '_archive'])]);
         $this->expectException(Exception::class);
-        $order->addReference('archive', ['theirModel' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
+        $order->addReference('archive', ['theirModel' => fn () => new $order(null, ['table' => $order->table . '_archive'])]);
     }
 
     public function testCustomRef(): void
@@ -109,7 +108,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $p = new Persistence\Array_();
 
         $m = new Model($p, ['table' => 'user']);
-        $m->addReference('archive', ['theirModel' => fn ($m) => new $m(null, ['table' => $m->table . '_archive'])]);
+        $m->addReference('archive', ['theirModel' => fn () => new $m(null, ['table' => $m->table . '_archive'])]);
 
         $this->assertSame('user_archive', $m->ref('archive')->table);
     }

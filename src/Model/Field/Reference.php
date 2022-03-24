@@ -137,7 +137,7 @@ class Reference extends Model\Field
         if (is_object($this->theirModel)) {
             if ($this->theirModel instanceof \Closure) {
                 // if model is Closure, then call the closure which should return a model
-                $theirModel = ($this->theirModel)($this->getOurModel(), $this, $defaults);
+                $theirModel = ($this->theirModel)($this, $defaults);
             } else {
                 // if model is set, then use clone of this model
                 $theirModel = clone $this->theirModel;

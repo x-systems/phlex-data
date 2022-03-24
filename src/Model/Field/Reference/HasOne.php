@@ -187,27 +187,6 @@ class HasOne extends Model\Field\Reference
         return $theirModel;
     }
 
-    public function setTheirModelHooks(Model $theirModel): void
-    {
-        // add hook to set ourKey = null when record of referenced model is deleted
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) {
-            $this->getOurField()->setNull();
-        });
-
-        // their model will be reloaded after saving our model to reflect changes in referenced fields
-        $theirModel->reloadAfterSave = false;
-
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) {
-            $theirFieldValue = $this->getTheirFieldValue($theirModel);
-
-            if ($this->getOurFieldValue() !== $theirFieldValue) {
-                $this->getOurField()->set($theirFieldValue)->getOwner()->save();
-            }
-
-            $theirModel->reload();
-        });
-    }
-
     public function set($value): self
     {
         // @todo GH check that class is same as theirModel class

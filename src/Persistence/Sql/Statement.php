@@ -189,8 +189,7 @@ class Statement extends Expression
         // array of tables - recursively process each
         if (is_array($table)) {
             if ($alias !== null) {
-                throw (new Exception('You cannot use single alias with multiple tables'))
-                    ->addMoreInfo('alias', $alias);
+                return $this->table(new Expression\Union($table), $alias);
             }
 
             foreach ($table as $alias => $t) {

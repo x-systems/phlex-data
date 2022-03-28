@@ -178,24 +178,6 @@ class StatementTest extends PHPUnit\TestCase
     }
 
     /**
-     * There shouldn't be alias when passing multiple tables.
-     */
-    public function testTableException1()
-    {
-        $this->expectException(Exception::class);
-        $this->q()->table('employee,jobs', 'u');
-    }
-
-    /**
-     * There shouldn't be alias when passing multiple tables.
-     */
-    public function testTableException2()
-    {
-        $this->expectException(Exception::class);
-        $this->q()->table(['employee', 'jobs'], 'u');
-    }
-
-    /**
      * Alias is NOT mandatory when pass table as Sql\Expression.
      *
      * @doesNotPerformAssertions
@@ -555,9 +537,9 @@ class StatementTest extends PHPUnit\TestCase
         );
 
         // $q1 union $q2
-        $u = new Sql\Expression('([] union [])', [$q1, $q2]);
+        $u = new Sql\Expression\Union([$q1, $q2], '_union');
         $this->assertSame(
-            '((select "date","amount" "debit",0 "credit" from "sales") union (select "date",0 "debit","amount" "credit" from "purchases"))',
+            '(select "date","amount" "debit",0 "credit" from "sales" union all select "date",0 "debit","amount" "credit" from "purchases")',
             $u->render()
         );
 
@@ -566,27 +548,16 @@ class StatementTest extends PHPUnit\TestCase
             ->field('date,debit,credit')
             ->table($u, 'derrivedTable');
         $this->assertSame(
-            'select "date","debit","credit" from ((select "date","amount" "debit",0 "credit" from "sales") union (select "date",0 "debit","amount" "credit" from "purchases")) "derrivedTable"',
+            'select "date","debit","credit" from (select "date","amount" "debit",0 "credit" from "sales" union all select "date",0 "debit","amount" "credit" from "purchases") "derrivedTable"',
             $q->render()
         );
 
-        // SQLite do not support (($q1) union ($q2)) syntax. Correct syntax is ($q1 union $q2) without additional braces
-        // Other SQL engines are more relaxed, but still these additional braces are not needed for union
-        // Let's test how to do that properly
-        $q1->consumedInParentheses(false);
-        $q2->consumedInParentheses(false);
-        $u = new Sql\Expression('([] union [])', [$q1, $q2]);
-        $this->assertSame(
-            '(select "date","amount" "debit",0 "credit" from "sales" union select "date",0 "debit","amount" "credit" from "purchases")',
-            $u->render()
-        );
-
         // SELECT date,debit,credit FROM ($q1 union $q2)
         $q = $this->q()
             ->field('date,debit,credit')
             ->table($u, 'derrivedTable');
         $this->assertSame(
-            'select "date","debit","credit" from (select "date","amount" "debit",0 "credit" from "sales" union select "date",0 "debit","amount" "credit" from "purchases") "derrivedTable"',
+            'select "date","debit","credit" from (select "date","amount" "debit",0 "credit" from "sales" union all select "date",0 "debit","amount" "credit" from "purchases") "derrivedTable"',
             $q->render()
         );
     }

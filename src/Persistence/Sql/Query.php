@@ -88,7 +88,7 @@ class Query extends Persistence\Query implements Expressionable
             // Add requested fields first
             foreach ($this->model->only_fields as $key) {
                 $field = $this->model->getField($key);
-                if (!$field->savesToPersistence()) {
+                if (!$field->loadsFromPersistence()) {
                     continue;
                 }
                 $this->addField($field);

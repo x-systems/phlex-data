@@ -48,7 +48,7 @@ class Field extends Model\Field implements Expressionable
      */
     public function useAlias(): bool
     {
-        return isset($this->actual);
+        return false;
     }
 
     /**

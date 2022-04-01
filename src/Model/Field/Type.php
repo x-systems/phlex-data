@@ -82,7 +82,7 @@ abstract class Type
         // using seed with alias e.g. ['string', 'maxLength' => 50]
         // convert the alias to actual class name and proper seed array
         if (is_array($type)) {
-            return self::$registry[$type[0] ?? 0] + $type;
+            return (self::$registry[$type[0] ?? 0] ?? []) + $type;
         }
 
         return self::$registry[$type ?? 0];
@@ -180,5 +180,19 @@ abstract class Type
         }
 
         return $this;
+    }
+
+    /**
+     * Detach from the codec and return fresh clone to use with another field.
+     *
+     * @return static
+     */
+    public function asSeed()
+    {
+        $type = clone $this;
+
+        $type->codec = [];
+
+        return $type;
     }
 }

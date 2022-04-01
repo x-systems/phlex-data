@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
+use Phlex\Core\Factory;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 use Phlex\Data\Persistence\Sql\Expression;
@@ -130,7 +131,7 @@ class Union extends Model
         $key = $unionField->getKey();
 
         if ($fieldSeed = $actual[$nestedModelAlias] ?? null) {
-            $nestedField = $nestedModel->addField($this->getActualKey($key), $fieldSeed);
+            $nestedField = $nestedModel->addField($this->getActualKey($key), Factory::mergeSeeds($fieldSeed, ['type' => $unionField->getValueType()->asSeed()]));
         } else {
             if ($nestedModel->hasField($key)) {
                 $nestedField = $nestedModel->getField($key);

@@ -32,11 +32,31 @@ class Query extends Persistence\Query implements Expressionable
 
         $this->statement = $this->getPersistence()->statement();
 
-        if ($model->table) {
-            $this->statement->table($model->table, $model->table_alias ?? null);
-        }
+        $this->addTable();
 
         $this->addWithCursors();
+    }
+
+    protected function addTable()
+    {
+        if (!$table = $this->model->table) {
+            return;
+        }
+
+        if (is_array($table)) {
+            $tables = [];
+            foreach ($table as $model) {
+                if ($model instanceof Model) {
+                    $model = $model->toQuery()->select();
+                }
+
+                $tables[] = $model;
+            }
+
+            $table = $tables;
+        }
+
+        $this->statement->table($table, $this->model->table_alias ?? null);
     }
 
     protected function addWithCursors()
@@ -95,13 +115,15 @@ class Query extends Persistence\Query implements Expressionable
                 $addedFields[$key] = true;
             }
 
-            // now add system fields, if they were not added
-            foreach ($this->model->getFields() as $key => $field) {
-                if (!$field->loadsFromPersistence()) {
-                    continue;
-                }
-                if ($field->system && !isset($addedFields[$key])) {
-                    $this->addField($field);
+            if (!$this->model->getOption(Persistence\Query::OPTION_MODEL_STRICT_ONLY_FIELDS)) {
+                // now add system fields, if they were not added
+                foreach ($this->model->getFields() as $key => $field) {
+                    if (!$field->loadsFromPersistence()) {
+                        continue;
+                    }
+                    if ($field->system && !isset($addedFields[$key])) {
+                        $this->addField($field);
+                    }
                 }
             }
         } else {
@@ -222,7 +244,7 @@ class Query extends Persistence\Query implements Expressionable
 
     public function toSqlExpression(): Expression
     {
-        return $this->statement->toSqlExpression();
+        return $this->withMode()->getStatement()->toSqlExpression();
     }
 
     public function getStatement(): Statement
@@ -261,6 +283,11 @@ class Query extends Persistence\Query implements Expressionable
     public function render(): string
     {
         return $this->withMode()->getStatement()->render();
+    }
+
+    public function renderDebug(): string
+    {
+        return $this->withMode()->getStatement()->getDebugQueryFormatted();
     }
 
     public function getDebug(): array

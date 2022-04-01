@@ -103,7 +103,7 @@ class HasOne extends Model\Field\Reference
      */
     public $serialize;
 
-    public $options;
+    public $options = [];
 
     /**
      * Reference\HasOne will also add a field corresponding

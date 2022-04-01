@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
+use Phlex\Data\Model;
 use Phlex\Data\Tests\ContainsOne\Country;
 use Phlex\Data\Tests\ContainsOne\Invoice;
 
@@ -26,34 +27,34 @@ class ContainsOneTest extends Sql\TestCase
     {
         parent::setUp();
 
+        $invoice = new Invoice($this->db);
+        $country = new Country($this->db);
         // populate database for our models
-        $this->createMigrator(new Country($this->db))->dropIfExists()->create();
-        $this->createMigrator(new Invoice($this->db))->dropIfExists()->create();
+        $this->createMigrator($invoice)->dropIfExists()->create();
+        $this->createMigrator($country)->dropIfExists()->create();
 
         // fill in some default values
-        $m = new Country($this->db);
-        $m->import([
+        $country->import([
             [
-                $m->key()->id => 1,
-                $m->key()->name => 'Latvia',
+                $country->key()->id => 1,
+                $country->key()->name => 'Latvia',
             ],
             [
-                $m->key()->id => 2,
-                $m->key()->name => 'United Kingdom',
+                $country->key()->id => 2,
+                $country->key()->name => 'United Kingdom',
             ],
         ]);
 
-        $m = new Invoice($this->db);
-        $m->import([
+        $invoice->import([
             [
-                $m->key()->id => 1,
-                $m->key()->ref_no => 'A1',
-                $m->key()->addr => null,
+                $invoice->key()->id => 1,
+                $invoice->key()->ref_no => 'A1',
+                $invoice->key()->addr => null,
             ],
             [
-                $m->key()->id => 2,
-                $m->key()->ref_no => 'A2',
-                $m->key()->addr => null,
+                $invoice->key()->id => 2,
+                $invoice->key()->ref_no => 'A2',
+                $invoice->key()->addr => null,
             ],
         ]);
     }

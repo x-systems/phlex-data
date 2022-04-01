@@ -139,7 +139,7 @@ class Model implements \IteratorAggregate
      *
      * $table = ['user', 'mysql'=>'tbl_user'];
      *
-     * @var string|array<0|string, string>|false|null
+     * @var string|array<0|string, string>|array<string, Model>|\Closure|false|null
      */
     public $table;
 
@@ -533,21 +533,21 @@ class Model implements \IteratorAggregate
         return $this->entry->get($this->primaryKey);
     }
 
-    private function assertHasPrimaryKey(): void
+    protected function assertHasPrimaryKey(): void
     {
         if (!$this->hasPrimaryKeyField()) {
             throw new Exception('ID field is not defined');
         }
     }
 
-    private function assertIsEntity(): void
+    protected function assertIsEntity(): void
     {
         if (!$this->isEntity()) {
             throw new Exception('Model is not entity');
         }
     }
 
-    private function assertNotEntity(): void
+    protected function assertNotEntity(): void
     {
         if ($this->isEntity()) {
             throw new Exception('Model is entity');

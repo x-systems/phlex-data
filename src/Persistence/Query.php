@@ -29,6 +29,10 @@ abstract class Query implements \IteratorAggregate
     public const MODE_INSERT = 'insert';
     public const MODE_DELETE = 'delete';
 
+    public const OPTION_FIELD_ALIAS = self::class . '@fieldAlias';
+
+    public const OPTION_MODEL_STRICT_ONLY_FIELDS = self::class . '@fieldAlias';
+
     /** @var Model|null */
     protected $model;
 

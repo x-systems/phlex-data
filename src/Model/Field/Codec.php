@@ -114,6 +114,9 @@ class Codec implements CodecInterface
         return $this->field->getValueType();
     }
 
+    /**
+     * Get the key under which to convert the field value.
+     */
     public function getKey(): string
     {
         return $this->field->getKey();

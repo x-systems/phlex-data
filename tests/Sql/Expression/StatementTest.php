@@ -537,7 +537,7 @@ class StatementTest extends PHPUnit\TestCase
         );
 
         // $q1 union $q2
-        $u = new Sql\Expression\Union([$q1, $q2], '_union');
+        $u = new Sql\Expression\Union([$q1, $q2]);
         $this->assertSame(
             '(select "date","amount" "debit",0 "credit" from "sales" union all select "date",0 "debit","amount" "credit" from "purchases")',
             $u->render()

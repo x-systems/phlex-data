@@ -7,6 +7,7 @@ namespace Phlex\Data\Persistence\Sql;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
+use Phlex\Data\Persistence\Query;
 
 /**
  * @property Persistence\Sql\Join $join
@@ -40,15 +41,7 @@ class Field extends Model\Field implements Expressionable
 
     public function getAlias(): ?string
     {
-        return $this->useAlias() ? $this->getCodec()->getKey() : null;
-    }
-
-    /**
-     * Should this field use alias?
-     */
-    public function useAlias(): bool
-    {
-        return false;
+        return $this->getOption(Query::OPTION_FIELD_ALIAS);
     }
 
     /**

@@ -808,9 +808,9 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
     }
 
     /**
-     * Test Model->hasMany().
+     * Test Model->withMany().
      */
-    public function testHasMany(): void
+    public function testWithMany(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -832,7 +832,7 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $user->addField('name');
         $user->addField('surname');
 
-        $country->hasMany('Users', ['theirModel' => $user]);
+        $country->withMany('Users', ['theirModel' => $user]);
         $user->hasOne('country', ['theirModel' => $country]);
 
         $cc = $country->load(1);

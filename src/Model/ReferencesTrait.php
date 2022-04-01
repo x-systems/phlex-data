@@ -26,11 +26,11 @@ trait ReferencesTrait
     public $_default_seed_hasOne = [Reference\HasOne::class];
 
     /**
-     * The seed used by hasMany() method.
+     * The seed used by withMany() method.
      *
      * @var array
      */
-    public $_default_seed_hasMany = [Reference\HasMany::class];
+    public $_default_seed_withMany = [Reference\WithMany::class];
 
     /**
      * The seed used by containsOne() method.
@@ -73,13 +73,13 @@ trait ReferencesTrait
     }
 
     /**
-     * Add hasMany reference.
+     * Add withMany reference.
      *
-     * @return Reference\HasMany
+     * @return Reference\WithMany
      */
-    public function hasMany(string $key, array $defaults = []) // : Reference
+    public function withMany(string $key, array $defaults = []) // : Reference
     {
-        return $this->doAddReference($this->_default_seed_hasMany, $key, $defaults); // @phpstan-ignore-line
+        return $this->doAddReference($this->_default_seed_withMany, $key, $defaults); // @phpstan-ignore-line
     }
 
     /**

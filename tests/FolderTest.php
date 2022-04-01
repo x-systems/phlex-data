@@ -15,7 +15,7 @@ class Folder extends Model
         parent::doInitialize();
         $this->addField('name');
 
-        $this->hasMany('SubFolder', ['theirModel' => [self::class], 'theirKey' => 'parent_id'])
+        $this->withMany('SubFolder', ['theirModel' => [self::class], 'theirKey' => 'parent_id'])
             ->addField('count', ['aggregate' => 'count', 'field' => $this->persistence->expr('*')]);
 
         $this->hasOne('parent', ['theirModel' => [self::class]])

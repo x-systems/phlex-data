@@ -36,6 +36,6 @@ class Standard extends Model
         $this->addField($this->key()->simpleOneId, ['type' => 'integer']);
         $this->hasOne($this->key()->simpleOne, ['theirModel' => [Simple::class], 'ourKey' => $this->key()->simpleOneId]);
 
-        $this->hasMany($this->key()->simpleMany, ['theirModel' => [Simple::class], 'theirKey' => Simple::hint()->key()->refId]);
+        $this->withMany($this->key()->simpleMany, ['theirModel' => [Simple::class], 'theirKey' => Simple::hint()->key()->refId]);
     }
 }

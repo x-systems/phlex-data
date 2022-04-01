@@ -122,7 +122,7 @@ class DeepCopy
      *          unset($data['first_name'], $data['last_name']);
      *          return $data;
      *      }],
-     *      'Invoices' => ['Lines'=>function($data){ // for nested Client->Invoices->Lines hasMany entity
+     *      'Invoices' => ['Lines'=>function($data){ // for nested Client->Invoices->Lines withMany entity
      *              $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
      *              return $data;
      *          }]
@@ -276,10 +276,10 @@ class DeepCopy
             $this->mapping[$source->table][$source->getId()] = $destination->getId();
             $this->debug(' .. copied ' . get_class($source) . ' ' . $source->getId() . ' ' . $destination->getId());
 
-            // Next look for hasMany relationships and copy those too
+            // Next look for withMany relationships and copy those too
 
             foreach ($this->extractKeys($references) as $refLink => $ref_val) {
-                if ($source->hasReference($refLink) && ($ref = $source->getReference($refLink)) instanceof Model\Field\Reference\HasMany) {
+                if ($source->hasReference($refLink) && ($ref = $source->getReference($refLink)) instanceof Model\Field\Reference\WithMany) {
                     // No mapping, will always copy
                     foreach ($source->ref($refLink) as $ref_model) {
                         $this->doCopy(

@@ -35,7 +35,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
 
-        $u->hasMany('Orders', ['theirModel' => $o]);
+        $u->withMany('Orders', ['theirModel' => $o]);
 
         $oo = $u->load(1)->ref('Orders');
         $ooo = $oo->tryLoad(1);
@@ -69,7 +69,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
 
-        $u->hasMany('Orders', ['theirModel' => $o]);
+        $u->withMany('Orders', ['theirModel' => $o]);
 
         $this->assertSameSql(
             'select "id","amount","user_id" from "order" where "user_id" = "user"."id"',
@@ -94,7 +94,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['currency', 'name']);
 
-        $u->hasMany('cur', ['theirModel' => $c, 'ourKey' => 'currency', 'theirKey' => 'currency']);
+        $u->withMany('cur', ['theirModel' => $c, 'ourKey' => 'currency', 'theirKey' => 'currency']);
 
         $cc = $u->load(1)->ref('cur');
         $cc = $cc->tryLoadAny();
@@ -110,7 +110,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['code', 'name']);
 
-        $u->hasMany('cur', ['theirModel' => $c, 'ourKey' => 'currency_code', 'theirKey' => 'code']);
+        $u->withMany('cur', ['theirModel' => $c, 'ourKey' => 'currency_code', 'theirKey' => 'code']);
 
         $this->assertSameSql(
             'select "id","code","name" from "currency" where "code" = "user"."currency_code"',
@@ -219,7 +219,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
         $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
-        $i->hasMany('line', ['theirModel' => $l]);
+        $i->withMany('line', ['theirModel' => $l]);
 
         $i->addExpression('total_net', $i->refLink('line')->toQuery()->aggregate('sum', 'total_net'));
 
@@ -254,7 +254,7 @@ class ReferenceSqlTest extends Sql\TestCase
             ['total_vat', 'type' => 'money'],
             ['total_gross', 'type' => 'money'],
         ]);
-        $i->hasMany('line', ['theirModel' => $l])
+        $i->withMany('line', ['theirModel' => $l])
             ->addFields([
                 ['total_vat', 'aggregate' => 'sum', 'type' => 'money'],
                 ['total_net', 'aggregate' => 'sum'],
@@ -318,7 +318,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $l = (new Model($this->db, ['table' => 'list']))->addFields(['name']);
         $i = (new Model($this->db, ['table' => 'item']))->addFields(['list_id', 'name', 'code']);
-        $l->hasMany('Items', ['theirModel' => $i])
+        $l->withMany('Items', ['theirModel' => $i])
             ->addFields([
                 ['items_name', 'aggregate' => 'count', 'field' => 'name'],
                 ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
@@ -380,7 +380,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $order->addField('description');
         $order->addField('amount', ['default' => 20, 'type' => 'float']);
 
-        $company->hasMany('Orders', ['theirModel' => $order]);
+        $company->withMany('Orders', ['theirModel' => $order]);
 
         $user = $user->load(1);
 
@@ -484,7 +484,7 @@ class ReferenceSqlTest extends Sql\TestCase
     public function testModelProperty(): void
     {
         $user = new Model($this->db, ['table' => 'user']);
-        $user->hasMany('Orders', ['theirModel' => [Model::class, 'table' => 'order'], 'theirKey' => 'id']);
+        $user->withMany('Orders', ['theirModel' => [Model::class, 'table' => 'order'], 'theirKey' => 'id']);
         $o = $user->ref('Orders');
         $this->assertSame('order', $o->table);
     }

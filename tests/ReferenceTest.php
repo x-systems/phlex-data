@@ -23,13 +23,13 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->hasMany('Orders', ['theirModel' => $order, 'caption' => 'My Orders']);
+        $user->withMany('Orders', ['theirModel' => $order, 'caption' => 'My Orders']);
         $o = $user->ref('Orders')->createEntity();
 
         $this->assertSame(20, $o->get('amount'));
         $this->assertSame(1, $o->get('user_id'));
 
-        $user->hasMany('BigOrders', ['theirModel' => function () {
+        $user->withMany('BigOrders', ['theirModel' => function () {
             $m = new Model();
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id');
@@ -56,7 +56,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $order->addField('amount', ['default' => 20]);
         $order->addField('user_id');
 
-        $user->hasMany('Orders', ['theirModel' => $order, 'caption' => 'My Orders']);
+        $user->withMany('Orders', ['theirModel' => $order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
         $this->assertSame('My Orders', $user->refModel('Orders')->getCaption());
@@ -80,9 +80,9 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $order = new Model();
         $order->addField('user_id');
 
-        $user->hasMany('Orders', ['theirModel' => $order]);
+        $user->withMany('Orders', ['theirModel' => $order]);
         $this->expectException(Exception::class);
-        $user->hasMany('Orders', ['theirModel' => $order]);
+        $user->withMany('Orders', ['theirModel' => $order]);
     }
 
     public function testRefName2(): void

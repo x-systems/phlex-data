@@ -186,6 +186,6 @@ class TestRole extends \Phlex\Data\Model
         parent::doInitialize();
 
         $this->addField('name');
-        $this->hasMany('Users', ['theirModel' => [TestUser::class], 'ourKey' => 'id', 'theirKey' => 'main_role_id']);
+        $this->withMany('Users', ['theirModel' => [TestUser::class], 'ourKey' => 'id', 'theirKey' => 'main_role_id']);
     }
 }

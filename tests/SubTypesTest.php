@@ -17,16 +17,16 @@ class StAccount extends Model
 
         $this->addField('name');
 
-        $this->hasMany('Transactions', ['theirModel' => [StGenericTransaction::class]])
+        $this->withMany('Transactions', ['theirModel' => [StGenericTransaction::class]])
             ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount']);
 
-        $this->hasMany('Transactions:Deposit', ['theirModel' => [StTransaction_Deposit::class]]);
-        $this->hasMany('Transactions:Withdrawal', ['theirModel' => [StTransaction_Withdrawal::class]]);
-        $this->hasMany('Transactions:Ob', ['theirModel' => [StTransaction_Ob::class]])
+        $this->withMany('Transactions:Deposit', ['theirModel' => [StTransaction_Deposit::class]]);
+        $this->withMany('Transactions:Withdrawal', ['theirModel' => [StTransaction_Withdrawal::class]]);
+        $this->withMany('Transactions:Ob', ['theirModel' => [StTransaction_Ob::class]])
             ->addField('opening_balance', ['aggregate' => 'sum', 'field' => 'amount']);
 
-        $this->hasMany('Transactions:TransferOut', ['theirModel' => [StTransaction_TransferOut::class]]);
-        $this->hasMany('Transactions:TransferIn', ['theirModel' => [StTransaction_TransferIn::class]]);
+        $this->withMany('Transactions:TransferOut', ['theirModel' => [StTransaction_TransferOut::class]]);
+        $this->withMany('Transactions:TransferIn', ['theirModel' => [StTransaction_TransferIn::class]]);
     }
 
     /**

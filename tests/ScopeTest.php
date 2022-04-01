@@ -26,7 +26,7 @@ class SCountry extends Model
 
         $this->addField('is_eu', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasMany('Users', ['theirModel' => [SUser::class]])
+        $this->withMany('Users', ['theirModel' => [SUser::class]])
             ->addField('user_names', ['field' => 'name', 'concat' => ',']);
     }
 }
@@ -49,7 +49,7 @@ class SUser extends Model
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
 
-        $this->hasMany('Tickets', ['theirModel' => [STicket::class], 'theirKey' => 'user']);
+        $this->withMany('Tickets', ['theirModel' => [STicket::class], 'theirKey' => 'user']);
     }
 }
 

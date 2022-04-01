@@ -32,7 +32,7 @@ class LCountry extends Model
 
         $this->addField('is_eu', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasMany('Users', ['theirModel' => [LUser::class]])
+        $this->withMany('Users', ['theirModel' => [LUser::class]])
             ->addField('user_names', ['field' => 'name', 'concat' => ',']);
     }
 }
@@ -70,7 +70,7 @@ class LUser extends Model
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
 
-        $this->hasMany('Friends', ['theirModel' => [LFriend::class]])
+        $this->withMany('Friends', ['theirModel' => [LFriend::class]])
             ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
     }
 }
@@ -231,7 +231,7 @@ class LookupSqlTest extends Sql\TestCase
     {
         $c = new LCountry($this->db);
 
-        // Specifying hasMany here will perform input
+        // Specifying withMany here will perform input
         $c->insert(['name' => 'Canada', 'Users' => [['name' => 'Alain'], ['name' => 'Duncan', 'is_vip' => true]]]);
 
         // Both lines will work quite similar
@@ -285,7 +285,7 @@ class LookupSqlTest extends Sql\TestCase
     {
         $c = new LCountry($this->db);
 
-        // Specifying hasMany here will perform input
+        // Specifying withMany here will perform input
         $c->import([
             ['name' => 'Canada', 'code' => 'CA'],
             ['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true],
@@ -360,7 +360,7 @@ class LookupSqlTest extends Sql\TestCase
     {
         $c = new LCountry($this->db);
 
-        // Specifying hasMany here will perform input
+        // Specifying withMany here will perform input
         $c->insert(['Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
         // Inserting Users into Latvia can also specify Friends. In this case Friend name will be looked up

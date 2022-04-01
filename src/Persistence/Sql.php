@@ -37,11 +37,11 @@ abstract class Sql extends Persistence
     public $_default_seed_hasOne = [Sql\Reference\HasOne::class];
 
     /**
-     * Default class when adding hasMany field.
+     * Default class when adding withMany field.
      *
      * @var array
      */
-    public $_default_seed_hasMany; // [Sql\Reference\HasMany::class];
+    public $_default_seed_withMany; // [Sql\Reference\WithMany::class];
 
     /**
      * Default class when adding Expression field.
@@ -300,7 +300,7 @@ abstract class Sql extends Persistence
         $defaults = array_merge([
             '_default_seed_addField' => $this->_default_seed_addField,
             '_default_seed_hasOne' => $this->_default_seed_hasOne,
-            '_default_seed_hasMany' => $this->_default_seed_hasMany,
+            '_default_seed_withMany' => $this->_default_seed_withMany,
             '_default_seed_addExpression' => $this->_default_seed_addExpression,
             '_default_seed_join' => $this->_default_seed_join,
         ], $defaults);

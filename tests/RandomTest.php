@@ -61,7 +61,7 @@ class Model_Item3 extends Model
         $i2->hasOne('parent_item', ['theirModel' => $m, 'table_alias' => 'parent'])
             ->withTitle();
 
-        $this->hasMany('Child', ['theirModel' => $m, 'theirKey' => 'parent_item_id', 'table_alias' => 'child'])
+        $this->withMany('Child', ['theirModel' => $m, 'theirKey' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
     }
 }
@@ -509,7 +509,7 @@ class RandomTest extends Sql\TestCase
         $m->addField('name');
 
         $d->hasOne('user', ['theirModel' => $m])->addTitle();
-        $m->hasMany('Documents', ['theirModel' => $d]);
+        $m->withMany('Documents', ['theirModel' => $d]);
 
         $d->addCondition('user_name', 'Sarah');
 

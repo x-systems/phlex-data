@@ -511,7 +511,7 @@ class JoinSqlTest extends Sql\TestCase
     }
 
     /**
-     * Test hasOne and hasMany trough Join.
+     * Test hasOne and withMany trough Join.
      */
     public function testJoinHasOneHasMany(): void
     {
@@ -529,7 +529,7 @@ class JoinSqlTest extends Sql\TestCase
                 30 => ['id' => 30, 'user_id' => 1, 'token' => 'ABC'],
                 31 => ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
                 32 => ['id' => 32, 'user_id' => 2, 'token' => 'GHI'],
-            ], 'email' => [ // each Contact hasMany Email
+            ], 'email' => [ // each Contact withMany Email
                 40 => ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
                 41 => ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
                 42 => ['id' => 42, 'contact_id' => 11, 'address' => 'jane@foo.net'],
@@ -558,11 +558,11 @@ class JoinSqlTest extends Sql\TestCase
             'id' => 1, 'name' => 'John', 'contact_id' => 10, 'phone_id' => 20, 'number' => '+123',
         ], $m_u2->get());
 
-        // hasMany token model (uses default ourKey, theirKey)
+        // withMany token model (uses default ourKey, theirKey)
         $m_t = new Model($this->db, ['table' => 'token']);
         $m_t->addField('user_id');
         $m_t->addField('token');
-        $ref_many = $j->hasMany('Token', ['theirModel' => $m_t]); // hasMany on JOIN (use default ourKey, theirKey)
+        $ref_many = $j->withMany('Token', ['theirModel' => $m_t]); // withMany on JOIN (use default ourKey, theirKey)
 
         $m_u2 = $m_u->load(1);
         $this->assertEquals([
@@ -570,11 +570,11 @@ class JoinSqlTest extends Sql\TestCase
             ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
         ], $m_u2->ref('Token')->export());
 
-        // hasMany email model (uses custom ourKey, theirKey)
+        // withMany email model (uses custom ourKey, theirKey)
         $m_e = new Model($this->db, ['table' => 'email']);
         $m_e->addField('contact_id');
         $m_e->addField('address');
-        $ref_many = $j->hasMany('Email', ['theirModel' => $m_e, 'ourKey' => 'contact_id', 'theirKey' => 'contact_id']); // hasMany on JOIN (use custom ourKey, theirKey)
+        $ref_many = $j->withMany('Email', ['theirModel' => $m_e, 'ourKey' => 'contact_id', 'theirKey' => 'contact_id']); // withMany on JOIN (use custom ourKey, theirKey)
 
         $m_u2 = $m_u->load(1);
         $this->assertEquals([

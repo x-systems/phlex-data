@@ -8,10 +8,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-/**
- * Reference\HasMany class.
- */
-class HasMany extends Model\Field\Reference
+class WithMany extends Model\Field\Reference
 {
     public function getTheirKey(Model $theirModel = null): string
     {
@@ -93,7 +90,7 @@ class HasMany extends Model\Field\Reference
     public function addField(string $key, array $defaults = []): Model\Field
     {
         if (!isset($defaults['aggregate']) && !isset($defaults['concat']) && !isset($defaults['expr'])) {
-            throw (new Exception('Aggregate field requires "aggregate", "concat" or "expr" specified to hasMany()->addField()'))
+            throw (new Exception('Aggregate field requires "aggregate", "concat" or "expr" specified to withMany()->addField()'))
                 ->addMoreInfo('field', $key)
                 ->addMoreInfo('defaults', $defaults);
         }

@@ -294,16 +294,16 @@ class Join
     /**
      * Creates reference based on the field from the join.
      *
-     * @return Field\Reference\HasMany
+     * @return Field\Reference\WithMany
      */
-    public function hasMany(string $link, array $defaults = [])
+    public function withMany(string $link, array $defaults = [])
     {
         $defaults = array_merge([
             'ourKey' => $this->primaryKey,
             'theirKey' => $this->getOwner()->table . '_' . $this->primaryKey,
         ], $defaults);
 
-        return $this->getOwner()->hasMany($link, $defaults);
+        return $this->getOwner()->withMany($link, $defaults);
     }
 
     /**

@@ -19,9 +19,9 @@ class DcClient extends Model
 
         $this->addField('name');
 
-        $this->hasMany('Invoices', ['theirModel' => [DcInvoice::class]]);
-        $this->hasMany('Quotes', ['theirModel' => [DcQuote::class]]);
-        $this->hasMany('Payments', ['theirModel' => [DcPayment::class]]);
+        $this->withMany('Invoices', ['theirModel' => [DcInvoice::class]]);
+        $this->withMany('Quotes', ['theirModel' => [DcQuote::class]]);
+        $this->withMany('Payments', ['theirModel' => [DcPayment::class]]);
     }
 }
 
@@ -35,10 +35,10 @@ class DcInvoice extends Model
 
         $this->hasOne('client', ['theirModel' => [DcClient::class]]);
 
-        $this->hasMany('Lines', ['theirModel' => [DcInvoiceLine::class], 'theirKey' => 'parent_id'])
+        $this->withMany('Lines', ['theirModel' => [DcInvoiceLine::class], 'theirKey' => 'parent_id'])
             ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
-        $this->hasMany('Payments', ['theirModel' => [DcPayment::class]])
+        $this->withMany('Payments', ['theirModel' => [DcPayment::class]])
             ->addField('paid', ['aggregate' => 'sum', 'field' => 'amount']);
 
         $this->addExpression('due', '[total]-[paid]');
@@ -64,7 +64,7 @@ class DcQuote extends Model
         parent::doInitialize();
         $this->hasOne('client', ['theirModel' => [DcClient::class]]);
 
-        $this->hasMany('Lines', ['theirModel' => [DcQuoteLine::class], 'theirKey' => 'parent_id'])
+        $this->withMany('Lines', ['theirModel' => [DcQuoteLine::class], 'theirKey' => 'parent_id'])
             ->addField('total', ['aggregate' => 'sum', 'field' => 'total']);
 
         $this->addField('ref');
@@ -271,7 +271,7 @@ class DeepCopyTest extends Sql\TestCase
         $client_id = $client->insert(['name' => 'John']);
 
         $quote = new DcQuote($this->db);
-        $quote->hasMany('Lines2', ['theirModel' => [DcQuoteLine::class], 'theirKey' => 'parent_id']);
+        $quote->withMany('Lines2', ['theirModel' => [DcQuoteLine::class], 'theirKey' => 'parent_id']);
 
         $quote->insert(['ref' => 'q1', 'client_id' => $client_id, 'Lines' => [
             ['name' => 'tools', 'qty' => 5, 'price' => 10],

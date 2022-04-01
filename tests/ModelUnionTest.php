@@ -45,112 +45,11 @@ class ModelUnionTest extends Sql\TestCase
     {
         $client = new Model\Client($this->db);
 
-        $client->hasMany('Payment', ['theirModel' => [Model\Payment::class]]);
-        $client->hasMany('Invoice', ['theirModel' => [Model\Invoice::class]]);
+        $client->withMany('Payment', ['theirModel' => [Model\Payment::class]]);
+        $client->withMany('Invoice', ['theirModel' => [Model\Invoice::class]]);
 
         return $client;
     }
-
-//     public function testFieldExpr(): void
-//     {
-//         $transaction = $this->createSubtractInvoiceTransaction();
-
-//         var_dump($transaction->toQuery()->count('cnt')->getDebugQuery());
-//         var_dump($transaction->toQuery()->aggregate('sum', 'amount')->getDebugQuery());
-
-//         return;
-
-//         $this->assertSameSql('"amount"', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount')])->render()[0]);
-//         $this->assertSameSql('-"amount"', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'amount', '-[]')])->render()[0]);
-//         $this->assertSameSql('-NULL', $transaction->expr('[]', [$transaction->getFieldExpr($transaction->nestedInvoice, 'blah', '-[]')])->render()[0]);
-//     }
-
-//     public function testNestedQuery1(): void
-//     {
-//         $transaction = $this->createTransaction();
-
-//         $this->assertSameSql(
-//             'select "name" "name" from "invoice" union all select "name" "name" from "payment"',
-//             $transaction->getSubQuery(['name'])->render()[0]
-//         );
-
-//         $this->assertSameSql(
-//             'select "name" "name", "amount" "amount" from "invoice" union all select "name" "name", "amount" "amount" from "payment"',
-//             $transaction->getSubQuery(['name', 'amount'])->render()[0]
-//         );
-
-//         $this->assertSameSql(
-//             'select "name" "name" from "invoice" union all select "name" "name" from "payment"',
-//             $transaction->getSubQuery(['name'])->render()[0]
-//         );
-//     }
-
-//     /**
-//      * If field is not set for one of the nested model, instead of generating exception, NULL will be filled in.
-//      */
-//     public function testMissingField(): void
-//     {
-//         $transaction = $this->createTransaction();
-//         $transaction->nestedInvoice->addExpression('type', '\'invoice\'');
-//         $transaction->addField('type');
-
-//         $this->assertSameSql(
-//             'select (\'invoice\') "type", "amount" "amount" from "invoice" union all select NULL "type", "amount" "amount" from "payment"',
-//             $transaction->getSubQuery(['type', 'amount'])->render()[0]
-//         );
-//     }
-
-//     public function testActions(): void
-//     {
-//         $transaction = $this->createTransaction();
-
-//         $this->assertSameSql(
-//             'select "client_id", "name", "amount" from (select "client_id" "client_id", "name" "name", "amount" "amount" from "invoice" UNION ALL select "client_id" "client_id", "name" "name", "amount" "amount" from "payment") "_tu"',
-//             $transaction->action('select')->render()[0]
-//         );
-
-//         $this->assertSameSql(
-//             'select "name" from (select "name" "name" from "invoice" UNION ALL select "name" "name" from "payment") "_tu"',
-//             $transaction->action('field', ['name'])->render()[0]
-//         );
-
-//         $this->assertSameSql(
-//             'select sum("cnt") from (select count(*) "cnt" from "invoice" UNION ALL select count(*) "cnt" from "payment") "_tu"',
-//             $transaction->action('count')->render()[0]
-//         );
-
-//         $this->assertSameSql(
-//             'select sum("val") from (select sum("amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "_tu"',
-//             $transaction->action('fx', ['sum', 'amount'])->render()[0]
-//         );
-
-//         $transaction = $this->createSubtractInvoiceTransaction();
-
-//         $this->assertSameSql(
-//             'select sum("val") from (select sum(-"amount") "val" from "invoice" UNION ALL select sum("amount") "val" from "payment") "_tu"',
-//             $transaction->action('fx', ['sum', 'amount'])->render()[0]
-//         );
-//     }
-
-//     public function testActions2(): void
-//     {
-//         $transaction = $this->createTransaction();
-//         $this->assertSame('5', $transaction->action('count')->getOne());
-//         $this->assertSame(37.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
-
-//         $transaction = $this->createSubtractInvoiceTransaction();
-//         $this->assertSame(-9.0, (float) $transaction->action('fx', ['sum', 'amount'])->getOne());
-//     }
-
-//     public function testSubAction1(): void
-//     {
-//         $transaction = $this->createSubtractInvoiceTransaction();
-
-//         $this->assertSameSql(
-//             'select sum(-"amount") from "invoice" UNION ALL select sum("amount") from "payment"',
-//             $transaction->getSubAction('fx', ['sum', 'amount'])->render()[0]
-//         );
-//     }
 
     public function testBasics(): void
     {
@@ -173,7 +72,7 @@ class ModelUnionTest extends Sql\TestCase
         ], $transaction->export());
 
         // Transaction is Union Model
-        $client->hasMany('Transaction', ['theirModel' => $transaction]);
+        $client->withMany('Transaction', ['theirModel' => $transaction]);
 
         $this->assertSameExportUnordered([
             ['id' => 'invoice/1', 'client_id' => 1, 'name' => 'chair purchase', 'amount' => 4.0],
@@ -194,7 +93,7 @@ class ModelUnionTest extends Sql\TestCase
         ], $transaction->export());
 
         // Transaction is Union Model
-        $client->hasMany('Transaction', ['theirModel' => $transaction]);
+        $client->withMany('Transaction', ['theirModel' => $transaction]);
 
         $this->assertSameExportUnordered([
             ['id' => 'invoice/1', 'client_id' => 1, 'name' => 'chair purchase', 'amount' => -4.0],
@@ -206,7 +105,7 @@ class ModelUnionTest extends Sql\TestCase
     public function testReference(): void
     {
         $client = $this->createClient();
-        $client->hasMany('transactions', ['theirModel' => $this->createTransaction()]);
+        $client->withMany('transactions', ['theirModel' => $this->createTransaction()]);
 
         $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->getSum('amount'));
         $this->assertSame(10.0, (float) $client->load(1)->ref('Payment')->getSum('amount'));
@@ -226,7 +125,7 @@ class ModelUnionTest extends Sql\TestCase
         );
 
         $client = $this->createClient();
-        $client->hasMany('tr', ['model' => $this->createSubtractInvoiceTransaction()]);
+        $client->withMany('tr', ['model' => $this->createSubtractInvoiceTransaction()]);
 
         $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
         $this->assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
@@ -247,7 +146,7 @@ class ModelUnionTest extends Sql\TestCase
     public function testFieldAggregate(): void
     {
         $client = $this->createClient();
-        $client->hasMany('transactions', ['theirModel' => $this->createTransaction()])
+        $client->withMany('transactions', ['theirModel' => $this->createTransaction()])
             ->addField('balance', ['field' => 'amount', 'aggregate' => 'sum']);
 
         // TODO some fields are pushdown, but some not, same issue as in self::testReference()
@@ -352,12 +251,12 @@ class ModelUnionTest extends Sql\TestCase
             'name' => 'chair purchase',
             'amount' => 4.0,
             'union_id' => 'invoice/1',
-            'union_amount' => '-4.0',
+            'union_amount' => -4.0,
         ], $transaction->load()->getNestedEntity()->get());
 
         $transaction->setTitleWithCaption();
 
-        $this->assertEquals([
+        $this->assertSame([
             'id' => 'invoice/1',
             'captioned_title' => '[Invoice] chair purchase',
         ], $transaction->load()->onlyFields([$transaction->primaryKey, $transaction->titleKey])->get());

@@ -44,8 +44,8 @@ trait AggregatesTrait
     /**
      * Get the number of records.
      */
-    public function getCount()
+    public function getCount(): int
     {
-        return $this->toQuery()->count()->getOne();
+        return (int) $this->toQuery()->count()->getOne();
     }
 }

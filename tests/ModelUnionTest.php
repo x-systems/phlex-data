@@ -56,7 +56,7 @@ class ModelUnionTest extends Sql\TestCase
         $client = $this->createClient();
 
         // There are total of 2 clients
-        $this->assertSame('2', $client->getCount());
+        $this->assertSame(2, $client->getCount());
 
         // Client with ID=1 has invoices for 19
         $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->getSum('amount'));

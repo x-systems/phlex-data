@@ -123,6 +123,21 @@ class Reference extends Model\Field
         return $this->getOwner();
     }
 
+    public function getOurFieldValue()
+    {
+        return $this->getOurField()->get();
+    }
+
+    public function getOurField(): Model\Field
+    {
+        return $this->getOurModel()->getField($this->getOurKey());
+    }
+
+    public function getOurKey(): string
+    {
+        return $this->ourKey ?: $this->getOurModel()->primaryKey;
+    }
+
     /**
      * Create destination model that is linked through this reference. Will apply
      * necessary conditions.
@@ -157,14 +172,25 @@ class Reference extends Model\Field
         return $theirModel;
     }
 
-    public function getOurField(): Model\Field
+    /**
+     * Returns referenced entity, in this case without any extra conditions.
+     * However descendant relationship types may override this to imply conditions.
+     */
+    public function getTheirEntity(array $defaults = []): Model
     {
-        return $this->getOurModel()->getField($this->getOurKey());
+        return $this->createTheirModel($defaults);
     }
 
-    public function getOurKey(): string
+    public function getTheirFieldValue(Model $theirModel = null)
     {
-        return $this->ourKey ?: $this->getOurModel()->primaryKey;
+        return $this->getTheirField($theirModel)->get();
+    }
+
+    public function getTheirField(Model $theirModel = null): Model\Field
+    {
+        $theirModel ??= $this->createTheirModel();
+
+        return $theirModel->getField($this->getTheirKey($theirModel));
     }
 
     public function getTheirKey(Model $theirModel = null): string
@@ -178,19 +204,27 @@ class Reference extends Model\Field
         return $theirModel->primaryKey;
     }
 
-    /**
-     * @return mixed
-     */
-    protected function getOurFieldValue()
+    public function get()
     {
-        return $this->getOurField()->get();
+        return $this->getTheirEntity();
     }
 
-    public function getTheirFieldValue(Model $theirModel = null)
+    public function getQueryArguments($operator, $value): array
     {
-        $theirModel ??= $this->createTheirModel();
+        return $this->getOurField()->getCodec()->getQueryArguments($operator, $value);
+    }
 
-        return $theirModel->get($this->getTheirKey($theirModel));
+    public function getConditionValueTitle($value): string
+    {
+        $ourModel = $this->getOurModel();
+
+        // make sure we set the value in the Model and fake it as loaded
+        $ourModel->toEntity([$ourModel->primaryKey => 0, $this->getOurKey() => $value]);
+
+        // then take the title
+        $title = $ourModel->get($this->getKey())->getTitle();
+
+        return $title !== $value ? $title : '';
     }
 
     protected function initTableAlias(): void
@@ -231,41 +265,6 @@ class Reference extends Model\Field
         $ourModel = $this->getOurModel();
 
         return $ourModel->getOption(self::OPTION_ROOT_MODEL, $ourModel)->persistence ?: false;
-    }
-
-    /**
-     * Returns referenced entity, in this case without any extra conditions.
-     * However descendant relationship types may override this to imply conditions.
-     */
-    public function getTheirEntity(array $defaults = []): Model
-    {
-        return $this->createTheirModel($defaults);
-    }
-
-    public function getQueryArguments($operator, $value): array
-    {
-        return $this->getOurField()->getCodec()->getQueryArguments($operator, $value);
-    }
-
-    public function get()
-    {
-        return $this->getTheirEntity();
-    }
-
-    public function getConditionValueTitle($value): ?string
-    {
-        $model = $this->getOwner();
-
-        // make sure we set the value in the Model and fake it as loaded
-        $model->toEntity([$model->primaryKey => 0, $this->getOurKey() => $value]);
-
-        // then take the title
-        $title = $model->get($this->getKey())->getTitle();
-        if ($title === $value) {
-            $title = null;
-        }
-
-        return $title;
     }
 
     // {{{ Debug Methods

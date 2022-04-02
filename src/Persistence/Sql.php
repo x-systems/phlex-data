@@ -41,7 +41,7 @@ abstract class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_withMany; // [Sql\Reference\WithMany::class];
+    public $_default_seed_withMany = [Sql\Reference\WithMany::class];
 
     /**
      * Default class when adding Expression field.

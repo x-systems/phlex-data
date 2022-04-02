@@ -401,7 +401,7 @@ class Condition extends AbstractScope
         }
 
         // use a title if defined for the value (generally reference field model title)
-        $title = null;
+        $title = '';
         if ($field instanceof Model\Field) {
             $title = $field->getConditionValueTitle($value);
         }
@@ -414,6 +414,6 @@ class Condition extends AbstractScope
             $valueStr = '\'' . (string) $value . '\'';
         }
 
-        return $valueStr . ($title !== null ? ' (\'' . $title . '\')' : '');
+        return $valueStr . ($title ? ' (\'' . $title . '\')' : '');
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Persistence\Sql\Reference;
+namespace Phlex\Data\Persistence\Sql\Field\Reference;
 
 use Phlex\Data\Exception;
 use Phlex\Data\Model;

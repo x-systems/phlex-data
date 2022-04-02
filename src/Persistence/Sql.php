@@ -34,14 +34,14 @@ abstract class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_hasOne = [Sql\Reference\HasOne::class];
+    public $_default_seed_hasOne = [Sql\Field\Reference\HasOne::class];
 
     /**
      * Default class when adding withMany field.
      *
      * @var array
      */
-    public $_default_seed_withMany = [Sql\Reference\WithMany::class];
+    public $_default_seed_withMany = [Sql\Field\Reference\WithMany::class];
 
     /**
      * Default class when adding Expression field.

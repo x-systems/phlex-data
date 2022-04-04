@@ -253,7 +253,7 @@ class DeepCopy
                                 $ourKey,
                                 $this->doCopy(
                                     $source->ref($refLink),
-                                    $destination->refModel($refLink),
+                                    $destination->getReference($refLink)->createTheirModel(),
                                     $ref_val,
                                     $exclusions[$refLink] ?? [],
                                     $transforms[$refLink] ?? []

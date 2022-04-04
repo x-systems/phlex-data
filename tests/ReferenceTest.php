@@ -59,7 +59,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $user->withMany('Orders', ['theirModel' => $order, 'caption' => 'My Orders']);
 
         // test caption of containsOne reference
-        $this->assertSame('My Orders', $user->refModel('Orders')->getCaption());
+        $this->assertSame('My Orders', $user->getReference('Orders')->createTheirModel()->getCaption());
         $this->assertSame('My Orders', $user->ref('Orders')->getCaption());
     }
 

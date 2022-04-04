@@ -68,7 +68,7 @@ class ContainsOneTest extends Sql\TestCase
 
         // test caption of containsOne reference
         $this->assertSame('Secret Code', $a->getField($a->key()->door_code)->getCaption());
-        $this->assertSame('Secret Code', $a->refModel($a->key()->door_code)->getCaption());
+        $this->assertSame('Secret Code', $a->getReference($a->key()->door_code)->createTheirModel()->getCaption());
         $this->assertSame('Secret Code', $a->door_code->getCaption());
     }
 

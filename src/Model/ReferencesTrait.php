@@ -113,16 +113,6 @@ trait ReferencesTrait
     }
 
     /**
-     * Return related model.
-     *
-     * @return \Phlex\Data\Model
-     */
-    public function refModel(string $key, array $defaults = []): self
-    {
-        return $this->getReference($key)->createTheirModel($defaults);
-    }
-
-    /**
      * Returns model that can be used for generating sub-query actions.
      *
      * @return \Phlex\Data\Model

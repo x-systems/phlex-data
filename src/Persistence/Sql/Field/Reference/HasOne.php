@@ -38,7 +38,7 @@ class HasOne extends Model\Field\Reference\HasOne
         $ourModel = $this->getOurModel();
 
         // if caption is not defined in $defaults -> get it directly from the linked model field $theirKey
-        $defaults['caption'] ??= $ourModel->refModel($this->elementId)->getField($theirKey)->getCaption();
+        $defaults['caption'] ??= $this->createTheirModel()->getField($theirKey)->getCaption();
 
         /** @var Persistence\Sql\Field\Expression $fieldExpression */
         $fieldExpression = $ourModel->addExpression($ourKey, array_merge(
@@ -154,11 +154,7 @@ class HasOne extends Model\Field\Reference\HasOne
         }
 
         // handles the deep traversal using an expression
-        $ourFieldExpression = $ourModel->toQuery()->field($ourField);
-
-        $theirModel->addCondition($theirKey, $ourFieldExpression);
-
-        return $theirModel;
+        return $theirModel->addCondition($theirKey, $ourModel->toQuery()->field($ourField));
     }
 
     /**

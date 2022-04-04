@@ -13,8 +13,6 @@ use Phlex\Data\Persistence;
 
 abstract class Sql extends Persistence
 {
-    public const OPTION_USE_TABLE_PREFIX = self::class . '@use_table_prefix';
-
     /**
      * Connection object.
      *
@@ -331,7 +329,7 @@ abstract class Sql extends Persistence
 
     protected function configure(Model $model): void
     {
-        $model->unsetOption(self::OPTION_USE_TABLE_PREFIX);
+        $model->unsetOption(Sql\Query::OPTION_FIELD_PREFIX);
 
         $model->addMethod('migrate', static function (Model $m, ...$args) {
             return $m->persistence->migrate($m, ...$args); // @phpstan-ignore-line

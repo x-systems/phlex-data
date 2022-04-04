@@ -17,9 +17,11 @@ class WithMany extends Model\Field\Reference\WithMany
     {
         $theirModel = $this->createTheirModel($defaults);
 
+        $this->getOurModel()->setOption(Persistence\Sql\Query::OPTION_FIELD_PREFIX);
+
         return $theirModel->addCondition(
             $this->getTheirKey($theirModel),
-            $this->referenceOurValue()
+            $this->getOurField()
         );
     }
 
@@ -85,15 +87,5 @@ class WithMany extends Model\Field\Reference\WithMany
         }
 
         return $this;
-    }
-
-    /**
-     * Returns our field or id field.
-     */
-    protected function referenceOurValue(): Model\Field
-    {
-        $this->getOurModel()->setOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX);
-
-        return $this->getOurField();
     }
 }

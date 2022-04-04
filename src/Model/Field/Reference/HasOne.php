@@ -138,16 +138,6 @@ class HasOne extends Model\Field\Reference
     }
 
     /**
-     * Returns our field or id field.
-     */
-    protected function referenceOurValue(): Model\Field
-    {
-        $this->getOurModel()->setOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX);
-
-        return $this->getOurField();
-    }
-
-    /**
      * If our model is loaded, then return their model with respective record loaded.
      *
      * If our model is not loaded, then return their model with condition set.

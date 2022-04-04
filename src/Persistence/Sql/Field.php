@@ -59,14 +59,14 @@ class Field extends Model\Field implements Expressionable
 
         $persistenceName = $this->getCodec($model->persistence)->getKey();
 
-        if ($model->getOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX)) {
+        if ($model->getOption(Persistence\Sql\Query::OPTION_FIELD_PREFIX)) {
             $template = '{{}}.{}';
             $args = [
                 $this->getTablePrefix(),
                 $persistenceName,
             ];
         } else {
-            // references set flag OPTION_USE_TABLE_PREFIX, so no need to check them here
+            // references set flag Persistence\Sql\Query::OPTION_FIELD_PREFIX, so no need to check them here
             $template = '{}';
             $args = [
                 $persistenceName,

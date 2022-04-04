@@ -118,11 +118,13 @@ class HasOne extends Model\Field\Reference\HasOne
      */
     public function refLink(array $defaults = []): Model
     {
+        $this->getOurModel()->setOption(Persistence\Sql\Query::OPTION_FIELD_PREFIX);
+
         $theirModel = $this->createTheirModel($defaults);
 
         return $theirModel->addCondition(
             $this->getTheirKey($theirModel),
-            $this->referenceOurValue()
+            $this->getOurField()
         );
     }
 

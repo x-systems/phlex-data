@@ -55,7 +55,7 @@ class Join extends Model\Join implements Expressionable
     {
         parent::doInitialize();
 
-        $this->getOwner()->setOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX);
+        $this->getOwner()->setOption(Persistence\Sql\Query::OPTION_FIELD_PREFIX);
 
         // If kind is not specified, figure out join type
         if (!isset($this->kind)) {

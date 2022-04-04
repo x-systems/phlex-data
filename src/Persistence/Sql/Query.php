@@ -23,6 +23,8 @@ class Query extends Persistence\Query implements Expressionable
     public const MODE_REPLACE = 'replace';
     public const MODE_TRUNCATE = 'truncate';
 
+    public const OPTION_FIELD_PREFIX = self::class . '@fieldPrefix';
+
     /** @var Statement */
     protected $statement;
 

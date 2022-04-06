@@ -79,7 +79,7 @@ class Field extends Model\Field implements Expressionable
         }
 
         // Otherwise call method from expression
-        return $model->persistence->expr($template, $args);
+        return new Expression($template, $args);
     }
 
     protected function getTablePrefix(): string

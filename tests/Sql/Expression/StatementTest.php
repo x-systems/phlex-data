@@ -185,7 +185,7 @@ class StatementTest extends PHPUnit\TestCase
     public function testTableException3()
     {
         // $this->expectException(Exception::class); // no more
-        $this->q()->table($this->q()->expr('test'));
+        $this->q()->table(new Sql\Expression('test'));
     }
 
     /**
@@ -442,7 +442,7 @@ class StatementTest extends PHPUnit\TestCase
                 ->field('c.name')
                 ->table($q1, 'e')
                 ->table($q2, 'c')
-                ->where('e.last_name', $this->q()->expr('c.last_name'))
+                ->where('e.last_name', new Sql\Expression('c.last_name'))
                 ->render()
         );
     }
@@ -519,7 +519,7 @@ class StatementTest extends PHPUnit\TestCase
             ->table('sales')
             ->field('date')
             ->field('amount', 'debit')
-            ->field($this->q()->expr('0'), 'credit'); // simply 0
+            ->field(new Sql\Expression('0'), 'credit'); // simply 0
         $this->assertSame(
             'select "date","amount" "debit",0 "credit" from "sales"',
             $q1->render()
@@ -529,7 +529,7 @@ class StatementTest extends PHPUnit\TestCase
         $q2 = $this->q()
             ->table('purchases')
             ->field('date')
-            ->field($this->q()->expr('0'), 'debit') // simply 0
+            ->field(new Sql\Expression('0'), 'debit') // simply 0
             ->field('amount', 'credit');
         $this->assertSame(
             'select "date",0 "debit","amount" "credit" from "purchases"',
@@ -1062,11 +1062,6 @@ class StatementTest extends PHPUnit\TestCase
             ->newInstanceWithoutConstructor();
     }
 
-    public function testExpr()
-    {
-        $this->assertSame(Sql\Expression::class, get_class($this->q()->expr('foo')));
-    }
-
     public function testJoin()
     {
         $this->assertSame(
@@ -1497,14 +1492,14 @@ class StatementTest extends PHPUnit\TestCase
     }
 
     /**
-     * Tests exprNow() method.
+     * Tests Expression\Now() class.
      */
     public function testExprNow()
     {
         $this->assertSame(
             'update "employee" set "hired"=current_timestamp()',
             $this->q()
-                ->field('hired')->table('employee')->set('hired', $this->q()->exprNow())
+                ->field('hired')->table('employee')->set('hired', new Sql\Expression\Now())
                 ->mode('update')
                 ->render()
         );
@@ -1512,7 +1507,7 @@ class StatementTest extends PHPUnit\TestCase
         $this->assertSame(
             'update "employee" set "hired"=current_timestamp(:a)',
             $this->q()
-                ->field('hired')->table('employee')->set('hired', $this->q()->exprNow(2))
+                ->field('hired')->table('employee')->set('hired', new Sql\Expression\Now(2))
                 ->mode('update')
                 ->render()
         );
@@ -1575,12 +1570,12 @@ class StatementTest extends PHPUnit\TestCase
         $quotes = $this->q()
             ->table('quotes')
             ->field('emp_id')
-            ->field($this->q()->expr('sum([])', ['total_net']))
+            ->field(new Sql\Expression('sum([])', ['total_net']))
             ->group('emp_id');
         $invoices = $this->q()
             ->table('invoices')
             ->field('emp_id')
-            ->field($this->q()->expr('sum([])', ['total_net']))
+            ->field(new Sql\Expression('sum([])', ['total_net']))
             ->group('emp_id');
         $q = $this->q()
             ->with($quotes, 'q', ['emp', 'quoted'])

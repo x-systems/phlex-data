@@ -26,7 +26,6 @@ parameters:
         - '~^Call to an undefined method Phlex\\Data\\Model\\Field\\Reference(.*)::addFields\(\)\.$~'
         # - '~^Call to an undefined method Phlex\\Data\\Model\\Field\\Reference(.*)::refLink\(\)\.$~'        
         # - '~^Access to an undefined property Phlex\\Data\\Persistence::\$\_default\_seed\_addField\.$~'
-        - '~^Call to an undefined method Phlex\\Data\\Persistence::expr\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\Persistence\\Query::render\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\Persistence\\Query::reset\(\)\.$~'
         - '~^Call to an undefined method Phlex\\Data\\Persistence\\Query::getDebugQuery\(\)\.$~'

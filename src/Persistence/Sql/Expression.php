@@ -186,21 +186,6 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
-    /**
-     * Returns Expression object.
-     *
-     * @param string|array $properties
-     * @param array        $arguments
-     */
-    public function expr($properties = [], $arguments = null): self
-    {
-        $expr = new self($properties, $arguments);
-
-        $expr->persistence = $this->persistence;
-
-        return $expr;
-    }
-
     public function getIdentifierQuoteCharacter()
     {
         if ($this->persistence && $this->persistence->connection) {

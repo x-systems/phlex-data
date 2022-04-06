@@ -264,15 +264,6 @@ class ExpressionTest extends PHPUnit\TestCase
     */
 
     /**
-     * expr() should return new Expression object and inherit persistence from it.
-     */
-    public function testExpr()
-    {
-        $e = $this->e(['persistence' => new \stdClass()]);
-        $this->assertTrue($e->expr()->persistence instanceof \stdClass);
-    }
-
-    /**
      * Fully covers escapeIdentifier method.
      */
     public function testEscape()

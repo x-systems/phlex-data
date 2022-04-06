@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 class Folder extends Model
 {
@@ -16,7 +17,7 @@ class Folder extends Model
         $this->addField('name');
 
         $this->withMany('SubFolder', ['theirModel' => [self::class], 'theirKey' => 'parent_id'])
-            ->addField('count', ['aggregate' => 'count', 'field' => $this->persistence->expr('*')]);
+            ->addField('count', ['aggregate' => 'count', 'field' => new Persistence\Sql\Expression('*')]);
 
         $this->hasOne('parent', ['theirModel' => [self::class]])
             ->addTitle();

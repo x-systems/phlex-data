@@ -66,7 +66,7 @@ class Condition extends Sql\Expression
             // a more complex expression. If expression is followed by another argument
             // we need to add equation sign  where('now()',123).
             if (!$operator) {
-                $matches[1] = $this->expr($field);
+                $matches[1] = new Sql\Expression($field);
 
                 $operator = '=';
             } else {
@@ -79,7 +79,7 @@ class Condition extends Sql\Expression
         switch ($numArgs) {
             case 1:
                 if (is_string($field)) {
-                    $field = $this->expr($field);
+                    $field = new Sql\Expression($field);
                 }
 
                 $this->conditions[] = [$field->consumedInParentheses()];

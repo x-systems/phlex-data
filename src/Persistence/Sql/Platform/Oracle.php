@@ -25,11 +25,11 @@ class Oracle extends Persistence\Sql
         parent::__construct(...func_get_args());
 
         // date and datetime format should be like this for Phlex Data to correctly pick it up and typecast
-        $this->expr('ALTER SESSION SET NLS_TIMESTAMP_FORMAT={datetime_format} NLS_DATE_FORMAT={date_format} NLS_NUMERIC_CHARACTERS={dec_char}', [
+        $this->execute(new Persistence\Sql\Expression('ALTER SESSION SET NLS_TIMESTAMP_FORMAT={datetime_format} NLS_DATE_FORMAT={date_format} NLS_NUMERIC_CHARACTERS={dec_char}', [
             'datetime_format' => 'YYYY-MM-DD HH24:MI:SS', // datetime format
             'date_format' => 'YYYY-MM-DD', // date format
             'dec_char' => '. ', // decimal separator, no thousands separator
-        ])->execute();
+        ]));
     }
 
     /** @var int */
@@ -142,7 +142,7 @@ class Oracle extends Persistence\Sql
 
         return $this->statement()
             ->table($model->table)
-            ->field($this->expr('max({id_col})', ['id_col' => $model->primaryKey]), 'max_id')
+            ->field(new Persistence\Sql\Expression('max({id_col})', ['id_col' => $model->primaryKey]), 'max_id')
             ->execute()
             ->fetchOne();
     }

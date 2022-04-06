@@ -348,7 +348,7 @@ abstract class Sql extends Persistence
                 $expr
             );
 
-            return $m->persistence->expr($expr, $args); // @phpstan-ignore-line
+            return new Sql\Expression($expr, $args);
         });
     }
 
@@ -515,26 +515,6 @@ abstract class Sql extends Persistence
     public function createMigrator(Model $model = null): Sql\Migration
     {
         return Factory::factory(Factory::mergeSeeds($this->_default_seed_migration, ['source' => $model ?: $this->connection]));
-    }
-
-    /**
-     * Creates new Expression object from expression string.
-     */
-    public function expr($expr, array $args = []): Sql\Expression
-    {
-        $expression = new Sql\Expression($expr, $args);
-
-        $expression->persistence = $this;
-
-        return $expression;
-    }
-
-    /**
-     * Creates new Query object with current_timestamp(precision) expression.
-     */
-    public function exprNow(int $precision = null): Sql\Expression
-    {
-        return $this->statement()->exprNow($precision);
     }
 
     public function query(Model $model = null): Persistence\Query

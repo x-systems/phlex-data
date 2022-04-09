@@ -14,12 +14,6 @@ class Condition extends Sql\Expression
 
     protected $template = '[conditions]';
 
-    /** @var string */
-    protected $junction = self::JUNCTION_AND;
-
-    /** @var array<array> */
-    protected $conditions = [];
-
     public function __construct(string $junction = self::JUNCTION_AND)
     {
         if (!in_array($junction, [self::JUNCTION_AND, self::JUNCTION_OR], true)) {
@@ -27,7 +21,8 @@ class Condition extends Sql\Expression
                 ->addMoreInfo('junction', $junction);
         }
 
-        $this->junction = $junction;
+        $this->args['conditions'] = [];
+        $this->args['junction'] = $junction;
     }
 
     public function where($field, $operator = null, $value = null)
@@ -82,7 +77,7 @@ class Condition extends Sql\Expression
                     $field = new Sql\Expression($field);
                 }
 
-                $this->conditions[] = [$field->consumedInParentheses()];
+                $this->args['conditions'][] = [$field->consumedInParentheses()];
 
                 break;
             case 2:
@@ -92,7 +87,7 @@ class Condition extends Sql\Expression
                         ->addMoreInfo('value', $operator);
                 }
 
-                $this->conditions[] = [$field, $operator];
+                $this->args['conditions'][] = [$field, $operator];
 
                 break;
             case 3:
@@ -103,7 +98,7 @@ class Condition extends Sql\Expression
                         ->addMoreInfo('value', $value);
                 }
 
-                $this->conditions[] = [$field, $operator, $value];
+                $this->args['conditions'][] = [$field, $operator, $value];
 
                 break;
         }
@@ -135,7 +130,7 @@ class Condition extends Sql\Expression
         $ret = [];
 
         // where() might have been called multiple times. Collect all conditions
-        foreach ($this->conditions as $conditionArgs) {
+        foreach ($this->args['conditions'] as $conditionArgs) {
             $ret[] = $this->getConditionExpression($conditionArgs);
         }
 
@@ -215,8 +210,8 @@ class Condition extends Sql\Expression
 
     protected function _render_conditions()
     {
-        if ($this->conditions) {
-            return Sql\Expression::asParameterList($this->getConditionExpressionsList(), $this->junction);
+        if ($list = $this->getConditionExpressionsList()) {
+            return Sql\Expression::asParameterList($list, $this->args['junction']);
         }
     }
 }

@@ -16,14 +16,7 @@ use Phlex\Data\Persistence\Sql;
  */
 class GroupConcat extends Sql\Expression
 {
-    protected $template = [
-        '[group_concat]',
-        Sql\Platform\Sqlite::class => 'group_concat({column}, [delimiter])',
-        Sql\Platform\Mssql::class => 'string_agg({column}, [delimiter])',
-        Sql\Platform\Mysql::class => 'group_concat({column} separator [delimiter])',
-        Sql\Platform\Oracle::class => 'listagg({column}, [delimiter]) within group (order by {column})',
-        Sql\Platform\Postgresql::class => 'string_agg({column}, [delimiter])',
-    ];
+    protected $template = 'group_concat({column}, [delimiter])';
 
     /**
      * @param mixed $column

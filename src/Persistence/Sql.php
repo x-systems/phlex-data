@@ -93,6 +93,8 @@ abstract class Sql extends Persistence
         'sqlsrv' => [Sql\Platform\Mssql::class],
     ];
 
+    protected $expressions = [];
+
     /**
      * Connects database.
      *
@@ -276,19 +278,6 @@ abstract class Sql extends Persistence
     public function getConnection(): DBAL\Connection
     {
         return $this->connection;
-    }
-
-    public function statement($defaults = []): Sql\Statement
-    {
-        return Factory::factory($this->_default_seed_statement, array_merge(
-            $defaults,
-            [
-                'persistence' => $this,
-            ],
-            $this->connection ? [
-                'identifierQuoteCharacter' => $this->connection->getDatabasePlatform()->getIdentifierQuoteCharacter(),
-            ] : []
-        ));
     }
 
     public function add(Model $model, array $defaults = []): Model
@@ -517,9 +506,46 @@ abstract class Sql extends Persistence
         return Factory::factory(Factory::mergeSeeds($this->_default_seed_migration, ['source' => $model ?: $this->connection]));
     }
 
+    public function statement($defaults = []): Sql\Statement
+    {
+        return Factory::factory($this->_default_seed_statement, array_merge(
+            $defaults,
+            [
+                'persistence' => $this,
+            ],
+            $this->connection ? [
+                'identifierQuoteCharacter' => $this->connection->getDatabasePlatform()->getIdentifierQuoteCharacter(),
+            ] : []
+        ));
+    }
+
     public function query(Model $model = null): Persistence\Query
     {
         return new Sql\Query($model);
+    }
+
+    /**
+     * Creates persistence specific expression of the same type as $expression.
+     */
+    public function expression(Sql\Expression $expression): Sql\Expression
+    {
+        $expressionClass = get_class($expression);
+        $expressionSeed = false;
+
+        if (array_key_exists($expressionClass, $this->expressions)) {
+            $expressionSeed = $this->expressions[$expressionClass];
+        } elseif (class_exists($autoClass = $this->getAutolocateExpressionClass($expression)) && $autoClass !== $expressionClass) {
+            $expressionSeed = (new \ReflectionClass($autoClass))->newInstanceWithoutConstructor();
+        }
+
+        $this->expressions[$expressionClass] = $expressionSeed;
+
+        return $expressionSeed ? Factory::factory($expressionSeed, $expression->getSeedDefaults()) : $expression;
+    }
+
+    protected function getAutolocateExpressionClass(Sql\Expression $expression): string
+    {
+        return static::class . '\\Expression\\' . class_basename($expression);
     }
 
     protected function getIdSequenceName(Model $model): ?string

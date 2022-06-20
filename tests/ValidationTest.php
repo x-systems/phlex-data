@@ -48,7 +48,7 @@ class BadValidationModel extends Model
 
 class ValidationTest extends \Phlex\Core\PHPUnit\TestCase
 {
-    /** @var Model */
+    /** @var MyValidationModel */
     public $m;
 
     protected function setUp(): void
@@ -142,5 +142,22 @@ class ValidationTest extends \Phlex\Core\PHPUnit\TestCase
         } catch (Model\Field\ValidationException $e) {
             $this->assertCount(2, $e->errors);
         }
+    }
+
+    public function testValidateUnique(): void
+    {
+        $this->m->getField('name')->setUnique();
+
+        $m = $this->m->createEntity();
+        $m->set('name', 'john');
+        $m->set('domain', 'gmail.com');
+        $m->save();
+
+        $m = $this->m->createEntity();
+        $m->set('name', 'john');
+        $m->set('domain', 'gmail.com');
+
+        $this->expectException(Model\Field\ValidationException::class);
+        $m->save();
     }
 }

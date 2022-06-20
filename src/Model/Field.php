@@ -481,6 +481,28 @@ class Field
         return null;
     }
 
+    /**
+     * Set that field value should be unique.
+     *
+     * @return $this
+     */
+    public function setUnique()
+    {
+        $this->onHookShortToOwner(Model::HOOK_BEFORE_SAVE, function () {
+            $owner = $this->getOwner();
+            $key = $this->getKey();
+            if ($owner->isDirty($key)) {
+                $model = $owner->newInstance()->addCondition($owner->primaryKey, '!=', $owner->getId());
+
+                if ($model->tryLoadBy($key, $owner->get($key))->isLoaded()) {
+                    throw new Field\ValidationException([$key => ucwords($key) . ' with such value already exists'], $owner);
+                }
+            }
+        });
+
+        return $this;
+    }
+
     // {{{ Debug Methods
 
     /**

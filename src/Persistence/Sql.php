@@ -35,6 +35,13 @@ abstract class Sql extends Persistence
     public $_default_seed_hasOne = [Sql\Field\Reference\HasOne::class];
 
     /**
+     * Default class when adding hasMany field.
+     *
+     * @var array
+     */
+    public $_default_seed_hasMany = [Sql\Field\Reference\HasMany::class];
+
+    /**
      * Default class when adding withMany field.
      *
      * @var array
@@ -264,7 +271,7 @@ abstract class Sql extends Persistence
             $pdoConnection->connection = $pdo;
         }, null, DBAL\Driver\PDO\Connection::class)();
 
-        $dbalConnection = DBAL\DriverManager::getConnection([
+        $dbalConnection = DBAL\DriverManager::getConnection([ // @phpstan-ignore-line
             'driver' => 'pdo_' . $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME),
         ]);
 
@@ -287,6 +294,7 @@ abstract class Sql extends Persistence
         $defaults = array_merge([
             '_default_seed_addField' => $this->_default_seed_addField,
             '_default_seed_hasOne' => $this->_default_seed_hasOne,
+            '_default_seed_hasMany' => $this->_default_seed_hasMany,
             '_default_seed_withMany' => $this->_default_seed_withMany,
             '_default_seed_addExpression' => $this->_default_seed_addExpression,
             '_default_seed_join' => $this->_default_seed_join,

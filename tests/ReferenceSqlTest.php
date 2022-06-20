@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence\Sql\Expression;
@@ -105,6 +106,68 @@ class ReferenceSqlTest extends Sql\TestCase
         $this->assertSame('Pound', $cc->get('name'));
     }
 
+    public function testHasMany(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'reference_list' => '++order/1++order/3++order/4++'],
+                2 => ['id' => 2, 'name' => 'Peter', 'reference_list' => '++order/2++'],
+                3 => ['id' => 3, 'name' => 'Joe', 'reference_list' => '++order/5++'],
+            ], 'order' => [
+                ['amount' => '20'],
+                ['amount' => '15'],
+                ['amount' => '5'],
+                ['amount' => '3'],
+                ['amount' => '8'],
+            ],
+            'offer' => [
+                ['amount' => '20'],
+                ['amount' => '15'],
+                ['amount' => '5'],
+                ['amount' => '3'],
+                ['amount' => '8'],
+            ],
+        ]);
+
+        $user = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
+
+        $reference = (new Model\Union($this->db))->addNestedModels([
+            'order' => (new Model($this->db, ['table' => 'order']))->addFields(['amount']),
+            'offer' => (new Model($this->db, ['table' => 'offer']))->addFields(['amount']),
+        ]);
+
+        $user->hasMany('reference', ['theirModel' => $reference]);
+
+        $oo = $user->load(1)->ref('reference');
+        $ooo = $oo->tryLoadAny();
+        $this->assertEquals(20, $ooo->get('amount'));
+        $ooo = $oo->tryLoad('order/2');
+        $this->assertNull($ooo->get('amount'));
+        $ooo = $oo->tryLoad('order/3');
+        $this->assertEquals(5, $ooo->get('amount'));
+
+        $reference->addField('amount');
+
+        $oo = $user->load(2)->ref('reference');
+        $ooo = $oo->tryLoad('order/1');
+        $this->assertNull($ooo->get('amount'));
+        $ooo = $oo->tryLoad('order/2');
+        $this->assertEquals(15, $ooo->get('amount'));
+        $ooo = $oo->tryLoad('order/3');
+        $this->assertNull($ooo->get('amount'));
+
+        $oo = $user->addCondition('id', '>', '2')->ref('reference');
+
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+            $this->assertSameSql(
+                'select "_tu"."union_id","_tu"."union_amount" from (select (:a || "id") "union_id","amount" "union_amount" from "order" union all select (:b || "id") "union_id","amount" "union_amount" from "offer") "_tu" where (select exists (select * from "user" where ("id" > :c and ("reference_list" like :d || "_tu"."union_id" || :e))))',
+                $oo->toQuery()->select()->render()
+            );
+        }
+
+        $this->assertSame([['id' => 'order/5']], $oo->export(['id']));
+    }
+
     public function testLink2(): void
     {
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
@@ -154,6 +217,13 @@ class ReferenceSqlTest extends Sql\TestCase
         $this->assertSameSql(
             'select "id","name" from "user" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
             $o->ref('user')->toQuery()->select()->render()
+        );
+
+        $o->addCondition('user', 1);
+
+        $this->assertSameSql(
+            'select "id","amount","user_id" from "order" where ("amount" > :a and "amount" < :b and "user_id" = :c)',
+            $o->toQuery()->select()->render()
         );
     }
 

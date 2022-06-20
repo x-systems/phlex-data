@@ -10,23 +10,6 @@ use Phlex\Data\Model;
 class WithMany extends Model\Field\Reference
 {
     /**
-     * Returns our field value or id.
-     *
-     * @return mixed
-     */
-    public function getOurFieldValue()
-    {
-        $ourModel = $this->getOurModel();
-
-        if ($ourModel->isLoaded()) {
-            return $ourModel->get($this->getOurKey());
-        }
-
-        // create expression based on existing conditions
-        return $ourModel->toQuery()->field($this->getOurKey());
-    }
-
-    /**
      * Returns referenced model with condition set.
      */
     public function getTheirEntity(array $defaults = []): Model
@@ -57,5 +40,22 @@ class WithMany extends Model\Field\Reference
         }
 
         return $theirKey;
+    }
+
+    /**
+     * Returns our field value or id.
+     *
+     * @return mixed
+     */
+    public function getOurFieldValue()
+    {
+        $ourModel = $this->getOurModel();
+
+        if ($ourModel->isLoaded()) {
+            return $ourModel->get($this->getOurKey());
+        }
+
+        // create expression based on existing conditions
+        return $ourModel->toQuery()->field($this->getOurKey());
     }
 }

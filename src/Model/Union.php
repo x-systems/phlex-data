@@ -177,4 +177,13 @@ class Union extends Model
 
         return $this;
     }
+
+    public function get($key = null)
+    {
+        if ($key !== null && !$this->hasField($key)) {
+            return $this->isLoaded() ? $this->getNestedEntity()->get($key) : null;
+        }
+
+        return parent::get($key);
+    }
 }

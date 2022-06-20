@@ -6,7 +6,7 @@ namespace Phlex\Data\Model\Field\Reference;
 
 use Phlex\Data\Model;
 
-class HasOne extends Model\Field\Reference
+class HasMany extends Model\Field\Reference
 {
     /**
      * Field type.
@@ -16,7 +16,7 @@ class HasOne extends Model\Field\Reference
      *
      * @var string
      */
-    public $type = 'integer';
+    public $type = 'list';
 
     /**
      * Is it system field?
@@ -50,6 +50,8 @@ class HasOne extends Model\Field\Reference
      * @var bool
      */
     public $read_only = false;
+
+    protected $table_alias = 'sub';
 
     /**
      * Defines a label to go along with this field. Use getCaption() which
@@ -113,7 +115,7 @@ class HasOne extends Model\Field\Reference
         parent::doInitialize();
 
         if (!$this->ourKey) {
-            $this->ourKey = $this->getKey() . '_id';
+            $this->ourKey = $this->getKey() . '_list';
         }
 
         $ourModel = $this->getOurModel();
@@ -137,50 +139,30 @@ class HasOne extends Model\Field\Reference
     }
 
     /**
-     * If our model is loaded, then return their model with respective record loaded.
-     *
-     * If our model is not loaded, then return their model with condition set.
-     * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
+     * Returns referenced model with condition set.
      */
     public function getTheirEntity(array $defaults = []): Model
     {
         $theirModel = $this->createTheirModel($defaults);
+        $ourModel = clone $this->getOurModel();
 
-        // add hook to set ourKey = null when record of referenced model is deleted
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_DELETE, function (Model $theirModel) {
-            $this->getOurField()->setNull();
-        });
-
-        if ($this->getOurModel()->isLoaded()) {
-            if ($ourValue = $this->getOurFieldValue()) {
-                // if our model is loaded, then try to load referenced model
-                $theirModel = $theirModel->tryLoadBy($this->getTheirKey($theirModel), $ourValue);
-            } else {
-                $theirModel->toEntity();
-            }
+        if ($ourModel->isLoaded()) {
+            return $theirModel->addCondition(
+                $this->getTheirKey($theirModel),
+                $this->getOurFieldValue()
+            );
         }
 
-        // their model will be reloaded after saving our model to reflect changes in referenced fields
-        $theirModel->reloadAfterSave = false;
-
-        $this->onHookToTheirModel($theirModel, Model::HOOK_AFTER_SAVE, function (Model $theirModel) {
-            $theirFieldValue = $this->getTheirFieldValue($theirModel);
-
-            if ($this->getOurFieldValue() !== $theirFieldValue) {
-                $this->getOurField()->set($theirFieldValue)->getOwner()->save();
-            }
-
-            $theirModel->reload();
-        });
-
-        return $theirModel;
+        return $theirModel->addCondition(
+            $ourModel->addCondition($this->getOurKey(), $this->getTheirField($theirModel))->toQuery()->exists()
+        );
     }
 
     public function set($value): self
     {
         // @todo GH check that class is same as theirModel class
         if ($value instanceof Model) {
-            $value = $value->get($this->getTheirKey());
+            $value = $value->export([$this->getTheirKey()]);
         }
 
         $this->getOwner()->getEntry()->set($this->getOurKey(), $value);

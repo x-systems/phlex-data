@@ -104,10 +104,7 @@ class ContainsOne extends Model\Field\Reference
     public function createTheirModel(array $defaults = []): Model
     {
         $ourModel = $this->getOurModel();
-        $theirModel = parent::createTheirModel($defaults);
 
-        $theirModel->setOption(self::OPTION_ROOT_MODEL, $ourModel->getOption(self::OPTION_ROOT_MODEL, $ourModel));
-
-        return $theirModel;
+        return parent::createTheirModel($defaults)->setOption(self::OPTION_ROOT_MODEL, $ourModel->getOption(self::OPTION_ROOT_MODEL, $ourModel));
     }
 }

@@ -533,21 +533,21 @@ class Model implements \IteratorAggregate
         return $this->entry->get($this->primaryKey);
     }
 
-    protected function assertHasPrimaryKey(): void
+    public function assertHasPrimaryKey(): void
     {
         if (!$this->hasPrimaryKeyField()) {
             throw new Exception('ID field is not defined');
         }
     }
 
-    protected function assertIsEntity(): void
+    public function assertIsEntity(): void
     {
         if (!$this->isEntity()) {
             throw new Exception('Model is not entity');
         }
     }
 
-    protected function assertNotEntity(): void
+    public function assertNotEntity(): void
     {
         if ($this->isEntity()) {
             throw new Exception('Model is entity');

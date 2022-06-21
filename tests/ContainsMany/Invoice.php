@@ -12,6 +12,7 @@ use Phlex\Data\Model;
  * @property string $ref_no              @Phlex\Field()
  * @property float  $amount              @Phlex\Field()
  * @property Line   $lines               @Phlex\RefOne()
+ * @property array  $lines_data          @Phlex\Field()
  * @property string $total_gross         @Phlex\Field()
  * @property float  $discounts_total_sum @Phlex\Field()
  */
@@ -29,7 +30,7 @@ class Invoice extends Model
         $this->addField($this->key()->amount, ['type' => 'money']);
 
         // will contain many Lines
-        $this->containsMany($this->key()->lines, ['model' => [Line::class], 'caption' => 'My Invoice Lines']);
+        $this->containsMany($this->key()->lines, ['theirModel' => [Line::class], 'caption' => 'My Invoice Lines']);
 
         // total_gross - calculated by php callback not by SQL expression
         $this->addCalculatedField($this->key()->total_gross, function (self $m) {
@@ -45,7 +46,7 @@ class Invoice extends Model
         $this->addCalculatedField($this->key()->discounts_total_sum, function (self $m) {
             $total = 0;
             foreach ($m->lines as $line) {
-                $total += $line->total_gross * $line->discounts_percent / 100;
+                $total += (float) ($line->total_gross) * (float) ($line->discounts_percent) / 100;
             }
 
             return $total;

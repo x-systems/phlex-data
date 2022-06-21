@@ -20,7 +20,7 @@ trait ArrayAccessTrait
      */
     public function offsetExists($name): bool
     {
-        return $this->_isset($name);
+        return $this->isset($name);
     }
 
     /**
@@ -53,6 +53,6 @@ trait ArrayAccessTrait
      */
     public function offsetUnset($name): void
     {
-        $this->_unset($name);
+        $this->reset($name);
     }
 }

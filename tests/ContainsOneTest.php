@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
+use Phlex\Data\Model;
 use Phlex\Data\Tests\ContainsOne\Country;
 use Phlex\Data\Tests\ContainsOne\Invoice;
 
@@ -26,34 +27,34 @@ class ContainsOneTest extends Sql\TestCase
     {
         parent::setUp();
 
+        $invoice = new Invoice($this->db);
+        $country = new Country($this->db);
         // populate database for our models
-        $this->createMigrator(new Country($this->db))->dropIfExists()->create();
-        $this->createMigrator(new Invoice($this->db))->dropIfExists()->create();
+        $this->createMigrator($invoice)->dropIfExists()->create();
+        $this->createMigrator($country)->dropIfExists()->create();
 
         // fill in some default values
-        $m = new Country($this->db);
-        $m->import([
+        $country->import([
             [
-                $m->key()->id => 1,
-                $m->key()->name => 'Latvia',
+                $country->key()->id => 1,
+                $country->key()->name => 'Latvia',
             ],
             [
-                $m->key()->id => 2,
-                $m->key()->name => 'United Kingdom',
+                $country->key()->id => 2,
+                $country->key()->name => 'United Kingdom',
             ],
         ]);
 
-        $m = new Invoice($this->db);
-        $m->import([
+        $invoice->import([
             [
-                $m->key()->id => 1,
-                $m->key()->ref_no => 'A1',
-                $m->key()->addr => null,
+                $invoice->key()->id => 1,
+                $invoice->key()->ref_no => 'A1',
+                $invoice->key()->addr => null,
             ],
             [
-                $m->key()->id => 2,
-                $m->key()->ref_no => 'A2',
-                $m->key()->addr => null,
+                $invoice->key()->id => 2,
+                $invoice->key()->ref_no => 'A2',
+                $invoice->key()->addr => null,
             ],
         ]);
     }
@@ -67,7 +68,7 @@ class ContainsOneTest extends Sql\TestCase
 
         // test caption of containsOne reference
         $this->assertSame('Secret Code', $a->getField($a->key()->door_code)->getCaption());
-        $this->assertSame('Secret Code', $a->refModel($a->key()->door_code)->getCaption());
+        $this->assertSame('Secret Code', $a->getReference($a->key()->door_code)->createTheirModel()->getCaption());
         $this->assertSame('Secret Code', $a->door_code->getCaption());
     }
 
@@ -80,53 +81,49 @@ class ContainsOneTest extends Sql\TestCase
         $i = $i->loadBy($i->key()->ref_no, 'A1');
 
         // check do we have address set
-        $a = $i->addr;
+        $a = $i->addr->tryLoadAny();
         $this->assertFalse($a->isLoaded());
 
         // now store some address
         $a->setMulti($row = [
-            $a->key()->id => 1,
             $a->key()->country_id => 1,
             $a->key()->address => 'foo',
             $a->key()->built_date => new \DateTime('2019-01-01'),
             $a->key()->tags => ['foo', 'bar'],
-            $a->key()->door_code => null,
+            $a->key()->door_code_data => null,
         ]);
         $a->save();
 
         // now reload invoice and see if it is saved
-        $this->assertEquals($row, $i->addr->get());
+        $this->assertEquals($row, array_intersect_key($i->addr->get(), $row));
         $i->reload();
-        $this->assertEquals($row, $i->addr->get());
+        $this->assertEquals($row, array_intersect_key($i->addr->get(), $row));
 
         // now try to change some field in address
-        $i->addr->set($i->addr->key()->address, 'bar')->save();
+        $i->ref('addr')->set($i->addr->key()->address, 'bar')->save();
         $this->assertSame('bar', $i->addr->address);
 
         // now add nested containsOne - DoorCode
         $c = $i->addr->door_code;
         $c->setMulti($row = [
-            $c->key()->id => 1,
             $c->key()->code => 'ABC',
             $c->key()->valid_till => new \DateTime('2019-07-01'),
         ]);
         $c->save();
-        $this->assertEquals($row, $i->addr->door_code->get());
+        $this->assertEquals($row, array_intersect_key($i->addr->door_code->get(), $row));
 
         // update DoorCode
         $i->reload();
         $i->addr->door_code->save([$i->addr->door_code->key()->code => 'DEF']);
-        $this->assertEquals(array_merge($row, [$i->addr->door_code->key()->code => 'DEF']), $i->addr->door_code->get());
+        $this->assertEquals(array_merge($row, [$i->addr->door_code->key()->code => 'DEF']), array_intersect_key($i->addr->door_code->get(), $row));
 
         // try hasOne reference
-        $c = $i->addr->country_id;
-        $this->assertSame('Latvia', $c->name);
+        $this->assertSame('Latvia', $i->addr->country->name);
         $i->addr->set($i->addr->key()->country_id, 2)->save();
-        $c = $i->addr->country_id;
-        $this->assertSame('United Kingdom', $c->name);
+        $this->assertSame('United Kingdom', $i->addr->country->name);
 
         // let's test how it all looks in persistence without encoding
-        $exp_addr = $i->getEntitySet()->setOrder('id')->export(null, null, false)[0][$i->key()->addr];
+        $exp_addr = $i->setOrder('id')->export(null, null, false)[0][$i->key()->addr_data];
         $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
@@ -139,7 +136,7 @@ class ContainsOneTest extends Sql\TestCase
                 $i->addr->key()->address => 'bar',
                 $i->addr->key()->built_date => $formatDtForCompareFunc(new \DateTime('2019-01-01')),
                 $i->addr->key()->tags => json_encode(['foo', 'bar']),
-                $i->addr->key()->door_code => json_encode([
+                $i->addr->key()->door_code_data => json_encode([
                     $i->addr->door_code->key()->id => 1,
                     $i->addr->door_code->key()->code => 'DEF',
                     $i->addr->door_code->key()->valid_till => $formatDtForCompareFunc(new \DateTime('2019-07-01')),
@@ -150,15 +147,15 @@ class ContainsOneTest extends Sql\TestCase
 
         // so far so good. now let's try to delete door_code
         $i->addr->door_code->delete();
-        $this->assertNull($i->addr->get($i->addr->key()->door_code));
+        $this->assertNull($i->addr->get($i->addr->key()->door_code_data));
         $this->assertFalse($i->addr->door_code->isLoaded());
 
         // and now delete address
         $i->addr->delete();
-        $this->assertNull($i->get($i->key()->addr));
+        $this->assertNull($i->get($i->key()->addr_data));
         $this->assertFalse($i->addr->isLoaded());
 
-        //var_dump($i->export(), $i->export(null, null, false));
+        // var_dump($i->export(), $i->export(null, null, false));
     }
 
     /**
@@ -172,12 +169,11 @@ class ContainsOneTest extends Sql\TestCase
         // with address
         $a = $i->addr;
         $a->setMulti($row = [
-            $a->key()->id => 1,
             $a->key()->country_id => 1,
             $a->key()->address => 'foo',
             $a->key()->built_date => new \DateTime('2019-01-01'),
             $a->key()->tags => [],
-            $a->key()->door_code => null,
+            $a->key()->door_code_data => null,
         ]);
         $a->save();
 
@@ -186,7 +182,9 @@ class ContainsOneTest extends Sql\TestCase
         $a->set('post_index', 'LV-1234');
         $a->save();
 
-        $this->assertEquals(array_merge($row, ['post_index' => 'LV-1234']), $a->get());
+        $rowWithField = array_merge($row, ['post_index' => 'LV-1234']);
+
+        $this->assertEquals($rowWithField, array_intersect_key($a->get(), $rowWithField));
 
         // now this one is a bit tricky
         // each time you call ref() it returns you new model object so it will not have post_index field
@@ -197,7 +195,7 @@ class ContainsOneTest extends Sql\TestCase
 
         // and it references to same old Address model without post_index field - no errors
         $a = $i->addr;
-        $this->assertEquals($row, $a->get());
+        $this->assertEquals($row, array_intersect_key($a->get(), $row));
     }
 
     /*

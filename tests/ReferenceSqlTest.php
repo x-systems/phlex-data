@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\SqlitePlatform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence\Sql\Expression;
@@ -35,7 +36,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
 
-        $u->hasMany('Orders', ['model' => $o]);
+        $u->withMany('Orders', ['theirModel' => $o]);
 
         $oo = $u->load(1)->ref('Orders');
         $ooo = $oo->tryLoad(1);
@@ -69,7 +70,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount', 'user_id']);
 
-        $u->hasMany('Orders', ['model' => $o]);
+        $u->withMany('Orders', ['theirModel' => $o]);
 
         $this->assertSameSql(
             'select "id","amount","user_id" from "order" where "user_id" = "user"."id"',
@@ -94,7 +95,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['currency', 'name']);
 
-        $u->hasMany('cur', ['model' => $c, 'ourKey' => 'currency', 'theirKey' => 'currency']);
+        $u->withMany('cur', ['theirModel' => $c, 'ourKey' => 'currency', 'theirKey' => 'currency']);
 
         $cc = $u->load(1)->ref('cur');
         $cc = $cc->tryLoadAny();
@@ -105,12 +106,74 @@ class ReferenceSqlTest extends Sql\TestCase
         $this->assertSame('Pound', $cc->get('name'));
     }
 
+    public function testHasMany(): void
+    {
+        $this->setDb([
+            'user' => [
+                1 => ['id' => 1, 'name' => 'John', 'reference_list' => '++order/1++order/3++order/4++'],
+                2 => ['id' => 2, 'name' => 'Peter', 'reference_list' => '++order/2++'],
+                3 => ['id' => 3, 'name' => 'Joe', 'reference_list' => '++order/5++'],
+            ], 'order' => [
+                ['amount' => '20'],
+                ['amount' => '15'],
+                ['amount' => '5'],
+                ['amount' => '3'],
+                ['amount' => '8'],
+            ],
+            'offer' => [
+                ['amount' => '20'],
+                ['amount' => '15'],
+                ['amount' => '5'],
+                ['amount' => '3'],
+                ['amount' => '8'],
+            ],
+        ]);
+
+        $user = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
+
+        $reference = (new Model\Union($this->db))->addNestedModels([
+            'order' => (new Model($this->db, ['table' => 'order']))->addFields(['amount']),
+            'offer' => (new Model($this->db, ['table' => 'offer']))->addFields(['amount']),
+        ]);
+
+        $user->hasMany('reference', ['theirModel' => $reference]);
+
+        $oo = $user->load(1)->ref('reference');
+        $ooo = $oo->tryLoadAny();
+        $this->assertEquals(20, $ooo->get('amount'));
+        $ooo = $oo->tryLoad('order/2');
+        $this->assertNull($ooo->get('amount'));
+        $ooo = $oo->tryLoad('order/3');
+        $this->assertEquals(5, $ooo->get('amount'));
+
+        $reference->addField('amount');
+
+        $oo = $user->load(2)->ref('reference');
+        $ooo = $oo->tryLoad('order/1');
+        $this->assertNull($ooo->get('amount'));
+        $ooo = $oo->tryLoad('order/2');
+        $this->assertEquals(15, $ooo->get('amount'));
+        $ooo = $oo->tryLoad('order/3');
+        $this->assertNull($ooo->get('amount'));
+
+        $oo = $user->addCondition('id', '>', '2')->ref('reference');
+
+        if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
+            $this->assertSameSql(
+                'select "_tu"."union_id","_tu"."union_amount" from (select (:a || "id") "union_id","amount" "union_amount" from "order" union all select (:b || "id") "union_id","amount" "union_amount" from "offer") "_tu" where (select exists (select * from "user" where ("id" > :c and ("reference_list" like :d || "_tu"."union_id" || :e))))',
+                $oo->toQuery()->select()->render()
+            );
+        }
+
+        $this->assertSame([['id' => 'order/5']], $oo->export(['id']));
+    }
+
     public function testLink2(): void
     {
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'currency_code']);
         $c = (new Model($this->db, ['table' => 'currency']))->addFields(['code', 'name']);
 
-        $u->hasMany('cur', ['model' => $c, 'ourKey' => 'currency_code', 'theirKey' => 'code']);
+        $u->withMany('cur', ['theirModel' => $c, 'ourKey' => 'currency_code', 'theirKey' => 'code']);
 
         $this->assertSameSql(
             'select "id","code","name" from "currency" where "code" = "user"."currency_code"',
@@ -141,19 +204,26 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
 
-        $o->hasOne('user_id', ['model' => $u]);
+        $o->hasOne('user', ['theirModel' => $u]);
 
-        $this->assertSame('John', $o->load(1)->ref('user_id')->get('name'));
-        $this->assertSame('Peter', $o->load(2)->ref('user_id')->get('name'));
-        $this->assertSame('John', $o->load(3)->ref('user_id')->get('name'));
-        $this->assertSame('Joe', $o->load(5)->ref('user_id')->get('name'));
+        $this->assertSame('John', $o->load(1)->ref('user')->get('name'));
+        $this->assertSame('Peter', $o->load(2)->ref('user')->get('name'));
+        $this->assertSame('John', $o->load(3)->ref('user')->get('name'));
+        $this->assertSame('Joe', $o->load(5)->ref('user')->get('name'));
 
         $o->addCondition('amount', '>', 6);
         $o->addCondition('amount', '<', 9);
 
         $this->assertSameSql(
             'select "id","name" from "user" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
-            $o->ref('user_id')->toQuery()->select()->render()
+            $o->ref('user')->toQuery()->select()->render()
+        );
+
+        $o->addCondition('user', 1);
+
+        $this->assertSameSql(
+            'select "id","amount","user_id" from "order" where ("amount" > :a and "amount" < :b and "user_id" = :c)',
+            $o->toQuery()->select()->render()
         );
     }
 
@@ -179,7 +249,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', ['date', 'type' => 'date']]);
 
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
+        $o->hasOne('user', ['theirModel' => $u])->addFields(['username' => 'name', ['date', 'type' => 'date']]);
 
         $this->assertSame('John', $o->load(1)->get('username'));
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('date'));
@@ -190,12 +260,12 @@ class ReferenceSqlTest extends Sql\TestCase
 
         // few more tests
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
+        $o->hasOne('user', ['theirModel' => $u])->addFields(['username' => 'name', 'thedate' => ['date', 'type' => 'date']]);
         $this->assertSame('John', $o->load(1)->get('username'));
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('thedate'));
 
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u])->addFields(['date'], ['type' => 'date']);
+        $o->hasOne('user', ['theirModel' => $u])->addFields(['date'], ['type' => 'date']);
         $this->assertEquals(new \DateTime('2001-01-02'), $o->load(1)->get('date'));
     }
 
@@ -219,7 +289,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['ref_no']);
         $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
-        $i->hasMany('line', ['model' => $l]);
+        $i->withMany('line', ['theirModel' => $l]);
 
         $i->addExpression('total_net', $i->refLink('line')->toQuery()->aggregate('sum', 'total_net'));
 
@@ -254,7 +324,7 @@ class ReferenceSqlTest extends Sql\TestCase
             ['total_vat', 'type' => 'money'],
             ['total_gross', 'type' => 'money'],
         ]);
-        $i->hasMany('line', ['model' => $l])
+        $i->withMany('line', ['theirModel' => $l])
             ->addFields([
                 ['total_vat', 'aggregate' => 'sum', 'type' => 'money'],
                 ['total_net', 'aggregate' => 'sum'],
@@ -318,7 +388,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $l = (new Model($this->db, ['table' => 'list']))->addFields(['name']);
         $i = (new Model($this->db, ['table' => 'item']))->addFields(['list_id', 'name', 'code']);
-        $l->hasMany('Items', ['model' => $i])
+        $l->withMany('Items', ['theirModel' => $i])
             ->addFields([
                 ['items_name', 'aggregate' => 'count', 'field' => 'name'],
                 ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
@@ -373,14 +443,14 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $company = (new Model($this->db, ['table' => 'company']))->addFields(['name']);
 
-        $user->hasOne('Company', ['model' => $company, 'ourKey' => 'company_id', 'theirKey' => 'id']);
+        $user->hasOne('Company', ['theirModel' => $company, 'ourKey' => 'company_id', 'theirKey' => 'id']);
 
         $order = new Model($this->db, ['table' => 'order']);
         $order->addField('company_id');
         $order->addField('description');
         $order->addField('amount', ['default' => 20, 'type' => 'float']);
 
-        $company->hasMany('Orders', ['model' => $order]);
+        $company->withMany('Orders', ['theirModel' => $order]);
 
         $user = $user->load(1);
 
@@ -423,30 +493,30 @@ class ReferenceSqlTest extends Sql\TestCase
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name']);
         $c = (new Model($this->db, ['table' => 'contact']))->addFields(['address']);
 
-        $u->hasOne('contact_id', ['model' => $c])
+        $u->hasOne('contact', ['theirModel' => $c])
             ->addField('address');
 
         $uu = $u->load(1);
         $this->assertSame('John contact', $uu->get('address'));
-        $this->assertSame('John contact', $uu->ref('contact_id')->get('address'));
+        $this->assertSame('John contact', $uu->ref('contact')->get('address'));
 
         $uu = $u->load(2);
         $this->assertNull($uu->get('address'));
         $this->assertNull($uu->get('contact_id'));
-        $this->assertNull($uu->ref('contact_id')->get('address'));
+        $this->assertNull($uu->ref('contact')->get('address'));
 
         $uu = $u->load(3);
         $this->assertSame('Joe contact', $uu->get('address'));
-        $this->assertSame('Joe contact', $uu->ref('contact_id')->get('address'));
+        $this->assertSame('Joe contact', $uu->ref('contact')->get('address'));
 
         $uu = $u->load(2);
-        $uu->ref('contact_id')->save(['address' => 'Peters new contact']);
+        $uu->ref('contact')->save(['address' => 'Peters new contact']);
 
         $this->assertNotNull($uu->get('contact_id'));
-        $this->assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));
+        $this->assertSame('Peters new contact', $uu->ref('contact')->get('address'));
 
         $uu->save()->reload();
-        $this->assertSame('Peters new contact', $uu->ref('contact_id')->get('address'));
+        $this->assertSame('Peters new contact', $uu->ref('contact')->get('address'));
         $this->assertSame('Peters new contact', $uu->get('address'));
     }
 
@@ -471,20 +541,20 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $s = (new Model($this->db, ['table' => 'stadium']));
         $s->addFields(['name']);
-        $s->hasOne('player_id', ['model' => $p]);
+        $s->hasOne('player', ['theirModel' => $p]);
 
-        $p->hasOne('Stadium', ['model' => $s, 'ourKey' => 'id', 'theirKey' => 'player_id']);
+        $p->hasOne('stadium', ['theirModel' => $s, 'ourKey' => 'id', 'theirKey' => 'player_id']);
 
         $p = $p->load(2);
-        $p->ref('Stadium')->import([['name' => 'Nou camp nou']]);
-        $this->assertSame('Nou camp nou', $p->ref('Stadium')->get('name'));
-        $this->assertSame(2, $p->ref('Stadium')->get('player_id'));
+        $p->ref('stadium')->import([['name' => 'Nou camp nou']]);
+        $this->assertSame('Nou camp nou', $p->ref('stadium')->get('name'));
+        $this->assertSame(2, $p->ref('stadium')->get('player_id'));
     }
 
     public function testModelProperty(): void
     {
         $user = new Model($this->db, ['table' => 'user']);
-        $user->hasMany('Orders', ['model' => [Model::class, 'table' => 'order'], 'theirKey' => 'id']);
+        $user->withMany('Orders', ['theirModel' => [Model::class, 'table' => 'order'], 'theirKey' => 'id']);
         $o = $user->ref('Orders');
         $this->assertSame('order', $o->table);
     }
@@ -507,19 +577,18 @@ class ReferenceSqlTest extends Sql\TestCase
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
 
         // by default not set
-        $o->hasOne('user_id', ['model' => $u]);
-        $this->assertSame($o->getField('user_id')->isVisible(), true);
-
-        $o->getRef('user_id')->addTitle();
-        $this->assertTrue($o->hasField('user'));
+        $o->hasOne('user', ['theirModel' => $u]);
         $this->assertSame($o->getField('user')->isVisible(), true);
-        $this->assertSame($o->getField('user_id')->isVisible(), false);
+
+        $o->getReference('user')->addTitle();
+        $this->assertTrue($o->hasField('user_name'));
+        $this->assertSame($o->getField('user_name')->isVisible(), true);
 
         // if it is set manually then it will not be changed
         $o = (new Model($this->db, ['table' => 'order']))->addFields(['amount']);
-        $o->hasOne('user_id', ['model' => $u]);
+        $o->hasOne('user', ['theirModel' => $u]);
         $o->getField('user_id')->ui['visible'] = true;
-        $o->getRef('user_id')->addTitle();
+        $o->getReference('user')->addTitle();
 
         $this->assertSame($o->getField('user_id')->isVisible(), true);
     }
@@ -548,11 +617,11 @@ class ReferenceSqlTest extends Sql\TestCase
         // with default titleKey='name'
         $u = (new Model($this->db, ['table' => 'user']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('user_id', ['model' => $u])->addTitle();
+        $o->hasOne('user', ['theirModel' => $u])->addTitle();
 
         // change order user by changing titleKey value
         $o = $o->load(1);
-        $o->set('user', 'Peter');
+        $o->set('user_name', 'Peter');
         $this->assertEquals(1, $o->get('user_id'));
         $o->save();
         $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
@@ -565,11 +634,11 @@ class ReferenceSqlTest extends Sql\TestCase
         // with custom titleKey='last_name'
         $u = (new Model($this->db, ['table' => 'user', 'titleKey' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('user_id', ['model' => $u])->addTitle();
+        $o->hasOne('user', ['theirModel' => $u])->addTitle();
 
         // change order user by changing titleKey value
         $o = $o->load(1);
-        $o->set('user', 'Foo');
+        $o->set('user_name', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
         $o->save();
         $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
@@ -582,11 +651,11 @@ class ReferenceSqlTest extends Sql\TestCase
         // with custom titleKey='last_name' and custom link name
         $u = (new Model($this->db, ['table' => 'user', 'titleKey' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'ourKey' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['theirModel' => $u, 'ourKey' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o = $o->load(1);
-        $o->set('my_user', 'Foo');
+        $o->set('my_user_name', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
         $o->save();
         $this->assertEquals(2, $o->get('user_id')); // user_id changed to Peters ID
@@ -599,11 +668,11 @@ class ReferenceSqlTest extends Sql\TestCase
         // with custom titleKey='last_name' and custom link name
         $u = (new Model($this->db, ['table' => 'user', 'titleKey' => 'last_name']))->addFields(['name', 'last_name']);
         $o = (new Model($this->db, ['table' => 'order']));
-        $o->hasOne('my_user', ['model' => $u, 'ourKey' => 'user_id'])->addTitle();
+        $o->hasOne('my_user', ['theirModel' => $u, 'ourKey' => 'user_id'])->addTitle();
 
         // change order user by changing ref field value
         $o = $o->load(1);
-        $o->set('my_user', 'Foo'); // user_id=2
+        $o->set('my_user_name', 'Foo'); // user_id=2
         $o->set('user_id', 3);     // user_id=3 (this will take precedence)
         $this->assertEquals(3, $o->get('user_id'));
         $o->save();
@@ -642,7 +711,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $this->assertSame('Surname', $u->getField('last_name')->getCaption());
 
         $o = (new Model($this->db, ['table' => 'order']));
-        $order_user_ref = $o->hasOne('my_user', ['model' => $u, 'ourKey' => 'user_id']);
+        $order_user_ref = $o->hasOne('my_user', ['theirModel' => $u, 'ourKey' => 'user_id']);
         $order_user_ref->addField('user_last_name', 'last_name');
 
         $referenced_caption = $o->getField('user_last_name')->getCaption();

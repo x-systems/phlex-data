@@ -10,9 +10,9 @@ class Selectable extends \Phlex\Data\Model\Field\Type
      * For fields that can be selected, values can represent interpretation of the values,
      * for instance ['F'=>'Female', 'M'=>'Male'];.
      *
-     * @var array|null
+     * @var array|bool|null
      */
-    public $values;
+    public $values = false;
 
     protected $labels = [];
 
@@ -30,9 +30,11 @@ class Selectable extends \Phlex\Data\Model\Field\Type
 
         $value = (array) $value;
 
-        foreach ($value as $v) {
-            if (!in_array($v, $this->values, true)) {
-                throw new ValidationException('Must be one of the associated values');
+        if ($this->values !== false) {
+            foreach ($value as $v) {
+                if (!in_array($v, $this->values, true)) {
+                    throw new ValidationException('Must be one of the associated values');
+                }
             }
         }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Phlex\Data\Model;
+use Phlex\Data\Persistence;
 
 class Folder extends Model
 {
@@ -15,10 +16,10 @@ class Folder extends Model
         parent::doInitialize();
         $this->addField('name');
 
-        $this->hasMany('SubFolder', ['model' => [self::class], 'theirKey' => 'parent_id'])
-            ->addField('count', ['aggregate' => 'count', 'field' => $this->persistence->expr('*')]);
+        $this->withMany('SubFolder', ['theirModel' => [self::class], 'theirKey' => 'parent_id'])
+            ->addField('count', ['aggregate' => 'count', 'field' => new Persistence\Sql\Expression('*')]);
 
-        $this->hasOne('parent_id', ['model' => [self::class]])
+        $this->hasOne('parent', ['theirModel' => [self::class]])
             ->addTitle();
 
         $this->addField('is_deleted', ['type' => 'boolean']);
@@ -51,7 +52,7 @@ class FolderTest extends Sql\TestCase
             'name' => 'My Projects',
             'count' => 3,
             'parent_id' => 1,
-            'parent' => 'Desktop',
+            'parent_name' => 'Desktop',
             'is_deleted' => 0,
         ], $f->get());
     }

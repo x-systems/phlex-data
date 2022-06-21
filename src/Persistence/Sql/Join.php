@@ -55,7 +55,7 @@ class Join extends Model\Join implements Expressionable
     {
         parent::doInitialize();
 
-        $this->getOwner()->setOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX);
+        $this->getOwner()->setOption(Persistence\Sql\Query::OPTION_FIELD_PREFIX);
 
         // If kind is not specified, figure out join type
         if (!isset($this->kind)) {
@@ -157,9 +157,9 @@ class Join extends Model\Join implements Expressionable
         $model = $this->getOwner();
 
         // we need to collect ID
-        if (isset($model->getDataRef()[$this->elementId])) {
-            $this->id = $model->getDataRef()[$this->elementId];
-            unset($model->getDataRef()[$this->elementId]);
+        if ($model->getEntry()->isLoaded($this->elementId)) {
+            $this->id = $model->getEntry()->get($this->elementId);
+            $model->getEntry()->unset($this->elementId);
         }
     }
 

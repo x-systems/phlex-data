@@ -29,7 +29,7 @@ store extra fields there. In your code::
 As you implement single Account and multiple Transaction types, you want to relate
 both::
 
-    $account->hasMany('Transactions', ['model' => [Transaction::class]]);
+    $account->withMany('Transactions', ['model' => [Transaction::class]]);
 
 There are however two difficulties here:
 
@@ -42,9 +42,9 @@ Best practice for specifying relation type
 Although there is no magic behind it, I recommend that you use the following
 code pattern when dealing with multiple types::
 
-    $account->hasMany('Transactions', ['model' => [Transaction::class]]);
-    $account->hasMany('Transactions:Deposit', ['model' => [Transaction\Deposit::class]]);
-    $account->hasMany('Transactions:Transfer', ['model' => [Transaction\Transfer::class]]);
+    $account->withMany('Transactions', ['model' => [Transaction::class]]);
+    $account->withMany('Transactions:Deposit', ['model' => [Transaction\Deposit::class]]);
+    $account->withMany('Transactions:Transfer', ['model' => [Transaction\Transfer::class]]);
 
 You can then use type-specific reference::
 
@@ -508,9 +508,9 @@ Create new Model::
 
 Next we need to define reference. Inside Model_Invoice add::
 
-    $this->hasMany('InvoicePayment');
+    $this->withMany('InvoicePayment');
 
-    $this->hasMany('Payment', ['model' => function($m) {
+    $this->withMany('Payment', ['model' => function($m) {
         $p = new Model_Payment($m->persistence);
         $j = $p->join('invoice_payment.payment_id');
         $j->addField('amount_closed');
@@ -544,7 +544,7 @@ Having some calculated fields for the invoice is handy. I'm adding `total_paymen
 that shows how much amount is closed and `amount_due`::
 
     // define field to see closed amount on invoice
-    $this->hasMany('InvoicePayment')
+    $this->withMany('InvoicePayment')
         ->addField('total_payments', ['aggregate'=>'sum', 'field'=>'amount_closed']);
     $this->addExpression('amount_due', '[total]-coalesce([total_payments],0)');
 
@@ -824,8 +824,8 @@ Narrowing Down Existing References
 Agile Data allow you to define multiple references between same entities, but
 sometimes that can be quite useful. Consider adding this inside your Model_Contact::
 
-    $this->hasMany('Invoice', 'Model_Invoice');
-    $this->hasMany('OverdueInvoice', ['model' => function($m){
+    $this->withMany('Invoice', 'Model_Invoice');
+    $this->withMany('OverdueInvoice', ['model' => function($m){
         return $m->ref('Invoice')->addCondition('due','<',date('Y-m-d'))
     }]);
 

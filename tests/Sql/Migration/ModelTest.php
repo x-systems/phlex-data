@@ -22,7 +22,7 @@ class ModelTest extends \Phlex\Data\Tests\Sql\TestCase
         $this->createMigrator($user)->create();
 
         // now we can use user
-        $user->createEntity()->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
+        $user->save(['name' => 'john', 'is_admin' => true, 'notes' => 'some long notes']);
     }
 
     public function testImportTable()
@@ -173,7 +173,7 @@ class TestUser extends \Phlex\Data\Model
         $this->addField('is_admin', ['type' => 'boolean']);
         $this->addField('notes', ['type' => 'text']);
 
-        $this->hasOne('role_id', ['model' => [TestRole::class], 'ourKey' => 'main_role_id', 'theirKey' => 'id']);
+        $this->hasOne('role', ['theirModel' => [TestRole::class], 'ourKey' => 'main_role_id', 'theirKey' => 'id']);
     }
 }
 
@@ -186,6 +186,6 @@ class TestRole extends \Phlex\Data\Model
         parent::doInitialize();
 
         $this->addField('name');
-        $this->hasMany('Users', [TestUser::class, 'ourKey' => 'id', 'theirKey' => 'main_role_id']);
+        $this->withMany('Users', ['theirModel' => [TestUser::class], 'ourKey' => 'id', 'theirKey' => 'main_role_id']);
     }
 }

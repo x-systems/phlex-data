@@ -14,14 +14,14 @@ class Migration extends Persistence\Sql\Migration
     {
         parent::create();
 
-        $this->persistence->expr(
+        $this->persistence->execute(new Persistence\Sql\Expression(
             <<<'EOT'
                 begin
                     execute immediate [];
                 end;
                 EOT,
             [
-                $this->persistence->expr(
+                new Persistence\Sql\Expression(
                     <<<'EOT'
                         create or replace trigger {table_ai_trigger_before}
                             before insert on {table}
@@ -38,9 +38,9 @@ class Migration extends Persistence\Sql\Migration
                         'table' => $this->table->getName(),
                         'table_ai_trigger_before' => $this->table->getName() . '__aitb',
                     ]
-                )->render(),
+                ),
             ]
-        )->execute();
+        ));
 
         return $this;
     }
@@ -49,7 +49,7 @@ class Migration extends Persistence\Sql\Migration
     {
         // drop trigger if exists
         // see https://stackoverflow.com/questions/1799128/oracle-if-table-exists
-        $this->persistence->expr(
+        $this->persistence->execute(new Persistence\Sql\Expression(
             <<<'EOT'
                 begin
                     execute immediate [];
@@ -61,14 +61,14 @@ class Migration extends Persistence\Sql\Migration
                 end;
                 EOT,
             [
-                $this->persistence->expr(
+                new Persistence\Sql\Expression(
                     'drop trigger {table_ai_trigger_before}',
                     [
                         'table_ai_trigger_before' => $this->table->getName() . '__aitb',
                     ]
-                )->render(),
+                ),
             ]
-        )->execute();
+        ));
 
         return parent::drop();
     }

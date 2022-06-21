@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Model;
+namespace Phlex\Data\Model\Field;
 
 use Phlex\Core\Factory;
 use Phlex\Data\Exception;
@@ -12,18 +12,33 @@ use Phlex\Data\Persistence;
 /**
  * Reference implements a link between one model and another. The basic components for
  * a reference is ability to generate the destination model, which is returned through
- * getModel() and that's pretty much it.
+ * createTheirModel() and that's pretty much it.
  *
  * It's possible to extend the basic reference with more meaningful references.
  *
  * @method Model getOwner() our model
  */
-class Reference
+class Reference extends Model\Field
 {
-    use Model\ElementTrait;
     use \Phlex\Core\InitializerTrait;
-    use \Phlex\Core\InjectableTrait;
-    use \Phlex\Core\TrackableTrait;
+
+    /**
+     * Option to use for linking a model to this reference when it is theirModel.
+     */
+    public const OPTION_MODEL_OWNER = self::class . '@model_owner';
+
+    /**
+     * Option to use with Model to contain reference to the root model for "contained" references.
+     *
+     * Useful for containsOne/Many implementation in case of
+     * SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
+     * from Array persistence used in containsOne model
+     */
+    public const OPTION_ROOT_MODEL = self::class . '@root_model';
+
+    public $access = self::ACCESS_GET;
+
+    public $persist = self::PERSIST_NONE;
 
     /**
      * Use this alias for related entity by default. This can help you
@@ -35,23 +50,14 @@ class Reference
     protected $table_alias;
 
     /**
-     * What should we pass into owner->ref() to get through to this reference.
-     * Each reference has a unique identifier, although it's stored
-     * in Model's elements as '#ref-xx'.
-     *
-     * @var string
-     */
-    public $link;
-
-    /**
      * Definition of the destination their model, that can be either an object, a
      * callback or a string. This can be defined during initialization and
-     * then used inside getModel() to fully populate and associate with
+     * then used inside createTheirModel() to fully populate and associate with
      * persistence.
      *
      * @var Model|\Closure|array
      */
-    public $model;
+    public $theirModel;
 
     /**
      * This is an optional property which can be used by your implementation
@@ -77,18 +83,13 @@ class Reference
      */
     public $caption;
 
-    public function __construct(string $link)
-    {
-        $this->link = $link;
-    }
-
     protected function onHookToOurModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
         $name = $this->elementId; // use static function to allow this object to be GCed
 
         return $model->onHookDynamic(
             $spot,
-            static fn (Model $model) => $model->getElement($name),
+            static fn (Model $model) => $model->getField($name),
             $fx,
             $args,
             $priority
@@ -97,40 +98,44 @@ class Reference
 
     protected function onHookToTheirModel(Model $model, string $spot, \Closure $fx, array $args = [], int $priority = 5): int
     {
-        if ($model->ownerReference !== null && $model->ownerReference !== $this) {
+        $modelOwnerReference = $model->getOption(self::OPTION_MODEL_OWNER);
+        if ($modelOwnerReference !== null && $modelOwnerReference !== $this) {
             throw new Exception('Model owner reference unexpectedly already set');
         }
-        $model->ownerReference = $this;
-        $getThisFx = static fn (Model $model) => $model->ownerReference;
+        $model->setOption(self::OPTION_MODEL_OWNER, $this);
 
         return $model->onHookDynamic(
             $spot,
-            $getThisFx,
+            static fn (Model $model) => $model->getOption(self::OPTION_MODEL_OWNER),
             $fx,
             $args,
             $priority
         );
     }
 
-    /**
-     * Initialization.
-     */
     protected function doInitialize(): void
     {
         $this->initTableAlias();
     }
 
-    /**
-     * Will use #ref_<link>.
-     */
-    public function getDesiredName(): string
-    {
-        return '#ref_' . $this->link;
-    }
-
     public function getOurModel(): Model
     {
         return $this->getOwner();
+    }
+
+    public function getOurFieldValue()
+    {
+        return $this->getOurField()->get();
+    }
+
+    public function getOurField(): Model\Field
+    {
+        return $this->getOurModel()->getField($this->getOurKey());
+    }
+
+    public function getOurKey(): string
+    {
+        return $this->ourKey ?: $this->getOurModel()->primaryKey;
     }
 
     /**
@@ -144,17 +149,17 @@ class Reference
         // set table_alias
         $defaults['table_alias'] ??= $this->table_alias;
 
-        if (is_object($this->model)) {
-            if ($this->model instanceof \Closure) {
+        if (is_object($this->theirModel)) {
+            if ($this->theirModel instanceof \Closure) {
                 // if model is Closure, then call the closure which should return a model
-                $theirModel = ($this->model)($this->getOurModel(), $this, $defaults);
+                $theirModel = ($this->theirModel)($this, $defaults);
             } else {
                 // if model is set, then use clone of this model
-                $theirModel = clone $this->model;
+                $theirModel = clone $this->theirModel;
             }
         } else {
             // add model from seed
-            $modelDefaults = $this->model;
+            $modelDefaults = $this->theirModel;
             $theirModelSeed = [$modelDefaults[0]];
             unset($modelDefaults[0]);
             $defaults = array_merge($modelDefaults, $defaults);
@@ -167,14 +172,25 @@ class Reference
         return $theirModel;
     }
 
-    protected function getOurField(): Model\Field
+    /**
+     * Returns referenced entity, in this case without any extra conditions.
+     * However descendant relationship types may override this to imply conditions.
+     */
+    public function getTheirEntity(array $defaults = []): Model
     {
-        return $this->getOurModel()->getField($this->getOurKey());
+        return $this->createTheirModel($defaults);
     }
 
-    protected function getOurKey(): string
+    public function getTheirFieldValue(Model $theirModel = null)
     {
-        return $this->ourKey ?: $this->getOurModel()->primaryKey;
+        return $this->getTheirField($theirModel)->get();
+    }
+
+    public function getTheirField(Model $theirModel = null): Model\Field
+    {
+        $theirModel ??= $this->createTheirModel();
+
+        return $theirModel->getField($this->getTheirKey($theirModel));
     }
 
     public function getTheirKey(Model $theirModel = null): string
@@ -188,19 +204,27 @@ class Reference
         return $theirModel->primaryKey;
     }
 
-    /**
-     * @return mixed
-     */
-    protected function getOurFieldValue()
+    public function get()
     {
-        return $this->getOurField()->get();
+        return $this->getTheirEntity();
     }
 
-    public function getTheirFieldValue(Model $theirModel = null)
+    public function getQueryArguments($operator, $value): array
     {
-        $theirModel ??= $this->createTheirModel();
+        return $this->getOurField()->getCodec()->getQueryArguments($operator, $value);
+    }
 
-        return $theirModel->get($this->getTheirKey($theirModel));
+    public function getConditionValueTitle($value): string
+    {
+        $ourModel = $this->getOurModel();
+
+        // make sure we set the value in the Model and fake it as loaded
+        $ourModel->toEntity([$ourModel->primaryKey => 0, $this->getOurKey() => $value]);
+
+        // then take the title
+        $title = $ourModel->get($this->getKey())->getTitle();
+
+        return $title !== $value ? $title : '';
     }
 
     protected function initTableAlias(): void
@@ -208,7 +232,7 @@ class Reference
         if (!$this->table_alias) {
             $ourModel = $this->getOurModel();
 
-            $aliasFull = $this->link;
+            $aliasFull = $this->getKey();
             $alias = preg_replace('~_(' . preg_quote($ourModel->primaryKey, '~') . '|id)$~', '', $aliasFull);
             $alias = preg_replace('~([0-9a-z]?)[0-9a-z]*[^0-9a-z]*~i', '$1', $alias);
             if (isset($ourModel->table_alias)) {
@@ -240,33 +264,7 @@ class Reference
     {
         $ourModel = $this->getOurModel();
 
-        // this will be useful for containsOne/Many implementation in case when you have
-        // SQL_Model->containsOne()->hasOne() structure to get back to SQL persistence
-        // from Array persistence used in containsOne model
-        if ($ourModel->contained_in_root_model && $ourModel->contained_in_root_model->persistence) {
-            return $ourModel->contained_in_root_model->persistence;
-        }
-
-        return $ourModel->persistence ?: false;
-    }
-
-    /**
-     * Returns referenced model without any extra conditions. However other
-     * relationship types may override this to imply conditions.
-     */
-    public function ref(array $defaults = []): Model
-    {
-        return $this->createTheirModel($defaults);
-    }
-
-    /**
-     * Returns referenced model without any extra conditions. Ever when extended
-     * must always respond with Model that does not look into current record
-     * or scope.
-     */
-    public function refModel(array $defaults = []): Model
-    {
-        return $this->createTheirModel($defaults);
+        return $ourModel->getOption(self::OPTION_ROOT_MODEL, $ourModel)->persistence ?: false;
     }
 
     // {{{ Debug Methods

@@ -56,7 +56,7 @@ class ModelSoftDeleteTest extends Sql\TestCase
         $this->assertSame([1, 2, 3], self::getEntiityIds($users));
         $this->assertSame('Soft Delete Status is equal to \'Any value\'', $users->scope()->toWords());
 
-        $jane = $users->createEntity()->save([
+        $jane = $users->save([
             'name' => 'Jane',
             'surname' => 'Stevens',
         ]);

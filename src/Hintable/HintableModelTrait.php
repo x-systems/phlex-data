@@ -124,41 +124,12 @@ trait HintableModelTrait
         $hProps = $this->getHintableProps();
         if (isset($hProps[$name])) {
             $hProp = $hProps[$name];
-            if ($hProp->refType === HintablePropertyDef::REF_TYPE_ONE) {
-                /** @var Model */
-                $model = $this->ref($hProp->key);
-
-                // TODO ensure no more than one Model can load
-//                $model->onHookShort(Model::HOOK_BEFORE_LOAD, \Closure::bind(function () {
-//                    foreach limit 2
-//                }, $model, Model::class));
-
-                return $model;
-            } elseif ($hProp->refType === HintablePropertyDef::REF_TYPE_MANY) {
-                /** @var Model */
-                $model = $this->ref($hProp->key);
-
-                // prevent to load directly (without an iterator)
-                \Closure::bind(function () use ($model) {
-                    $model->entityId = '_atk__data__hintable_magic__refMany';
-                }, null, Model::class)();
-                $model->onHookShort(Model::HOOK_AFTER_LOAD, \Closure::bind(function () {
-                    if ($this->entityId === '_atk__data__hintable_magic__refMany') {
-                        $backtrace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS, 4);
-                        if (
-                            count($backtrace) >= 4
-                            && ($backtrace[3]['function'] ?? null) === 'getIterator'
-                            && ($backtrace[3]['object'] ?? null) !== $this
-                        ) {
-                            $this->entityId = null;
-                        }
-                    }
-                }, $model, Model::class), [], -11);
-
-                return $model;
+            if ($hProp->refType === HintablePropertyDef::REF_TYPE_ONE
+                || $hProp->refType === HintablePropertyDef::REF_TYPE_MANY) {
+                $resNoRef = $this->ref($hProp->key);
+            } else {
+                $resNoRef = $this->get($hProp->key);
             }
-
-            $resNoRef = $this->get($hProp->key);
 
             return $resNoRef;
         }

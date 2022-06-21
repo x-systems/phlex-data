@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Scope;
 
-use Phlex\Core\ReadableCaptionTrait;
+use Phlex\Core;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence\Sql;
 
 class Condition extends AbstractScope
 {
-    use ReadableCaptionTrait;
-
     /** @var string|Model\Field|Sql\Expressionable */
     public $key;
 
@@ -181,6 +179,7 @@ class Condition extends AbstractScope
         $operator = $this->operator;
         $value = $this->value;
 
+        // handle placeholder values
         if (is_a($value, Placeholder::class, true)) {
             if (!is_object($value)) {
                 $value = new $value();
@@ -241,7 +240,7 @@ class Condition extends AbstractScope
 
             // handle the query arguments using field
             if ($field instanceof Model\Field) {
-                [$field, $operator, $value] = $field->getCodec()->getQueryArguments($operator, $value); // @phpstan-ignore-line
+                [$field, $operator, $value] = $field->getQueryArguments($operator, $value);
             }
 
             // only expression contained in $field
@@ -314,7 +313,7 @@ class Condition extends AbstractScope
                 $field = array_pop($references);
 
                 foreach ($references as $link) {
-                    $words[] = "that has reference {$this->readableCaption($link)}";
+                    $words[] = 'that has reference ' . Core\Utils::getReadableCaption($link);
 
                     $model = $model->refLink($link);
                 }
@@ -401,18 +400,10 @@ class Condition extends AbstractScope
             }
         }
 
-        // use the referenced model title if such exists
-        $title = null;
-        if ($field instanceof Model\Field && $field->getReference() !== null) {
-            // make sure we set the value in the Model
-            $model = $model->isEntity() ? clone $model : $model->createEntity();
-            $model->set($field->elementId, $value);
-
-            // then take the title
-            $title = $model->getRef($field->getReference()->link)->ref()->getTitle();
-            if ($title === $value) {
-                $title = null;
-            }
+        // use a title if defined for the value (generally reference field model title)
+        $title = '';
+        if ($field instanceof Model\Field) {
+            $title = $field->getConditionValueTitle($value);
         }
 
         if (is_bool($value)) {
@@ -423,6 +414,6 @@ class Condition extends AbstractScope
             $valueStr = '\'' . (string) $value . '\'';
         }
 
-        return $valueStr . ($title !== null ? ' (\'' . $title . '\')' : '');
+        return $valueStr . ($title ? ' (\'' . $title . '\')' : '');
     }
 }

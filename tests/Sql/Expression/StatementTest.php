@@ -178,32 +178,14 @@ class StatementTest extends PHPUnit\TestCase
     }
 
     /**
-     * There shouldn't be alias when passing multiple tables.
-     */
-    public function testTableException1()
-    {
-        $this->expectException(Exception::class);
-        $this->q()->table('employee,jobs', 'u');
-    }
-
-    /**
-     * There shouldn't be alias when passing multiple tables.
-     */
-    public function testTableException2()
-    {
-        $this->expectException(Exception::class);
-        $this->q()->table(['employee', 'jobs'], 'u');
-    }
-
-    /**
      * Alias is NOT mandatory when pass table as Sql\Expression.
      *
      * @doesNotPerformAssertions
      */
     public function testTableException3()
     {
-        //$this->expectException(Exception::class); // no more
-        $this->q()->table($this->q()->expr('test'));
+        // $this->expectException(Exception::class); // no more
+        $this->q()->table(new Sql\Expression('test'));
     }
 
     /**
@@ -453,14 +435,14 @@ class StatementTest extends PHPUnit\TestCase
         $q2 = $this->q()->table('customer');
 
         $this->assertSame(
-            //this way it would be more correct: 'select "e"."name","c"."name" from (select * from "employee") "e",(select * from "customer") "c" where "e"."last_name" = "c"."last_name"',
+            // this way it would be more correct: 'select "e"."name","c"."name" from (select * from "employee") "e",(select * from "customer") "c" where "e"."last_name" = "c"."last_name"',
             'select "e"."name","c"."name" from (select * from "employee") "e",(select * from "customer") "c" where "e"."last_name" = c.last_name',
             $this->q()
                 ->field('e.name')
                 ->field('c.name')
                 ->table($q1, 'e')
                 ->table($q2, 'c')
-                ->where('e.last_name', $this->q()->expr('c.last_name'))
+                ->where('e.last_name', new Sql\Expression('c.last_name'))
                 ->render()
         );
     }
@@ -537,7 +519,7 @@ class StatementTest extends PHPUnit\TestCase
             ->table('sales')
             ->field('date')
             ->field('amount', 'debit')
-            ->field($this->q()->expr('0'), 'credit'); // simply 0
+            ->field(new Sql\Expression('0'), 'credit'); // simply 0
         $this->assertSame(
             'select "date","amount" "debit",0 "credit" from "sales"',
             $q1->render()
@@ -547,7 +529,7 @@ class StatementTest extends PHPUnit\TestCase
         $q2 = $this->q()
             ->table('purchases')
             ->field('date')
-            ->field($this->q()->expr('0'), 'debit') // simply 0
+            ->field(new Sql\Expression('0'), 'debit') // simply 0
             ->field('amount', 'credit');
         $this->assertSame(
             'select "date",0 "debit","amount" "credit" from "purchases"',
@@ -555,9 +537,9 @@ class StatementTest extends PHPUnit\TestCase
         );
 
         // $q1 union $q2
-        $u = new Sql\Expression('([] union [])', [$q1, $q2]);
+        $u = new Sql\Expression\Union([$q1, $q2]);
         $this->assertSame(
-            '((select "date","amount" "debit",0 "credit" from "sales") union (select "date",0 "debit","amount" "credit" from "purchases"))',
+            '(select "date","amount" "debit",0 "credit" from "sales" union all select "date",0 "debit","amount" "credit" from "purchases")',
             $u->render()
         );
 
@@ -566,27 +548,16 @@ class StatementTest extends PHPUnit\TestCase
             ->field('date,debit,credit')
             ->table($u, 'derrivedTable');
         $this->assertSame(
-            'select "date","debit","credit" from ((select "date","amount" "debit",0 "credit" from "sales") union (select "date",0 "debit","amount" "credit" from "purchases")) "derrivedTable"',
+            'select "date","debit","credit" from (select "date","amount" "debit",0 "credit" from "sales" union all select "date",0 "debit","amount" "credit" from "purchases") "derrivedTable"',
             $q->render()
         );
 
-        // SQLite do not support (($q1) union ($q2)) syntax. Correct syntax is ($q1 union $q2) without additional braces
-        // Other SQL engines are more relaxed, but still these additional braces are not needed for union
-        // Let's test how to do that properly
-        $q1->consumedInParentheses(false);
-        $q2->consumedInParentheses(false);
-        $u = new Sql\Expression('([] union [])', [$q1, $q2]);
-        $this->assertSame(
-            '(select "date","amount" "debit",0 "credit" from "sales" union select "date",0 "debit","amount" "credit" from "purchases")',
-            $u->render()
-        );
-
         // SELECT date,debit,credit FROM ($q1 union $q2)
         $q = $this->q()
             ->field('date,debit,credit')
             ->table($u, 'derrivedTable');
         $this->assertSame(
-            'select "date","debit","credit" from (select "date","amount" "debit",0 "credit" from "sales" union select "date",0 "debit","amount" "credit" from "purchases") "derrivedTable"',
+            'select "date","debit","credit" from (select "date","amount" "debit",0 "credit" from "sales" union all select "date",0 "debit","amount" "credit" from "purchases") "derrivedTable"',
             $q->render()
         );
     }
@@ -1091,11 +1062,6 @@ class StatementTest extends PHPUnit\TestCase
             ->newInstanceWithoutConstructor();
     }
 
-    public function testExpr()
-    {
-        $this->assertSame(Sql\Expression::class, get_class($this->q()->expr('foo')));
-    }
-
     public function testJoin()
     {
         $this->assertSame(
@@ -1508,7 +1474,7 @@ class StatementTest extends PHPUnit\TestCase
      */
     public function testCaseExprException1()
     {
-        //$this->expectException(Exception::class);
+        // $this->expectException(Exception::class);
         $this->q()->case()
             ->when(['status'], 't2.expose_new')
             ->render();
@@ -1526,14 +1492,14 @@ class StatementTest extends PHPUnit\TestCase
     }
 
     /**
-     * Tests exprNow() method.
+     * Tests Expression\Now() class.
      */
     public function testExprNow()
     {
         $this->assertSame(
             'update "employee" set "hired"=current_timestamp()',
             $this->q()
-                ->field('hired')->table('employee')->set('hired', $this->q()->exprNow())
+                ->field('hired')->table('employee')->set('hired', new Sql\Expression\Now())
                 ->mode('update')
                 ->render()
         );
@@ -1541,7 +1507,7 @@ class StatementTest extends PHPUnit\TestCase
         $this->assertSame(
             'update "employee" set "hired"=current_timestamp(:a)',
             $this->q()
-                ->field('hired')->table('employee')->set('hired', $this->q()->exprNow(2))
+                ->field('hired')->table('employee')->set('hired', new Sql\Expression\Now(2))
                 ->mode('update')
                 ->render()
         );
@@ -1604,12 +1570,12 @@ class StatementTest extends PHPUnit\TestCase
         $quotes = $this->q()
             ->table('quotes')
             ->field('emp_id')
-            ->field($this->q()->expr('sum([])', ['total_net']))
+            ->field(new Sql\Expression('sum([])', ['total_net']))
             ->group('emp_id');
         $invoices = $this->q()
             ->table('invoices')
             ->field('emp_id')
-            ->field($this->q()->expr('sum([])', ['total_net']))
+            ->field(new Sql\Expression('sum([])', ['total_net']))
             ->group('emp_id');
         $q = $this->q()
             ->with($quotes, 'q', ['emp', 'quoted'])

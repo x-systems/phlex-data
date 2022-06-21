@@ -29,6 +29,10 @@ abstract class Query implements \IteratorAggregate
     public const MODE_INSERT = 'insert';
     public const MODE_DELETE = 'delete';
 
+    public const OPTION_FIELD_ALIAS = self::class . '@fieldAlias';
+
+    public const OPTION_MODEL_STRICT_ONLY_FIELDS = self::class . '@fieldAlias';
+
     /** @var Model|null */
     protected $model;
 
@@ -47,8 +51,6 @@ abstract class Query implements \IteratorAggregate
     public function __construct(Model $model)
     {
         $this->model = $model;
-
-        $model = $model->isEntity() ? $model->getEntitySet() : $model;
 
         $this->scope = clone $model->scope();
 
@@ -337,11 +339,7 @@ abstract class Query implements \IteratorAggregate
      */
     public function getRow(): ?array
     {
-        return $this->executeQueryWithDebug(function () {
-            $this->withMode()->limit(1);
-
-            return $this->doGetRow();
-        });
+        return $this->executeQueryWithDebug(fn () => $this->withMode()->limit(1)->doGetRow());
     }
 
     abstract protected function doGetRow(): ?array;

@@ -13,8 +13,6 @@ use Phlex\Data\Persistence;
 
 abstract class Sql extends Persistence
 {
-    public const OPTION_USE_TABLE_PREFIX = self::class . '@use_table_prefix';
-
     /**
      * Connection object.
      *
@@ -34,14 +32,21 @@ abstract class Sql extends Persistence
      *
      * @var array
      */
-    public $_default_seed_hasOne = [Sql\Reference\HasOne::class];
+    public $_default_seed_hasOne = [Sql\Field\Reference\HasOne::class];
 
     /**
      * Default class when adding hasMany field.
      *
      * @var array
      */
-    public $_default_seed_hasMany; // [Sql\Reference\HasMany::class];
+    public $_default_seed_hasMany = [Sql\Field\Reference\HasMany::class];
+
+    /**
+     * Default class when adding withMany field.
+     *
+     * @var array
+     */
+    public $_default_seed_withMany = [Sql\Field\Reference\WithMany::class];
 
     /**
      * Default class when adding Expression field.
@@ -94,6 +99,8 @@ abstract class Sql extends Persistence
         'pgsql' => [Sql\Platform\Postgresql::class],
         'sqlsrv' => [Sql\Platform\Mssql::class],
     ];
+
+    protected $expressions = [];
 
     /**
      * Connects database.
@@ -264,7 +271,7 @@ abstract class Sql extends Persistence
             $pdoConnection->connection = $pdo;
         }, null, DBAL\Driver\PDO\Connection::class)();
 
-        $dbalConnection = DBAL\DriverManager::getConnection([
+        $dbalConnection = DBAL\DriverManager::getConnection([ // @phpstan-ignore-line
             'driver' => 'pdo_' . $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME),
         ]);
 
@@ -280,19 +287,6 @@ abstract class Sql extends Persistence
         return $this->connection;
     }
 
-    public function statement($defaults = []): Sql\Statement
-    {
-        return Factory::factory($this->_default_seed_statement, array_merge(
-            $defaults,
-            [
-                'persistence' => $this,
-            ],
-            $this->connection ? [
-                'identifierQuoteCharacter' => $this->connection->getDatabasePlatform()->getIdentifierQuoteCharacter(),
-            ] : []
-        ));
-    }
-
     public function add(Model $model, array $defaults = []): Model
     {
         // Use our own classes for fields, references and expressions unless
@@ -301,13 +295,14 @@ abstract class Sql extends Persistence
             '_default_seed_addField' => $this->_default_seed_addField,
             '_default_seed_hasOne' => $this->_default_seed_hasOne,
             '_default_seed_hasMany' => $this->_default_seed_hasMany,
+            '_default_seed_withMany' => $this->_default_seed_withMany,
             '_default_seed_addExpression' => $this->_default_seed_addExpression,
             '_default_seed_join' => $this->_default_seed_join,
         ], $defaults);
 
         $model = parent::add($model, $defaults);
 
-        if (!isset($model->table) || (!is_string($model->table) && $model->table !== false)) {
+        if (!isset($model->table) || (!is_string($model->table) && !is_array($model->table) && $model->table !== false)) {
             throw (new Exception('Property $table must be specified for a model'))
                 ->addMoreInfo('model', $model);
         }
@@ -316,9 +311,9 @@ abstract class Sql extends Persistence
         if ($model->table === false) {
             $model->removeField($model->primaryKey);
             $model->addExpression($model->primaryKey, '1');
-            //} else {
+            // } else {
             // SQL databases use ID of int by default
-            //$m->getField($m->primaryKey)->type = 'integer';
+            // $m->getField($m->primaryKey)->type = 'integer';
         }
 
         // Sequence support
@@ -331,7 +326,7 @@ abstract class Sql extends Persistence
 
     protected function configure(Model $model): void
     {
-        $model->unsetOption(self::OPTION_USE_TABLE_PREFIX);
+        $model->unsetOption(Sql\Query::OPTION_FIELD_PREFIX);
 
         $model->addMethod('migrate', static function (Model $m, ...$args) {
             return $m->persistence->migrate($m, ...$args); // @phpstan-ignore-line
@@ -350,7 +345,7 @@ abstract class Sql extends Persistence
                 $expr
             );
 
-            return $m->persistence->expr($expr, $args); // @phpstan-ignore-line
+            return new Sql\Expression($expr, $args);
         });
     }
 
@@ -519,29 +514,46 @@ abstract class Sql extends Persistence
         return Factory::factory(Factory::mergeSeeds($this->_default_seed_migration, ['source' => $model ?: $this->connection]));
     }
 
-    /**
-     * Creates new Expression object from expression string.
-     */
-    public function expr($expr, array $args = []): Sql\Expression
+    public function statement($defaults = []): Sql\Statement
     {
-        $expression = new Sql\Expression($expr, $args);
-
-        $expression->persistence = $this;
-
-        return $expression;
-    }
-
-    /**
-     * Creates new Query object with current_timestamp(precision) expression.
-     */
-    public function exprNow(int $precision = null): Sql\Expression
-    {
-        return $this->statement()->exprNow($precision);
+        return Factory::factory($this->_default_seed_statement, array_merge(
+            $defaults,
+            [
+                'persistence' => $this,
+            ],
+            $this->connection ? [
+                'identifierQuoteCharacter' => $this->connection->getDatabasePlatform()->getIdentifierQuoteCharacter(),
+            ] : []
+        ));
     }
 
     public function query(Model $model = null): Persistence\Query
     {
         return new Sql\Query($model);
+    }
+
+    /**
+     * Creates persistence specific expression of the same type as $expression.
+     */
+    public function expression(Sql\Expression $expression): Sql\Expression
+    {
+        $expressionClass = get_class($expression);
+        $expressionSeed = false;
+
+        if (array_key_exists($expressionClass, $this->expressions)) {
+            $expressionSeed = $this->expressions[$expressionClass];
+        } elseif (class_exists($autoClass = $this->getAutolocateExpressionClass($expression)) && $autoClass !== $expressionClass) {
+            $expressionSeed = (new \ReflectionClass($autoClass))->newInstanceWithoutConstructor();
+        }
+
+        $this->expressions[$expressionClass] = $expressionSeed;
+
+        return $expressionSeed ? Factory::factory($expressionSeed, $expression->getSeedDefaults()) : $expression;
+    }
+
+    protected function getAutolocateExpressionClass(Sql\Expression $expression): string
+    {
+        return static::class . '\\Expression\\' . class_basename($expression);
     }
 
     protected function getIdSequenceName(Model $model): ?string

@@ -92,11 +92,6 @@ class SelectTest extends PHPUnit\TestCase
         return $q;
     }
 
-    private function e($template = null, $args = null)
-    {
-        return $this->persistence->expr($template, $args);
-    }
-
     public function testBasicQueries()
     {
         $this->assertSame(4, count($this->q('employee')->execute()->fetchAllAssociative()));
@@ -170,17 +165,17 @@ class SelectTest extends PHPUnit\TestCase
         if ($this->persistence->connection->getDatabasePlatform() instanceof PostgreSQL94Platform || $this->persistence->connection->getDatabasePlatform() instanceof SQLServer2012Platform) {
             $this->assertSame(
                 'foo',
-                $this->e('select CAST([] AS VARCHAR)', ['foo'])->execute()->fetchOne()
+                $this->persistence->execute(new Persistence\Sql\Expression('select CAST([] AS VARCHAR)', ['foo']))->fetchOne()
             );
         } elseif ($this->persistence->connection->getDatabasePlatform() instanceof OraclePlatform) {
             $this->assertSame(
                 'foo',
-                $this->e('select CAST([] AS VARCHAR2(100)) FROM DUAL', ['foo'])->execute()->fetchOne()
+                $this->persistence->execute(new Persistence\Sql\Expression('select CAST([] AS VARCHAR2(100)) FROM DUAL', ['foo']))->fetchOne()
             );
         } else {
             $this->assertSame(
                 'foo',
-                $this->e('select CAST([] AS CHAR)', ['foo'])->execute()->fetchOne()
+                $this->persistence->execute(new Persistence\Sql\Expression('select CAST([] AS CHAR)', ['foo']))->fetchOne()
             );
         }
     }
@@ -263,7 +258,7 @@ class SelectTest extends PHPUnit\TestCase
     {
         $this->assertEquals(
             [['id' => '2', 'name' => 'Jack', 'surname' => 'Williams', 'retired' => '1']],
-            $this->q('employee')->where('retired', 1)->where($this->q()->expr('{}=[] or {}=[]', ['surname', 'Williams', 'surname', 'Smith']))->execute()->fetchAllAssociative()
+            $this->q('employee')->where('retired', 1)->where(new Persistence\Sql\Expression('{}=[] or {}=[]', ['surname', 'Williams', 'surname', 'Smith']))->execute()->fetchAllAssociative()
         );
     }
 

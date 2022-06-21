@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Sql;
 
+use Phlex\Core\InjectableTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Persistence;
 
 class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
 {
+    use InjectableTrait;
+
     /** @const string "[]" in template, escape as parameter */
     protected const ESCAPE_PARAM = 'param';
     /** @const string "{}" in template, escape as identifier */
@@ -186,21 +189,6 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         return $this;
     }
 
-    /**
-     * Returns Expression object.
-     *
-     * @param string|array $properties
-     * @param array        $arguments
-     */
-    public function expr($properties = [], $arguments = null): self
-    {
-        $expr = new self($properties, $arguments);
-
-        $expr->persistence = $this->persistence;
-
-        return $expr;
-    }
-
     public function getIdentifierQuoteCharacter()
     {
         if ($this->persistence && $this->persistence->connection) {
@@ -322,8 +310,8 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
                 ->addMoreInfo('escapeMode', $escapeMode);
         }
 
-        $expression = $expressionable->toSqlExpression();
-        $expression->identifierQuoteCharacter = $this->getIdentifierQuoteCharacter();
+        /** @var Expressionable $expressionable */
+        $expression = $expressionable->toSqlExpression()->getConsumable($this);
 
         $template = $expression->template;
         if (is_array($template)) {
@@ -410,6 +398,41 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
         }
 
         return $result;
+    }
+
+    protected function getConsumable(self $consumer): self
+    {
+        $this->identifierQuoteCharacter = $consumer->getIdentifierQuoteCharacter();
+
+        $expression = $this;
+        if ($this->persistence = $consumer->persistence) {
+            $expression = $this->persistence->expression($this);
+        }
+
+        return $expression;
+    }
+
+    public function getSeedDefaults(): array
+    {
+        $ret = [];
+
+        foreach ($this->getSeedProperties() as $property) {
+            $ret[$property] = $this->{$property};
+        }
+
+        return $ret;
+    }
+
+    protected function getSeedProperties(): array
+    {
+        return [
+            'args',
+            'nextPlaceholder',
+            'identifierQuoteCharacter',
+            'params',
+            'consumedInParentheses',
+            'selectsMultipleRows',
+        ];
     }
 
     /**

@@ -6,6 +6,8 @@ namespace Phlex\Data\Tests\Model;
 
 class Client extends User
 {
+    public $table = 'client';
+
     protected function doInitialize(): void
     {
         parent::doInitialize();

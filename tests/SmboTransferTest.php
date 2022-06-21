@@ -42,8 +42,8 @@ class SmboTransferTest extends Sql\TestCase
      */
     public function testTransfer(): void
     {
-        $aib = (new Account($this->db))->createEntity()->save(['name' => 'AIB']);
-        $boi = (new Account($this->db))->createEntity()->save(['name' => 'BOI']);
+        $aib = (new Account($this->db))->save(['name' => 'AIB']);
+        $boi = (new Account($this->db))->save(['name' => 'BOI']);
 
         $t = $aib->transfer($boi, 100); // create transfer between accounts
         $t->save();
@@ -67,18 +67,18 @@ class SmboTransferTest extends Sql\TestCase
 
         $aa = $a->createEntity();
         $aa->save(['name' => 'AIB']);
-        $aa->ref('Payment')->createEntity()->save(['amount' => 10]);
-        $aa->ref('Payment')->createEntity()->save(['amount' => 20]);
+        $aa->ref('Payment')->save(['amount' => 10]);
+        $aa->ref('Payment')->save(['amount' => 20]);
         $aa->unload();
 
         $aa = $a->createEntity();
         $aa->save(['name' => 'BOI']);
-        $aa->ref('Payment')->createEntity()->save(['amount' => 30]);
+        $aa->ref('Payment')->save(['amount' => 30]);
         $aa->unload();
 
         // create payment without link to account
         $p = new Payment($this->db);
-        $p->createEntity()->saveAndUnload(['amount' => 40]);
+        $p->saveWithoutReloading(['amount' => 40])->unload();
 
         // Account is not loaded, will dump all Payments related to ANY Account
         $data = $a->ref('Payment')->export(['amount']);
@@ -86,7 +86,7 @@ class SmboTransferTest extends Sql\TestCase
             ['amount' => 10],
             ['amount' => 20],
             ['amount' => 30],
-            //['amount' => 40], // will not select this because it is not related to any Account
+            // ['amount' => 40], // will not select this because it is not related to any Account
         ], $data);
 
         // Account is loaded, will dump all Payments related to that particular Account

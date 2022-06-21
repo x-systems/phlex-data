@@ -114,23 +114,4 @@ class Migration
 
         return $codec->migrate($this);
     }
-
-    protected function getReferenceField(Model\Field $field): ?Model\Field
-    {
-        $reference = $field->getReference();
-        if ($reference instanceof Model\Reference\HasOne) {
-            $referenceTheirField = \Closure::bind(fn () => $reference->theirKey, null, Model\Reference::class)();
-
-            $referenceField = $referenceTheirField ?: $reference->getOwner()->primaryKey;
-
-            $modelSeed = is_array($reference->model)
-                ? $reference->model
-                : [get_class($reference->model)];
-            $referenceModel = Model::fromSeed($modelSeed, [Persistence\Sql::createFromConnection($this->persistence->connection)]);
-
-            return $referenceModel->getField($referenceField);
-        }
-
-        return null;
-    }
 }

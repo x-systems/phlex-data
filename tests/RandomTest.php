@@ -28,7 +28,7 @@ class Model_Item extends Model
     {
         parent::doInitialize();
         $this->addField('name');
-        $this->hasOne('parent_item_id', ['model' => [self::class]])
+        $this->hasOne('parent_item', ['theirModel' => [self::class]])
             ->addTitle();
     }
 }
@@ -41,7 +41,7 @@ class Model_Item2 extends Model
         parent::doInitialize();
         $this->addField('name');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', ['model' => [self::class]])
+        $i2->hasOne('parent_item', ['theirModel' => [self::class]])
             ->addTitle();
     }
 }
@@ -58,10 +58,10 @@ class Model_Item3 extends Model
         $this->addField('name');
         $this->addField('age');
         $i2 = $this->join('item2.item_id');
-        $i2->hasOne('parent_item_id', ['model' => $m, 'table_alias' => 'parent'])
+        $i2->hasOne('parent_item', ['theirModel' => $m, 'table_alias' => 'parent'])
             ->withTitle();
 
-        $this->hasMany('Child', ['model' => $m, 'theirKey' => 'parent_item_id', 'table_alias' => 'child'])
+        $this->withMany('Child', ['theirModel' => $m, 'theirKey' => 'parent_item_id', 'table_alias' => 'child'])
             ->addField('child_age', ['aggregate' => 'sum', 'field' => 'age']);
     }
 }
@@ -174,7 +174,7 @@ class RandomTest extends Sql\TestCase
         $m = new Model_Item($this->db, ['table' => 'item']);
 
         $this->assertSame(
-            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item_name' => 'Sue'],
             $m->load(3)->get()
         );
     }
@@ -197,7 +197,7 @@ class RandomTest extends Sql\TestCase
         $m = new Model_Item2($this->db, ['table' => 'item']);
 
         $this->assertSame(
-            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item' => 'Sue'],
+            ['id' => 3, 'name' => 'Smith', 'parent_item_id' => 2, 'parent_item_name' => 'Sue'],
             $m->load(3)->get()
         );
     }
@@ -220,12 +220,12 @@ class RandomTest extends Sql\TestCase
         $m = new Model_Item3($this->db, ['table' => 'item']);
 
         $this->assertEquals(
-            ['id' => '2', 'name' => 'Sue', 'parent_item_id' => 1, 'parent_item' => 'John', 'age' => '20', 'child_age' => 24],
+            ['id' => '2', 'name' => 'Sue', 'parent_item_id' => 1, 'parent_item_name' => 'John', 'age' => '20', 'child_age' => 24],
             $m->load(2)->get()
         );
 
         $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->getCount());
-        $this->assertSame('John', $m->load(2)->ref('parent_item_id', ['table_alias' => 'pp'])->get('name'));
+        $this->assertSame('John', $m->load(2)->ref('parent_item', ['table_alias' => 'pp'])->get('name'));
     }
 
     public function testUpdateCondition(): void
@@ -307,7 +307,7 @@ class RandomTest extends Sql\TestCase
         $m->set('name', 'john');
         $m->save();
 
-        $m = $m->getEntitySet()->load(3);
+        $m = $m->load(3);
         $this->assertSame('rec #3', $m->get('name'));
 
         $m->delete();
@@ -318,8 +318,8 @@ class RandomTest extends Sql\TestCase
         $m = new Model_Item($this->db);
 
         $this->expectException(Exception::class);
-        $m->hasOne('foo', ['model' => [Model_Item::class]])
-            ->addTitle(); // field foo already exists, so we can't add title with same name
+        $m->hasOne('foo', ['theirModel' => [Model_Item::class], 'ourKey' => 'foo'])
+            ->addTitle(['key' => 'foo']); // field foo already exists, so we can't add title with same name
     }
 
     // @todo: activate when morphing of seeds to more specific class tested
@@ -381,7 +381,7 @@ class RandomTest extends Sql\TestCase
         $this->assertEquals(1, $mm->getTitle()); // returns parent_item_id value
 
         // set custom titleKey as titleKey from linked model
-        $mm->titleKey = 'parent_item';
+        $mm->titleKey = 'parent_item_name';
         $this->assertSame('John', $mm->getTitle()); // returns parent record titleKey
 
         // no titleKey set - return id value
@@ -393,9 +393,6 @@ class RandomTest extends Sql\TestCase
         $m->titleKey = 'my_name';
         $mm = $m->load(2);
         $this->assertEquals(2, $mm->getTitle()); // loaded returns id value
-
-        $this->expectException(Exception::class);
-        $mm->getTitles();
     }
 
     /**
@@ -511,13 +508,13 @@ class RandomTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'db1.user']);
         $m->addField('name');
 
-        $d->hasOne('user_id', ['model' => $m])->addTitle();
-        $m->hasMany('Documents', ['model' => $d]);
+        $d->hasOne('user', ['theirModel' => $m])->addTitle();
+        $m->withMany('Documents', ['theirModel' => $d]);
 
-        $d->addCondition('user', 'Sarah');
+        $d->addCondition('user_name', 'Sarah');
 
         $this->assertSameSql(
-            'select "id","name","user_id",(select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a',
+            'select "id","name","user_id",(select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") "user_name" from "db2"."doc" where (select "name" from "db1"."user" where "id" = "db2"."doc"."user_id") = :a',
             $d->toQuery()->select()->render()
         );
     }

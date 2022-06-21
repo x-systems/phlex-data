@@ -22,6 +22,6 @@ class Simple extends Model
         $this->addField('x', ['type' => 'string', 'required' => true]);
 
         $this->addField($this->key()->refId, ['type' => 'integer']);
-        $this->hasOne($this->key()->ref, ['model' => [Standard::class], 'ourKey' => $this->key()->refId]);
+        $this->hasOne($this->key()->ref, ['theirModel' => [Standard::class], 'ourKey' => $this->key()->refId]);
     }
 }

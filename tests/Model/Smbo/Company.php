@@ -25,7 +25,7 @@ class Company extends Model
         $j_company->addFields([
             ['business_start', 'type' => 'date'],
             ['director_name'],
-            ['vat_calculation_type', 'enum' => ['cash', 'invoice']],
+            ['vat_calculation_type', 'type' => ['enum', 'values' => ['cash', 'invoice']]],
         ]);
 
         $this->addFields([

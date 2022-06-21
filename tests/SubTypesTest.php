@@ -17,16 +17,16 @@ class StAccount extends Model
 
         $this->addField('name');
 
-        $this->hasMany('Transactions', ['model' => [StGenericTransaction::class]])
+        $this->withMany('Transactions', ['theirModel' => [StGenericTransaction::class]])
             ->addField('balance', ['aggregate' => 'sum', 'field' => 'amount']);
 
-        $this->hasMany('Transactions:Deposit', ['model' => [StTransaction_Deposit::class]]);
-        $this->hasMany('Transactions:Withdrawal', ['model' => [StTransaction_Withdrawal::class]]);
-        $this->hasMany('Transactions:Ob', ['model' => [StTransaction_Ob::class]])
+        $this->withMany('Transactions:Deposit', ['theirModel' => [StTransaction_Deposit::class]]);
+        $this->withMany('Transactions:Withdrawal', ['theirModel' => [StTransaction_Withdrawal::class]]);
+        $this->withMany('Transactions:Ob', ['theirModel' => [StTransaction_Ob::class]])
             ->addField('opening_balance', ['aggregate' => 'sum', 'field' => 'amount']);
 
-        $this->hasMany('Transactions:TransferOut', ['model' => [StTransaction_TransferOut::class]]);
-        $this->hasMany('Transactions:TransferIn', ['model' => [StTransaction_TransferIn::class]]);
+        $this->withMany('Transactions:TransferOut', ['theirModel' => [StTransaction_TransferOut::class]]);
+        $this->withMany('Transactions:TransferIn', ['theirModel' => [StTransaction_TransferIn::class]]);
     }
 
     /**
@@ -39,7 +39,7 @@ class StAccount extends Model
         $m->save(['name' => $name]);
 
         if ($amount) {
-            $m->ref('Transactions:Ob')->createEntity()->save(['amount' => $amount]);
+            $m->ref('Transactions:Ob')->save(['amount' => $amount]);
         }
 
         return $m;
@@ -47,12 +47,12 @@ class StAccount extends Model
 
     public function deposit(float $amount): Model
     {
-        return $this->ref('Transactions:Deposit')->createEntity()->save(['amount' => $amount]);
+        return $this->ref('Transactions:Deposit')->save(['amount' => $amount]);
     }
 
     public function withdraw(float $amount): Model
     {
-        return $this->ref('Transactions:Withdrawal')->createEntity()->save(['amount' => $amount]);
+        return $this->ref('Transactions:Withdrawal')->save(['amount' => $amount]);
     }
 
     /**
@@ -60,8 +60,8 @@ class StAccount extends Model
      */
     public function transferTo(self $account, float $amount): array
     {
-        $out = $this->ref('Transactions:TransferOut')->createEntity()->save(['amount' => $amount]);
-        $in = $account->ref('Transactions:TransferIn')->createEntity()->save(['amount' => $amount, 'link_id' => $out->getId()]);
+        $out = $this->ref('Transactions:TransferOut')->save(['amount' => $amount]);
+        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->getId()]);
         $out->set('link_id', $in->getId());
         $out->save();
 
@@ -79,7 +79,7 @@ class StGenericTransaction extends Model
     {
         parent::doInitialize();
 
-        $this->hasOne('account_id', ['model' => [StAccount::class]]);
+        $this->hasOne('account', ['theirModel' => [StAccount::class]]);
         $this->addField('type', ['type' => ['enum', 'values' => ['Ob', 'Deposit', 'Withdrawal', 'TransferOut', 'TransferIn']]]);
 
         if ($this->type) {
@@ -126,9 +126,9 @@ class StTransaction_TransferOut extends StGenericTransaction
     protected function doInitialize(): void
     {
         parent::doInitialize();
-        $this->hasOne('link_id', ['model' => [StTransaction_TransferIn::class]]);
+        $this->hasOne('link', ['theirModel' => [StTransaction_TransferIn::class]]);
 
-        //$this->join('transaction','linked_transaction');
+        // $this->join('transaction','linked_transaction');
     }
 }
 
@@ -139,7 +139,7 @@ class StTransaction_TransferIn extends StGenericTransaction
     protected function doInitialize(): void
     {
         parent::doInitialize();
-        $this->hasOne('link_id', ['model' => [StTransaction_TransferOut::class]]);
+        $this->hasOne('link', ['theirModel' => [StTransaction_TransferOut::class]]);
     }
 }
 

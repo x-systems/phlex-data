@@ -7,12 +7,22 @@ namespace Phlex\Data\Persistence\Sql;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
+use Phlex\Data\Persistence\Query;
 
 /**
  * @property Persistence\Sql\Join $join
  */
 class Field extends Model\Field implements Expressionable
 {
+    public function compare($value, $value2 = null): bool
+    {
+        if ($value instanceof Expressionable) {
+            return false;
+        }
+
+        return parent::compare(...func_get_args());
+    }
+
     /**
      * SQL fields are allowed to have expressions inside of them.
      *
@@ -22,7 +32,7 @@ class Field extends Model\Field implements Expressionable
      */
     public function normalize($value)
     {
-        if ($value instanceof Expression || $value instanceof Expressionable) {
+        if ($value instanceof Expressionable) {
             return $value;
         }
 
@@ -31,15 +41,7 @@ class Field extends Model\Field implements Expressionable
 
     public function getAlias(): ?string
     {
-        return $this->useAlias() ? $this->getCodec()->getKey() : null;
-    }
-
-    /**
-     * Should this field use alias?
-     */
-    public function useAlias(): bool
-    {
-        return isset($this->actual);
+        return $this->getOption(Query::OPTION_FIELD_ALIAS);
     }
 
     /**
@@ -57,14 +59,14 @@ class Field extends Model\Field implements Expressionable
 
         $persistenceName = $this->getCodec($model->persistence)->getKey();
 
-        if ($model->getOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX)) {
+        if ($model->getOption(Persistence\Sql\Query::OPTION_FIELD_PREFIX)) {
             $template = '{{}}.{}';
             $args = [
                 $this->getTablePrefix(),
                 $persistenceName,
             ];
         } else {
-            // references set flag OPTION_USE_TABLE_PREFIX, so no need to check them here
+            // references set flag Persistence\Sql\Query::OPTION_FIELD_PREFIX, so no need to check them here
             $template = '{}';
             $args = [
                 $persistenceName,
@@ -77,7 +79,7 @@ class Field extends Model\Field implements Expressionable
         }
 
         // Otherwise call method from expression
-        return $model->persistence->expr($template, $args);
+        return new Expression($template, $args);
     }
 
     protected function getTablePrefix(): string

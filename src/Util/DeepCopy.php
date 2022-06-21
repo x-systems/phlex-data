@@ -122,7 +122,7 @@ class DeepCopy
      *          unset($data['first_name'], $data['last_name']);
      *          return $data;
      *      }],
-     *      'Invoices' => ['Lines'=>function($data){ // for nested Client->Invoices->Lines hasMany entity
+     *      'Invoices' => ['Lines'=>function($data){ // for nested Client->Invoices->Lines withMany entity
      *              $data['exchanged_amount'] = $data['amount'] * getExRate($data['date'], $data['currency']);
      *              return $data;
      *          }]
@@ -160,7 +160,7 @@ class DeepCopy
     public function copy(): Model
     {
         return $this->destination->atomic(function () {
-            return $this->_copy(
+            return $this->doCopy(
                 $this->source,
                 $this->destination,
                 $this->references,
@@ -178,7 +178,7 @@ class DeepCopy
      *
      * @return Model Destination model
      */
-    protected function _copy(Model $source, Model $destination, array $references, array $exclusions, array $transforms): Model
+    protected function doCopy(Model $source, Model $destination, array $references, array $exclusions, array $transforms): Model
     {
         try {
             // Perhaps source was already copied, then simply load destination model and return
@@ -220,27 +220,29 @@ class DeepCopy
             $destination->hook(self::HOOK_AFTER_COPY, [$source]);
 
             // Look for hasOne references that needs to be mapped. Make sure records can be mapped, or copy them
-            foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
-                $this->debug("Considering {$ref_key}");
+            foreach ($this->extractKeys($references) as $refLink => $ref_val) {
+                $this->debug("Considering {$refLink}");
 
-                if ($source->hasRef($ref_key) && ($ref = $source->getRef($ref_key)) instanceof Model\Reference\HasOne) {
-                    $this->debug("Proceeding with {$ref_key}");
+                if ($source->hasReference($refLink) && ($ref = $source->getReference($refLink)) instanceof Model\Field\Reference\HasOne) {
+                    $this->debug("Proceeding with {$refLink}");
 
                     // load destination model through $source
-                    $source_table = $ref->refModel()->table;
+                    $source_table = $ref->createTheirModel()->table;
+                    $ourKey = $ref->getOurKey();
+                    $sourceFieldValue = $source->get($ourKey);
 
                     if (
                         isset($this->mapping[$source_table])
-                        && array_key_exists($source->get($ref_key), $this->mapping[$source_table])
+                        && array_key_exists($sourceFieldValue, $this->mapping[$source_table])
                     ) {
                         // no need to deep copy, simply alter ID
-                        $destination->set($ref_key, $this->mapping[$source_table][$source->get($ref_key)]);
-                        $this->debug(' already copied ' . $source->get($ref_key) . ' as ' . $destination->get($ref_key));
+                        $destination->set($ourKey, $this->mapping[$source_table][$sourceFieldValue]);
+                        $this->debug(' already copied ' . $sourceFieldValue . ' as ' . $destination->get($ourKey));
                     } else {
                         // hasOne points to null!
-                        $this->debug('Value is ' . $source->get($ref_key));
-                        if (!$source->get($ref_key)) {
-                            $destination->set($ref_key, $source->get($ref_key));
+                        $this->debug('Value is ' . $sourceFieldValue);
+                        if (!$sourceFieldValue) {
+                            $destination->set($ourKey, $sourceFieldValue);
 
                             continue;
                         }
@@ -248,20 +250,20 @@ class DeepCopy
                         // pointing to non-existent record. Would need to copy
                         try {
                             $destination->set(
-                                $ref_key,
-                                $this->_copy(
-                                    $source->ref($ref_key),
-                                    $destination->refModel($ref_key),
+                                $ourKey,
+                                $this->doCopy(
+                                    $source->ref($refLink),
+                                    $destination->getReference($refLink)->createTheirModel(),
                                     $ref_val,
-                                    $exclusions[$ref_key] ?? [],
-                                    $transforms[$ref_key] ?? []
+                                    $exclusions[$refLink] ?? [],
+                                    $transforms[$refLink] ?? []
                                 )->getId()
                             );
-                            $this->debug(' ... mapped into ' . $destination->get($ref_key));
+                            $this->debug(' ... mapped into ' . $destination->get($ourKey));
                         } catch (DeepCopyException $e) {
-                            $this->debug('escalating a problem from ' . $ref_key);
+                            $this->debug('escalating a problem from ' . $refLink);
 
-                            throw $e->addDepth($ref_key);
+                            throw $e->addDepth($refLink);
                         }
                     }
                 }
@@ -274,18 +276,18 @@ class DeepCopy
             $this->mapping[$source->table][$source->getId()] = $destination->getId();
             $this->debug(' .. copied ' . get_class($source) . ' ' . $source->getId() . ' ' . $destination->getId());
 
-            // Next look for hasMany relationships and copy those too
+            // Next look for withMany relationships and copy those too
 
-            foreach ($this->extractKeys($references) as $ref_key => $ref_val) {
-                if ($source->hasRef($ref_key) && ($ref = $source->getRef($ref_key)) instanceof Model\Reference\HasMany) {
+            foreach ($this->extractKeys($references) as $refLink => $ref_val) {
+                if ($source->hasReference($refLink) && ($ref = $source->getReference($refLink)) instanceof Model\Field\Reference\WithMany) {
                     // No mapping, will always copy
-                    foreach ($source->ref($ref_key) as $ref_model) {
-                        $this->_copy(
+                    foreach ($source->ref($refLink) as $ref_model) {
+                        $this->doCopy(
                             $ref_model,
-                            $destination->ref($ref_key),
+                            $destination->ref($refLink),
                             $ref_val,
-                            $exclusions[$ref_key] ?? [],
-                            $transforms[$ref_key] ?? []
+                            $exclusions[$refLink] ?? [],
+                            $transforms[$refLink] ?? []
                         );
                     }
                 }

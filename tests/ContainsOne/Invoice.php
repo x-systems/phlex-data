@@ -9,8 +9,9 @@ use Phlex\Data\Model;
 /**
  * Invoice model.
  *
- * @property string  $ref_no @Phlex\Field()
- * @property Address $addr   @Phlex\RefOne()
+ * @property string  $ref_no    @Phlex\Field()
+ * @property Address $addr      @Phlex\RefOne()
+ * @property array   $addr_data @Phlex\Field()
  */
 class Invoice extends Model
 {
@@ -25,6 +26,6 @@ class Invoice extends Model
         $this->addField($this->key()->ref_no, ['required' => true]);
 
         // will contain one Address
-        $this->containsOne($this->key()->addr, ['model' => [Address::class]]);
+        $this->containsOne($this->key()->addr, ['theirModel' => [Address::class]]);
     }
 }

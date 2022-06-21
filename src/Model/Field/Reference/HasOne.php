@@ -2,18 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Model\Reference;
+namespace Phlex\Data\Model\Field\Reference;
 
 use Phlex\Data\Model;
-use Phlex\Data\Persistence;
 
-/**
- * Reference\HasOne class.
- */
-class HasOne extends Model\Reference
+class HasOne extends Model\Field\Reference
 {
-    use Model\JoinLinkTrait;
-
     /**
      * Field type.
      *
@@ -108,7 +102,7 @@ class HasOne extends Model\Reference
      */
     public $serialize;
 
-    public $options;
+    public $options = [];
 
     /**
      * Reference\HasOne will also add a field corresponding
@@ -119,7 +113,7 @@ class HasOne extends Model\Reference
         parent::doInitialize();
 
         if (!$this->ourKey) {
-            $this->ourKey = $this->link;
+            $this->ourKey = $this->getKey() . '_id';
         }
 
         $ourModel = $this->getOurModel();
@@ -127,7 +121,6 @@ class HasOne extends Model\Reference
         if (!$ourModel->hasField($this->ourKey)) {
             $ourModel->addField($this->ourKey, [
                 'type' => $this->type,
-                'referenceLink' => $this->link,
                 'system' => $this->system,
                 'joinName' => $this->joinName,
                 'default' => $this->default,
@@ -144,22 +137,12 @@ class HasOne extends Model\Reference
     }
 
     /**
-     * Returns our field or id field.
-     */
-    protected function referenceOurValue(): Model\Field
-    {
-        $this->getOurModel()->setOption(Persistence\Sql::OPTION_USE_TABLE_PREFIX);
-
-        return $this->getOurField();
-    }
-
-    /**
      * If our model is loaded, then return their model with respective record loaded.
      *
      * If our model is not loaded, then return their model with condition set.
      * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
      */
-    public function ref(array $defaults = []): Model
+    public function getTheirEntity(array $defaults = []): Model
     {
         $theirModel = $this->createTheirModel($defaults);
 
@@ -168,12 +151,12 @@ class HasOne extends Model\Reference
             $this->getOurField()->setNull();
         });
 
-        if ($this->getOurModel()->isEntity()) {
+        if ($this->getOurModel()->isLoaded()) {
             if ($ourValue = $this->getOurFieldValue()) {
                 // if our model is loaded, then try to load referenced model
                 $theirModel = $theirModel->tryLoadBy($this->getTheirKey($theirModel), $ourValue);
             } else {
-                $theirModel = $theirModel->createEntity();
+                $theirModel->toEntity();
             }
         }
 
@@ -191,5 +174,17 @@ class HasOne extends Model\Reference
         });
 
         return $theirModel;
+    }
+
+    public function set($value): self
+    {
+        // @todo GH check that class is same as theirModel class
+        if ($value instanceof Model) {
+            $value = $value->get($this->getTheirKey());
+        }
+
+        $this->getOwner()->getEntry()->set($this->getOurKey(), $value);
+
+        return $this;
     }
 }

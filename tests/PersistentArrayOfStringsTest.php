@@ -49,7 +49,7 @@ class PersistentArrayOfStringsTest extends \Phlex\Core\PHPUnit\TestCase
             'array' => ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
             'object' => (object) ['foo' => 'bar', 'int' => 123, 'rows' => ['a', 'b']],
         ]);
-        $mm->saveAndUnload();
+        $mm->saveWithoutReloading();
 
         // no typecasting option set in export()
         $data = $m->export(null, null, false);

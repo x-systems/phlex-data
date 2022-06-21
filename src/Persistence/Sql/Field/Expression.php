@@ -6,6 +6,7 @@ namespace Phlex\Data\Persistence\Sql\Field;
 
 use Phlex\Core\InitializerTrait;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence\Query;
 use Phlex\Data\Persistence\Sql;
 
 class Expression extends Sql\Field
@@ -61,19 +62,15 @@ class Expression extends Sql\Field
 
     /**
      * Possibly that user will attempt to insert values here. If that is the case, then
-     * we would need to inject it into related hasMany relationship.
+     * we would need to inject it into related WithMany relationship.
      */
     public function afterSave()
     {
     }
 
-    /**
-     * Should this field use alias?
-     * Expression fields always need alias.
-     */
-    public function useAlias(): bool
+    public function getAlias(): ?string
     {
-        return true;
+        return $this->getOption(Query::OPTION_FIELD_ALIAS, $this->getCodec()->getKey());
     }
 
     /**

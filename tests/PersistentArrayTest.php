@@ -7,8 +7,8 @@ namespace Phlex\Data\Tests;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
-use Phlex\Data\Tests\Model\Female as Female;
-use Phlex\Data\Tests\Model\Male as Male;
+use Phlex\Data\Tests\Model\Female;
+use Phlex\Data\Tests\Model\Male;
 
 class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
 {
@@ -63,8 +63,8 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $m = $m->load(1);
         $this->assertTrue($m->isLoaded());
         $m->set('gender', 'F');
-        $m->saveAndUnload();
-        $this->assertFalse($m->isLoaded());
+        $m->saveWithoutReloading();
+        $this->assertTrue($m->isLoaded());
 
         $m = new Female($p, ['table' => 'user']);
         $m = $m->load(1);
@@ -798,19 +798,19 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $country->table = 'country';
         $country->addField('name');
 
-        $user->hasOne('country_id', ['model' => $country]);
+        $user->hasOne('country', ['theirModel' => $country]);
 
         $uu = $user->load(1);
-        $this->assertSame('Latvia', $uu->ref('country_id')->get('name'));
+        $this->assertSame('Latvia', $uu->ref('country')->get('name'));
 
         $uu = $user->load(2);
-        $this->assertSame('UK', $uu->ref('country_id')->get('name'));
+        $this->assertSame('UK', $uu->ref('country')->get('name'));
     }
 
     /**
-     * Test Model->hasMany().
+     * Test Model->withMany().
      */
-    public function testHasMany(): void
+    public function testWithMany(): void
     {
         $p = new Persistence\Array_([
             'user' => [
@@ -832,8 +832,8 @@ class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $user->addField('name');
         $user->addField('surname');
 
-        $country->hasMany('Users', ['model' => $user]);
-        $user->hasOne('country_id', ['model' => $country]);
+        $country->withMany('Users', ['theirModel' => $user]);
+        $user->hasOne('country', ['theirModel' => $country]);
 
         $cc = $country->load(1);
         $this->assertSame(2, $cc->ref('Users')->getCount());

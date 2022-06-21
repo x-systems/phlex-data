@@ -134,9 +134,7 @@ class Query extends Persistence\Query
         // @todo: kept for BC, inconstent results with SQL count!
         $this->initLimit();
 
-        $alias ??= 'count';
-
-        $this->iterator = new \ArrayIterator([[$alias => iterator_count($this->iterator)]]);
+        $this->iterator = new \ArrayIterator([[$alias ?? 'count' => iterator_count($this->iterator)]]);
     }
 
     /**
@@ -208,7 +206,7 @@ class Query extends Persistence\Query
      */
     protected function initAggregate(string $functionName, $field, string $alias = null, bool $coalesce = false): void
     {
-        $field = is_string($field) ? $field : $field->elementId;
+        $field = is_string($field) ? $field : $field->getKey();
 
         $result = 0;
         $column = array_column($this->getRows(), $field);
@@ -251,11 +249,10 @@ class Query extends Persistence\Query
             // https://bugs.php.net/bug.php?id=80125
             // and related
             // https://bugs.php.net/bug.php?id=65387
-            // - PHP 7.3 - impossible to fix easily
             // - PHP 7.4 - fix it using WeakReference
             // - PHP 8.0 - fixed in php, see:
             // https://github.com/php/php-src/commit/afab9eb48c883766b7870f76f2e2b0a4bd575786
-            // remove the if below once PHP 7.3 and 7.4 is no longer supported
+            // remove the if below once PHP 7.4 is no longer supported
             $filterFx = fn ($row) => $this->match($row, $this->scope);
             if (\PHP_MAJOR_VERSION === 7 && \PHP_MINOR_VERSION === 4) {
                 $filterFxWeakRef = \WeakReference::create($filterFx);

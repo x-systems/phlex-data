@@ -48,9 +48,7 @@ class Selectable extends Sql\Codec
                 return $value;
             }
 
-            $value = array_filter(explode($this->separator, $value));
-
-            return array_combine($value, $value);
+            return array_values(array_filter(explode($this->separator, $value)));
         }
 
         return $value;
@@ -61,11 +59,17 @@ class Selectable extends Sql\Codec
         if ($this->storesMultipleValues()) {
             $expr = Sql\Expression::or();
 
-            foreach ((array) $value as $v) {
-                $expr->where($this->field, 'like', '%' . $this->doEncode($v) . '%');
+            if ($value instanceof Sql\Expressionable) {
+                $value = new Sql\Expression\Concat('%' . $this->separator, $value, $this->separator . '%');
+
+                $expr->where($this->field, 'like', $value);
+            } else {
+                foreach ((array) $value as $v) {
+                    $expr->where($this->field, 'like', '%' . $this->doEncode($v) . '%');
+                }
             }
 
-            return [$expr];
+            return [$expr, null, null];
         }
 
         return parent::getQueryArguments($operator, $value);

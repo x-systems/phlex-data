@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Phlex\Data\Model\Reference;
+namespace Phlex\Data\Model\Field\Reference;
 
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
@@ -10,7 +10,7 @@ use Phlex\Data\Persistence;
 /**
  * ContainsOne reference.
  */
-class ContainsOne extends Model\Reference
+class ContainsOne extends Model\Field\Reference
 {
     /**
      * Field type.
@@ -52,7 +52,7 @@ class ContainsOne extends Model\Reference
         parent::doInitialize();
 
         if (!$this->ourKey) {
-            $this->ourKey = $this->link;
+            $this->ourKey = $this->getKey() . '_data';
         }
 
         $ourModel = $this->getOurModel();
@@ -61,7 +61,6 @@ class ContainsOne extends Model\Reference
         if (!$ourModel->hasElement($ourKey)) {
             $ourModel->addField($ourKey, [
                 'type' => $this->type,
-                'referenceLink' => $this->link,
                 'system' => $this->system,
                 'caption' => $this->caption, // it's ref models caption, but we can use it here for field too
                 'ui' => array_merge([
@@ -75,7 +74,7 @@ class ContainsOne extends Model\Reference
     protected function getDefaultPersistence(Model $theirModel)
     {
         $persistence = new Persistence\Array_([
-            $this->table_alias => $this->getOurModel()->isEntity() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],
+            $this->table_alias => $this->getOurModel()->isLoaded() && $this->getOurFieldValue() !== null ? [1 => $this->getOurFieldValue()] : [],
         ]);
 
         return $persistence->setCodecs($this->getPersistence()->getCodecs());
@@ -84,12 +83,9 @@ class ContainsOne extends Model\Reference
     /**
      * Returns referenced model with loaded data record.
      */
-    public function ref(array $defaults = []): Model
+    public function getTheirEntity(array $defaults = []): Model
     {
-        $ourModel = $this->getOurModel();
-
         $theirModel = $this->createTheirModel(array_merge($defaults, [
-            'contained_in_root_model' => $ourModel->contained_in_root_model ?: $ourModel,
             'table' => $this->table_alias,
         ]));
 
@@ -103,5 +99,12 @@ class ContainsOne extends Model\Reference
 
         // try to load any (actually only one possible) record
         return $theirModel->tryLoadAny();
+    }
+
+    public function createTheirModel(array $defaults = []): Model
+    {
+        $ourModel = $this->getOurModel();
+
+        return parent::createTheirModel($defaults)->setOption(self::OPTION_ROOT_MODEL, $ourModel->getOption(self::OPTION_ROOT_MODEL, $ourModel));
     }
 }

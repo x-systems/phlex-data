@@ -6,7 +6,7 @@ namespace Phlex\Data\Tests\Sql\Expression\WithDb;
 
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Phlex\Core\PHPUnit;
-use Phlex\Data\Persistence;
+use Phlex\Data\Persistence\Sql;
 
 class ConnectionTest extends PHPUnit\TestCase
 {
@@ -15,8 +15,10 @@ class ConnectionTest extends PHPUnit\TestCase
      */
     public function testServerConnection()
     {
-        $c = Persistence\Sql::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
+        $c = Sql::connect($GLOBALS['DB_DSN'], $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
 
-        return (string) $c->expr('SELECT 1' . ($c->connection->getDatabasePlatform() instanceof OraclePlatform ? ' FROM DUAL' : ''))->execute()->fetchOne();
+        $expression = new Sql\Expression('SELECT 1' . ($c->connection->getDatabasePlatform() instanceof OraclePlatform ? ' FROM DUAL' : ''));
+
+        return (string) $c->execute($expression)->fetchOne();
     }
 }

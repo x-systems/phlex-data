@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Model;
 
 use Phlex\Core\Factory;
+use Phlex\Core\Utils;
 use Phlex\Data\Model;
 
 trait UserActionsTrait
@@ -35,7 +36,7 @@ trait UserActionsTrait
         }
 
         if (!isset($defaults['caption'])) {
-            $defaults['caption'] = $this->readableCaption($name);
+            $defaults['caption'] = Utils::getReadableCaption($name);
         }
 
         /** @var Model\UserAction $action */

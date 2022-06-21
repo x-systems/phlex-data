@@ -32,7 +32,7 @@ class LCountry extends Model
 
         $this->addField('is_eu', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasMany('Users', ['model' => [LUser::class]])
+        $this->withMany('Users', ['theirModel' => [LUser::class]])
             ->addField('user_names', ['field' => 'name', 'concat' => ',']);
     }
 }
@@ -66,11 +66,11 @@ class LUser extends Model
         $this->addField('name');
         $this->addField('is_vip', ['type' => 'boolean', 'default' => false]);
 
-        $this->hasOne('country_id', ['model' => [LCountry::class]])
+        $this->hasOne('country', ['theirModel' => [LCountry::class]])
             ->withTitle()
             ->addFields(['country_code' => 'code', 'is_eu']);
 
-        $this->hasMany('Friends', ['model' => [LFriend::class]])
+        $this->withMany('Friends', ['theirModel' => [LFriend::class]])
             ->addField('friend_names', ['field' => 'friend_name', 'concat' => ',']);
     }
 }
@@ -97,9 +97,9 @@ class LFriend extends Model
     {
         parent::doInitialize();
 
-        $this->hasOne('user_id', ['model' => [LUser::class]])
+        $this->hasOne('user', ['theirModel' => [LUser::class]])
             ->addField('my_name', 'name');
-        $this->hasOne('friend_id', ['model' => [LUser::class]])
+        $this->hasOne('friend', ['theirModel' => [LUser::class]])
             ->addField('friend_name', 'name');
 
         // add or remove reverse friendships
@@ -159,10 +159,10 @@ class LookupSqlTest extends Sql\TestCase
         $results = [];
 
         // should be OK, will set country name, rest of fields will be null
-        $c->createEntity()->saveAndUnload(['name' => 'Canada']);
+        $c->saveWithoutReloading(['name' => 'Canada']);
 
         // adds another country, but with more fields
-        $c->createEntity()->saveAndUnload(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
+        $c->saveWithoutReloading(['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true]);
 
         // setting field prior will affect save()
         $cc = $c->createEntity();
@@ -231,7 +231,7 @@ class LookupSqlTest extends Sql\TestCase
     {
         $c = new LCountry($this->db);
 
-        // Specifying hasMany here will perform input
+        // Specifying withMany here will perform input
         $c->insert(['name' => 'Canada', 'Users' => [['name' => 'Alain'], ['name' => 'Duncan', 'is_vip' => true]]]);
 
         // Both lines will work quite similar
@@ -285,7 +285,7 @@ class LookupSqlTest extends Sql\TestCase
     {
         $c = new LCountry($this->db);
 
-        // Specifying hasMany here will perform input
+        // Specifying withMany here will perform input
         $c->import([
             ['name' => 'Canada', 'code' => 'CA'],
             ['name' => 'Latvia', 'code' => 'LV', 'is_eu' => true],
@@ -299,7 +299,7 @@ class LookupSqlTest extends Sql\TestCase
         $u->import([
             ['name' => 'Alain', 'country_code' => 'CA'],
             ['name' => 'Imants', 'country_code' => 'LV'],
-            //'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
+            // 'name' => 'Romans', 'country_code' => 'UK'],  // does not exist
         ]);
 
         $this->assertSame([
@@ -360,7 +360,7 @@ class LookupSqlTest extends Sql\TestCase
     {
         $c = new LCountry($this->db);
 
-        // Specifying hasMany here will perform input
+        // Specifying withMany here will perform input
         $c->insert(['Canada', 'Users' => ['Alain', ['Duncan', 'is_vip' => true]]]);
 
         // Inserting Users into Latvia can also specify Friends. In this case Friend name will be looked up

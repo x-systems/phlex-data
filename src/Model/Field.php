@@ -6,8 +6,8 @@ namespace Phlex\Data\Model;
 
 use Phlex\Core\InjectableTrait;
 use Phlex\Core\OptionsTrait;
-use Phlex\Core\ReadableCaptionTrait;
 use Phlex\Core\TrackableTrait;
+use Phlex\Core\Utils;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\MutatorInterface;
@@ -22,7 +22,6 @@ class Field
     use JoinLinkTrait;
     use Model\ElementTrait;
     use OptionsTrait;
-    use ReadableCaptionTrait;
     use TrackableTrait;
 
     public const PERSIST_NONE = 0;
@@ -46,14 +45,6 @@ class Field
      * @var mixed
      */
     public $default;
-
-    /**
-     * If value of this field is defined by a model, this property
-     * will contain reference link.
-     *
-     * @var string|null
-     */
-    protected $referenceLink;
 
     /**
      * Actual field name.
@@ -194,7 +185,7 @@ class Field
      */
     public function get()
     {
-        return $this->getOwner()->get($this->getKey());
+        return $this->getOwner()->getEntry()->get($this->getKey(), $this->default);
     }
 
     /**
@@ -204,7 +195,33 @@ class Field
      */
     public function set($value): self
     {
-        $this->getOwner()->set($this->getKey(), $value);
+        $key = $this->getKey();
+
+        try {
+            $value = $this->normalize($value);
+        } catch (Exception $e) {
+            throw $e
+                ->addMoreInfo('key', $key)
+                ->addMoreInfo('value', $value)
+                ->addMoreInfo('field', $this);
+        }
+
+        $entry = $this->getOwner()->getEntry();
+
+        // do nothing when value has not changed
+        $currentValue = $entry->get($key, $this->default);
+        if ($this->compare($value, $currentValue)) {
+            return $this;
+        }
+
+        $this->assertSetAccess();
+
+        // if value is same as loaded remove the dirty value, otherwise set
+        if ($this->compare($value, $entry->getLoaded($key, $currentValue))) {
+            $entry->reset($key, $currentValue);
+        } else {
+            $entry->set($key, $value);
+        }
 
         return $this;
     }
@@ -237,6 +254,7 @@ class Field
         $model->primaryKey = $this->getKey();
         $this->required = true;
         $this->system = true;
+        $this->access = self::ACCESS_GET;
 
         return $this;
     }
@@ -262,9 +280,9 @@ class Field
      */
     public function compare($value, $value2 = null): bool
     {
-        if (func_num_args() === 1) {
-            $value2 = $this->get();
-        }
+//         if (func_num_args() === 1) {
+//             $value2 = $this->get();
+//         }
 
         // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
         // compare if typecasted values are the same using strict comparison (===) or nor
@@ -295,11 +313,9 @@ class Field
         return $typecastFunc($value) === $typecastFunc($value2);
     }
 
-    public function getReference(): ?Reference
+    public function getQueryArguments($operator, $value): array
     {
-        return $this->referenceLink !== null
-            ? $this->getOwner()->getRef($this->referenceLink)
-            : null;
+        return $this->getCodec()->getQueryArguments($operator, $value);
     }
 
     public function getCodec(MutatorInterface $mutator = null): Field\Codec
@@ -359,7 +375,7 @@ class Field
      */
     public function getCaption(): string
     {
-        return $this->caption ?? $this->ui['caption'] ?? $this->readableCaption(preg_replace('~^atk_fp_\w+?__~', '', $this->getKey()));
+        return $this->caption ?? $this->ui['caption'] ?? Utils::getReadableCaption(preg_replace('~^atk_fp_\w+?__~', '', $this->getKey()));
     }
 
     // }}}
@@ -458,6 +474,33 @@ class Field
     public function checkPersisting(int $action): bool
     {
         return (bool) ($this->persist & $action);
+    }
+
+    public function getConditionValueTitle($value): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Set that field value should be unique.
+     *
+     * @return $this
+     */
+    public function setUnique()
+    {
+        $this->onHookShortToOwner(Model::HOOK_BEFORE_SAVE, function () {
+            $owner = $this->getOwner();
+            $key = $this->getKey();
+            if ($owner->isDirty($key)) {
+                $model = $owner->newInstance()->addCondition($owner->primaryKey, '!=', $owner->getId());
+
+                if ($model->tryLoadBy($key, $owner->get($key))->isLoaded()) {
+                    throw new Field\ValidationException([$key => ucwords($key) . ' with such value already exists'], $owner);
+                }
+            }
+        });
+
+        return $this;
     }
 
     // {{{ Debug Methods

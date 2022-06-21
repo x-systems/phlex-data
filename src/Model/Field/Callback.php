@@ -30,9 +30,7 @@ class Callback extends Model\Field
         $this->ui['table']['sortable'] = false;
 
         $this->onHookShortToOwner(Model::HOOK_AFTER_LOAD, function () {
-            $model = $this->getOwner();
-
-            $model->getDataRef()[$this->getKey()] = ($this->expr)($model);
+            $this->getOwner()->getEntry()->set($this->getKey(), ($this->expr)($this->getOwner()));
         });
     }
 }

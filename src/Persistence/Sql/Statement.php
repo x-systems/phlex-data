@@ -77,7 +77,7 @@ class Statement extends Expression
      *  $q->field(['name', 'surname', 'address.line1']);
      *
      * You can pass first argument as Expression or Query
-     *  $q->field( $q->expr('2+2'), 'alias');   // must always use alias
+     *  $q->field( new Sql\Expression('2+2'), 'alias');   // must always use alias
      *
      * You can create new Statement for subqueries. Subqueries will be wrapped in
      * brackets.
@@ -86,11 +86,11 @@ class Statement extends Expression
      * Associative array will assume that "key" holds the field alias.
      * Value may be field name, Expression or Statement.
      *  $q->field(['alias' => 'name', 'alias2' => 'mother.surname']);
-     *  $q->field(['alias' => $q->expr(..), 'alias2' => (new Statement())->.. ]);
+     *  $q->field(['alias' => new Sql\Expression(..), 'alias2' => (new Statement())->.. ]);
      *
      * If you need to use funky name for the field (e.g, one containing
      * a dot or a space), you should wrap it into expression:
-     *  $q->field($q->expr('{}', ['fun...ky.field']), 'f');
+     *  $q->field(new Sql\Expression('{}', ['fun...ky.field']), 'f');
      *
      * @param mixed  $field Specifies field to select
      * @param string $alias Specify alias for this field
@@ -189,8 +189,7 @@ class Statement extends Expression
         // array of tables - recursively process each
         if (is_array($table)) {
             if ($alias !== null) {
-                throw (new Exception('You cannot use single alias with multiple tables'))
-                    ->addMoreInfo('alias', $alias);
+                return $this->table(new Expression\Union($table), $alias);
             }
 
             foreach ($table as $alias => $t) {
@@ -270,7 +269,7 @@ class Statement extends Expression
         return empty($this->args['table']) ? '' : 'from';
     }
 
-    /// }}}
+    // / }}}
 
     // {{{ with()
 
@@ -337,7 +336,7 @@ class Statement extends Expression
         ]);
     }
 
-    /// }}}
+    // / }}}
 
     // {{{ join()
 
@@ -488,9 +487,9 @@ class Statement extends Expression
      *  $q->where('id','>',1);
      *
      * You may use Expression as any part of the query.
-     *  $q->where($q->expr('a=b'));
-     *  $q->where('date>',$q->expr('now()'));
-     *  $q->where($q->expr('length(password)'),'>',5);
+     *  $q->where(new Sql\Expression('a=b'));
+     *  $q->where('date>', new Sql\Expression\Now());
+     *  $q->where(new Sql\Expression('length(password)'),'>',5);
      *
      * If you specify Query as an argument, it will be automatically
      * surrounded by brackets:
@@ -900,11 +899,11 @@ class Statement extends Expression
         $arr = [
             'R' => false,
             'mode' => $this->mode,
-            //'template'   => $this->template,
-            //'params'     => $this->params,
-            //'connection' => $this->connection,
-            //'main_table' => $this->main_table,
-            //'args'       => $this->args,
+            // 'template'   => $this->template,
+            // 'params'     => $this->params,
+            // 'connection' => $this->connection,
+            // 'main_table' => $this->main_table,
+            // 'args'       => $this->args,
         ];
 
         try {
@@ -943,17 +942,6 @@ class Statement extends Expression
         return $this;
     }
 
-    /**
-     * Returns Expression object for NOW() or CURRENT_TIMESTAMP() method.
-     */
-    public function exprNow(int $precision = null): Expression
-    {
-        return $this->expr(
-            'current_timestamp(' . ($precision !== null ? '[]' : '') . ')',
-            $precision !== null ? [$precision] : []
-        );
-    }
-
     public static function subquery(): self
     {
         return new self();
@@ -988,5 +976,5 @@ class Statement extends Expression
         }
     }
 
-    /// }}}
+    // / }}}
 }

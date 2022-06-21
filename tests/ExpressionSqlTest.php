@@ -173,7 +173,7 @@ class ExpressionSqlTest extends Sql\TestCase
         $mm->save(['a' => 3]);
         $this->assertEquals(5, $mm->get('sum'));
 
-        $this->assertEquals(9, $m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
+        $this->assertEquals(9, $m->save(['a' => 4, 'b' => 5])->get('sum'));
 
         $this->setDb($dbData);
         $m = new Model($this->db, ['table' => 'math', 'reloadAfterSave' => false]);
@@ -187,7 +187,7 @@ class ExpressionSqlTest extends Sql\TestCase
         $mm->save(['a' => 3]);
         $this->assertEquals(4, $mm->get('sum'));
 
-        $this->assertNull($m->createEntity()->save(['a' => 4, 'b' => 5])->get('sum'));
+        $this->assertNull($m->save(['a' => 4, 'b' => 5])->get('sum'));
     }
 
     public function testExpressionActionAlias(): void

@@ -375,7 +375,7 @@ class Field
      */
     public function getCaption(): string
     {
-        return $this->caption ?? $this->ui['caption'] ?? Utils::getReadableCaption(preg_replace('~^atk_fp_\w+?__~', '', $this->getKey()));
+        return $this->caption ?? $this->ui['caption'] ?? Utils::getReadableCaption($this->getKey());
     }
 
     // }}}

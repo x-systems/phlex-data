@@ -497,7 +497,7 @@ class FieldTest extends Sql\TestCase
         $this->assertFalse($m->getField('foo')->isEditable());
         $this->assertFalse($m->getField('foo')->isVisible());
 
-        $m->onlyFields(['bar']);
+        $m->setActiveFields(['bar']);
         // TODO: build a query and see if the field is there
     }
 
@@ -812,22 +812,25 @@ class FieldTest extends Sql\TestCase
         $entity = $model->createEntity();
 
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields()));
-        $this->assertSame(['system', 'editable_system', 'visible_system'], array_keys($entity->getFields(Model::FIELD_FILTER_SYSTEM)));
-        $this->assertSame(['editable', 'visible', 'not_editable'], array_keys($entity->getFields(Model::FIELD_FILTER_NOT_SYSTEM)));
-        $this->assertSame(['editable', 'editable_system', 'visible'], array_keys($entity->getFields(Model::FIELD_FILTER_EDITABLE)));
-        $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields(Model::FIELD_FILTER_VISIBLE)));
-        $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields([Model::FIELD_FILTER_EDITABLE, Model::FIELD_FILTER_VISIBLE])));
+        $this->assertSame(['system', 'editable_system', 'visible_system'], array_keys($entity->getActiveFields(Model::FIELD_FILTER_SYSTEM)));
+        $this->assertSame(['editable', 'visible', 'not_editable'], array_keys($entity->getActiveFields(Model::FIELD_FILTER_NOT_SYSTEM)));
+        $this->assertSame(['editable', 'editable_system', 'visible'], array_keys($entity->getActiveFields(Model::FIELD_FILTER_EDITABLE)));
+        $this->assertSame(['editable', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getActiveFields(Model::FIELD_FILTER_VISIBLE)));
+        $this->assertSame(['editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getActiveFields([Model::FIELD_FILTER_EDITABLE, Model::FIELD_FILTER_VISIBLE])));
 
-        $entity->onlyFields(['system', 'visible', 'not_editable']);
+        $entity->setActiveFields(['system', 'visible', 'not_editable']);
 
-        // getFields() is unaffected by only_fields, will always return all fields
+        // getFields() is unaffected by Model::activeFields, will always return all fields
         $this->assertSame(['system', 'editable', 'editable_system', 'visible', 'visible_system', 'not_editable'], array_keys($entity->getFields()));
 
-        // only return subset of only_fields
-        $this->assertSame(['visible', 'not_editable'], array_keys($entity->getFields(Model::FIELD_FILTER_VISIBLE)));
+        // only return subset of activeFields
+        $this->assertSame(['visible', 'not_editable'], array_keys($entity->getActiveFields(Model::FIELD_FILTER_VISIBLE)));
 
         $this->expectExceptionMessage('not supported');
         $model->getFields('foo');
+
+        $this->expectExceptionMessage('not supported');
+        $model->getActiveFields('foo');
     }
 
     public function testDateTimeFieldsToString(): void

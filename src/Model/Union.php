@@ -88,11 +88,11 @@ class Union extends Model
     {
         $model = $this->table[$alias] = $this->persistence->add($model);
 
-        $model->setOption(Persistence\Query::OPTION_MODEL_STRICT_ONLY_FIELDS);
+        $model->setOption(Persistence\Query::OPTION_MODEL_STRICT_ACTIVE_FIELDS);
 
         $model->addExpression($this->getActualPrimaryKey(), new Expression\Concat($alias . $this->tokenDelimiter, Expression::asIdentifier($model->primaryKey)));
 
-        $model->only_fields[] = $this->getActualPrimaryKey();
+        $model->activeFields[] = $this->getActualPrimaryKey();
 
         foreach ($this->getFields() as $field) {
             if ($field->isPrimaryKey()) {
@@ -142,7 +142,7 @@ class Union extends Model
 
         $nestedField->setOption(Persistence\Query::OPTION_FIELD_ALIAS, $this->getActualKey($key));
 
-        $nestedModel->only_fields[] = $nestedField->getKey();
+        $nestedModel->activeFields[] = $nestedField->getKey();
     }
 
     public function getNestedModel(string $alias): Model
@@ -158,7 +158,7 @@ class Union extends Model
 
         $nestedModel->allFields();
 
-        $nestedModel->unsetOption(Persistence\Query::OPTION_MODEL_STRICT_ONLY_FIELDS);
+        $nestedModel->unsetOption(Persistence\Query::OPTION_MODEL_STRICT_ACTIVE_FIELDS);
 
         foreach ($nestedModel->getFields() as $field) {
             $field->unsetOption(Persistence\Query::OPTION_FIELD_ALIAS);

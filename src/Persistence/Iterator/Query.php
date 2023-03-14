@@ -215,21 +215,21 @@ class Query extends Persistence\Query
             case 'SUM':
                 $result = array_sum($column);
 
-            break;
+                break;
             case 'AVG':
                 $column = $coalesce ? $column : array_filter($column, fn ($value) => $value !== null);
 
                 $result = array_sum($column) / count($column);
 
-            break;
+                break;
             case 'MAX':
                 $result = max($column);
 
-            break;
+                break;
             case 'MIN':
                 $result = min($column);
 
-            break;
+                break;
             default:
                 throw (new Exception('Persistence\Array_ query unsupported aggregate function'))
                     ->addMoreInfo('function', $functionName);
@@ -327,37 +327,37 @@ class Query extends Persistence\Query
             case Condition::OPERATOR_EQUALS:
                 $result = is_array($v2) ? $this->evaluateIf($v1, Condition::OPERATOR_IN, $v2) : $v1 === $v2;
 
-            break;
+                break;
             case Condition::OPERATOR_GREATER:
                 $result = $v1 > $v2;
 
-            break;
+                break;
             case Condition::OPERATOR_GREATER_EQUAL:
                 $result = $v1 >= $v2;
 
-            break;
+                break;
             case Condition::OPERATOR_LESS:
                 $result = $v1 < $v2;
 
-            break;
+                break;
             case Condition::OPERATOR_LESS_EQUAL:
                 $result = $v1 <= $v2;
 
-            break;
+                break;
             case Condition::OPERATOR_DOESNOT_EQUAL:
                 $result = !$this->evaluateIf($v1, Condition::OPERATOR_EQUALS, $v2);
 
-            break;
+                break;
             case Condition::OPERATOR_LIKE:
                 $pattern = str_ireplace('%', '(.*?)', preg_quote($v2));
 
                 $result = (bool) preg_match('/^' . $pattern . '$/', (string) $v1);
 
-            break;
+                break;
             case Condition::OPERATOR_NOT_LIKE:
                 $result = !$this->evaluateIf($v1, Condition::OPERATOR_LIKE, $v2);
 
-            break;
+                break;
             case Condition::OPERATOR_IN:
                 $result = false;
                 foreach ($v2 as $v2Item) { // TODO flatten rows, this looses column names!
@@ -368,19 +368,19 @@ class Query extends Persistence\Query
                     }
                 }
 
-            break;
+                break;
             case Condition::OPERATOR_NOT_IN:
                 $result = !$this->evaluateIf($v1, Condition::OPERATOR_IN, $v2);
 
-            break;
+                break;
             case Condition::OPERATOR_REGEXP:
                 $result = (bool) preg_match('/' . $v2 . '/', $v1);
 
-            break;
+                break;
             case Condition::OPERATOR_NOT_REGEXP:
                 $result = !$this->evaluateIf($v1, Condition::OPERATOR_REGEXP, $v2);
 
-            break;
+                break;
             default:
                 throw (new Exception('Unsupported operator'))
                     ->addMoreInfo('operator', $operator);

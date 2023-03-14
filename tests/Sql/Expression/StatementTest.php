@@ -506,9 +506,9 @@ class StatementTest extends PHPUnit\TestCase
         // should throw exception "Table cannot be Query in UPDATE, INSERT etc. query modes"
         $this->assertMatchesRegularExpression(
             '/.*Table cannot be Statement.*/',
-            ($this->q()
+            $this->q()
                 ->mode('update')
-                ->table($this->q()->table('test'), 'foo'))->__debugInfo()['R']
+                ->table($this->q()->table('test'), 'foo')->__debugInfo()['R']
         );
     }
 
@@ -1288,7 +1288,7 @@ class StatementTest extends PHPUnit\TestCase
      */
     public function testSetException2()
     {
-        $this->q()->set((new Sql\Expression('foo')), 1);
+        $this->q()->set(new Sql\Expression('foo'), 1);
     }
 
     /**

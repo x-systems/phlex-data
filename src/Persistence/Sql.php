@@ -271,7 +271,7 @@ abstract class Sql extends Persistence
             $pdoConnection->connection = $pdo;
         }, null, DBAL\Driver\PDO\Connection::class)();
 
-        $dbalConnection = DBAL\DriverManager::getConnection([ // @phpstan-ignore-line
+        $dbalConnection = DBAL\DriverManager::getConnection([
             'driver' => 'pdo_' . $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME),
         ]);
 

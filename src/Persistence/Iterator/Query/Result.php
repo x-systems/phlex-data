@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Persistence\Iterator\Query;
 
-use Traversable;
-
 class Result extends \Doctrine\DBAL\Result
 {
     /** @var \Iterator|null */
@@ -84,21 +82,21 @@ class Result extends \Doctrine\DBAL\Result
         return $data ? array_column($data, 0) : false;
     }
 
-    public function iterateNumeric(): Traversable
+    public function iterateNumeric(): \Traversable
     {
         while (($row = $this->fetchNumeric()) !== false) {
             yield $row;
         }
     }
 
-    public function iterateAssociative(): Traversable
+    public function iterateAssociative(): \Traversable
     {
         while (($row = $this->fetchAssociative()) !== false) {
             yield $row;
         }
     }
 
-    public function iterateColumn(): Traversable
+    public function iterateColumn(): \Traversable
     {
         while (($value = $this->fetchOne()) !== false) {
             yield $value;
@@ -132,7 +130,7 @@ class Result extends \Doctrine\DBAL\Result
     {
     }
 
-    protected function getFreshIterator(): ?Traversable
+    protected function getFreshIterator(): ?\Traversable
     {
         if ($this->generatorClosure) {
             // execute the closure to create the generator

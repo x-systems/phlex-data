@@ -151,7 +151,7 @@ class Statement extends Expression
                 $withAlias === false
                 || (is_string($field) && $alias === $field)
                 || is_numeric($alias)
-                ) {
+            ) {
                 $alias = null;
             }
 
@@ -249,7 +249,7 @@ class Statement extends Expression
                 $withAlias === false
                 || (is_string($table) && $alias === $table)
                 || is_numeric($alias)
-                ) {
+            ) {
                 $alias = null;
             }
 

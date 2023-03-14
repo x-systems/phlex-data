@@ -160,7 +160,7 @@ class Condition extends Sql\Expression
 
         // if no condition defined - set default condition
         if (count($conditionArgs) === 2) {
-            $value = $operator; // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
+            $value = $operator;
 
             if ($value instanceof Sql\Expressionable) {
                 $value = $value->toSqlExpression();
@@ -174,7 +174,7 @@ class Condition extends Sql\Expression
                 $operator = '=';
             }
         } else {
-            $operator = trim(strtolower($operator)); // @phpstan-ignore-line see https://github.com/phpstan/phpstan/issues/4173
+            $operator = trim(strtolower($operator));
         }
 
         // below we can be sure that all 3 arguments has been passed

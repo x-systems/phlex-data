@@ -11,6 +11,7 @@ use Phlex\Data\Model; // import for phpstan
 /**
  * @template TTargetClass of object
  * @template TReturnType
+ *
  * @extends MagicAbstract<TTargetClass&Model, TReturnType>
  */
 class MagicModelField extends MagicAbstract

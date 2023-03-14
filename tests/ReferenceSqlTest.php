@@ -378,11 +378,11 @@ class ReferenceSqlTest extends Sql\TestCase
                 2 => ['id' => 2, 'name' => 'Veg'],
                 3 => ['id' => 3, 'name' => 'Fruit'],
             ], 'item' => [
-                ['name' => 'Apple',  'code' => 'ABC', 'list_id' => 3],
+                ['name' => 'Apple', 'code' => 'ABC', 'list_id' => 3],
                 ['name' => 'Banana', 'code' => 'DEF', 'list_id' => 3],
-                ['name' => 'Pork',   'code' => 'GHI', 'list_id' => 1],
-                ['name' => 'Chicken', 'code' => null,  'list_id' => 1],
-                ['name' => 'Pear',   'code' => null,  'list_id' => 3],
+                ['name' => 'Pork', 'code' => 'GHI', 'list_id' => 1],
+                ['name' => 'Chicken', 'code' => null, 'list_id' => 1],
+                ['name' => 'Pear', 'code' => null, 'list_id' => 3],
             ],
         ]);
 
@@ -393,11 +393,11 @@ class ReferenceSqlTest extends Sql\TestCase
                 ['items_name', 'aggregate' => 'count', 'field' => 'name'],
                 ['items_code', 'aggregate' => 'count', 'field' => 'code'], // counts only not-null values
                 ['items_star', 'aggregate' => 'count'], // no field set, counts all rows with count(*)
-                ['items_c:',  'concat' => '::', 'field' => 'name'],
-                ['items_c-',  'aggregate' => new Expression\GroupConcat($i->expr('[name]'), '-')], // @phpstan-ignore-line
-                ['len',       'aggregate' => $i->expr('sum(length([name]))')],
-                ['len2',      'expr' => 'sum(length([name]))'],
-                ['chicken5',  'expr' => 'sum([])', 'args' => ['5']],
+                ['items_c:', 'concat' => '::', 'field' => 'name'],
+                ['items_c-', 'aggregate' => new Expression\GroupConcat($i->expr('[name]'), '-')], // @phpstan-ignore-line
+                ['len', 'aggregate' => $i->expr('sum(length([name]))')],
+                ['len2', 'expr' => 'sum(length([name]))'],
+                ['chicken5', 'expr' => 'sum([])', 'args' => ['5']],
             ]);
 
         $ll = $l->load(1);

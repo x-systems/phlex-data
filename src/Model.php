@@ -768,8 +768,6 @@ class Model implements \IteratorAggregate
     /**
      * Adds WITH cursor.
      *
-     * @param Model $model
-     *
      * @return $this
      */
     public function addWith(self $model, string $alias, array $mapping = [], bool $recursive = false)

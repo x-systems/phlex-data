@@ -267,8 +267,6 @@ class Join
      * weakJoin will be attached to a current join.
      *
      * @todo NOT IMPLEMENTED! weakJoin method does not exist!
-     *
-     * @return
      */
     /*
     public function weakJoin($defaults = [])

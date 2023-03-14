@@ -394,36 +394,36 @@ class TypecastingTest extends Sql\TestCase
     public function testTypecastTimezone()
     {
         $m = new Model($this->db, ['table' => 'event']);
-        $dt = $m->addField('dt', ['type' => ['datetime', 'codec' => ['timezone' => 'EEST']]]);
-        $d = $m->addField('d', ['type' => ['date', 'codec' => ['timezone' => 'EEST']]]);
-        $t = $m->addField('t', ['type' => ['time', 'codec' => ['timezone' => 'EEST']]]);
+        $dt = $m->addField('dt', ['type' => ['datetime', 'codec' => ['timezone' => 'Europe/Vilnius']]]);
+        $d = $m->addField('d', ['type' => ['date', 'codec' => ['timezone' => 'Europe/Vilnius']]]);
+        $t = $m->addField('t', ['type' => ['time', 'codec' => ['timezone' => 'Europe/Vilnius']]]);
 
         date_default_timezone_set('UTC');
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $dt->getCodec()->encode($s));
+        $this->assertSame('2005-08-16 01:52:01.000000', $dt->getCodec()->encode($s));
         $this->assertSame('2005-08-15', $d->getCodec()->encode($s));
         $this->assertSame('22:52:01.000000', $t->getCodec()->encode($s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $dt->getCodec()->decode('2005-08-16 00:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $dt->getCodec()->decode('2005-08-16 01:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $d->getCodec()->decode('2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $t->getCodec()->decode('22:52:01'));
 
         date_default_timezone_set('Asia/Tokyo');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');
-        $this->assertSame('2005-08-16 00:52:01.000000', $dt->getCodec()->encode($s));
+        $this->assertSame('2005-08-16 01:52:01.000000', $dt->getCodec()->encode($s));
         $this->assertSame('2005-08-15', $d->getCodec()->encode($s));
         $this->assertSame('22:52:01.000000', $t->getCodec()->encode($s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $dt->getCodec()->decode('2005-08-16 00:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 UTC'), $dt->getCodec()->decode('2005-08-16 01:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $d->getCodec()->decode('2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $t->getCodec()->decode('22:52:01'));
 
         date_default_timezone_set('America/Los_Angeles');
 
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01'); // uses servers default timezone
-        $this->assertSame('2005-08-16 07:52:01.000000', $dt->getCodec()->encode($s));
+        $this->assertSame('2005-08-16 08:52:01.000000', $dt->getCodec()->encode($s));
         $this->assertSame('2005-08-15', $d->getCodec()->encode($s));
         $this->assertSame('22:52:01.000000', $t->getCodec()->encode($s));
-        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $dt->getCodec()->decode('2005-08-16 07:52:01'));
+        $this->assertEquals(new \DateTime('Monday, 15-Aug-05 22:52:01 America/Los_Angeles'), $dt->getCodec()->decode('2005-08-16 08:52:01'));
         $this->assertEquals(new \DateTime('Monday, 15-Aug-05'), $d->getCodec()->decode('2005-08-15'));
         $this->assertEquals(new \DateTime('1970-01-01 22:52:01'), $t->getCodec()->decode('22:52:01'));
     }

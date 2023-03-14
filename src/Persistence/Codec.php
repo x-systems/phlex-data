@@ -21,14 +21,6 @@ class Codec extends Model\Field\Codec
         return parent::encode($value);
     }
 
-    /**
-     * Get field value type after serialization.
-     */
-    public function getValueType(): Model\Field\Type
-    {
-        return $this->field->getValueType();
-    }
-
     public function getQueryArguments($operator, $value): array
     {
         $skipValueEncoding = [

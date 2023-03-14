@@ -82,6 +82,6 @@ class Selectable extends Sql\Codec
 
     protected function storesMultipleValues(): bool
     {
-        return $this->field->getValueType()->allowMultipleSelection; // @phpstan-ignore-line
+        return $this->getValueType()->allowMultipleSelection; // @phpstan-ignore-line
     }
 }

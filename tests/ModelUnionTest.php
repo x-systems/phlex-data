@@ -259,7 +259,7 @@ class ModelUnionTest extends Sql\TestCase
         $this->assertSame([
             'id' => 'invoice/1',
             'captioned_title' => '[Invoice] chair purchase',
-        ], $transaction->load()->onlyFields([$transaction->primaryKey, $transaction->titleKey])->get());
+        ], $transaction->load()->setActiveFields([$transaction->primaryKey, $transaction->titleKey])->get());
     }
 
     public function testNestedModelAdded(): void

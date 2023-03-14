@@ -31,7 +31,7 @@ abstract class Query implements \IteratorAggregate
 
     public const OPTION_FIELD_ALIAS = self::class . '@fieldAlias';
 
-    public const OPTION_MODEL_STRICT_ONLY_FIELDS = self::class . '@fieldAlias';
+    public const OPTION_MODEL_STRICT_ACTIVE_FIELDS = self::class . '@modelStrictActiveFields';
 
     /** @var Model|null */
     protected $model;

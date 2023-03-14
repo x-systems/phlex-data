@@ -77,7 +77,7 @@ class Query extends Persistence\Query implements Expressionable
 
             // prepare sub-query
             if ($fieldsFrom) {
-                $withModel->onlyFields($fieldsFrom);
+                $withModel->setActiveFields($fieldsFrom);
             }
             // 2nd parameter here strictly define which fields should be selected
             // as result system fields will not be added if they are not requested
@@ -104,11 +104,11 @@ class Query extends Persistence\Query implements Expressionable
             foreach ($fields as $key) {
                 $this->addField($this->model->getField($key));
             }
-        } elseif ($this->model->only_fields) {
+        } elseif ($this->model->activeFields) {
             $addedFields = [];
 
             // Add requested fields first
-            foreach ($this->model->only_fields as $key) {
+            foreach ($this->model->activeFields as $key) {
                 $field = $this->model->getField($key);
                 if (!$field->loadsFromPersistence()) {
                     continue;
@@ -117,7 +117,7 @@ class Query extends Persistence\Query implements Expressionable
                 $addedFields[$key] = true;
             }
 
-            if (!$this->model->getOption(Persistence\Query::OPTION_MODEL_STRICT_ONLY_FIELDS)) {
+            if (!$this->model->getOption(Persistence\Query::OPTION_MODEL_STRICT_ACTIVE_FIELDS)) {
                 // now add system fields, if they were not added
                 foreach ($this->model->getFields() as $key => $field) {
                     if (!$field->loadsFromPersistence()) {

@@ -179,7 +179,7 @@ class Csv extends Persistence
         $this->executeRestoringPointer(function () use ($model) {
             $this->fileObject->seek(0);
 
-            $this->fileObject->fputcsv(array_keys($model->getFields('not system')));
+            $this->fileObject->fputcsv(array_keys($model->getActiveFields('not system')));
         });
     }
 

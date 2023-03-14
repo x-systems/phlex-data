@@ -134,7 +134,7 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model();
         $m->addField('name');
         $m->addField('surname');
-        $m->onlyFields(['surname']);
+        $m->setActiveFields(['surname']);
         $m = $m->createEntity();
 
         $this->expectException(Exception::class);
@@ -146,7 +146,7 @@ class BusinessModelTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model();
         $m->addField('name');
         $m->addField('surname');
-        $m->onlyFields(['surname']);
+        $m->setActiveFields(['surname']);
         $e = $m->createEntity();
 
         $e->allFields();

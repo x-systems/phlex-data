@@ -75,8 +75,8 @@ class Model implements \IteratorAggregate
     public const HOOK_NORMALIZE = self::class . '@normalize';
     /** @const string Executed when self::validate() method is called. */
     public const HOOK_VALIDATE = self::class . '@validate';
-    /** @const string Executed when self::onlyFields() method is called. */
-    public const HOOK_ONLY_FIELDS = self::class . '@onlyFields';
+    /** @const string Executed when self::setActiveFields() method is called. */
+    public const HOOK_ACTIVE_FIELDS = self::class . '@activeFields';
 
     public const HOOK_SET_OPTION = self::class . '@afterSetOption';
 
@@ -95,7 +95,7 @@ class Model implements \IteratorAggregate
     /** @const string */
     public const FIELD_FILTER_PERSIST = 'persist';
     /** @const string */
-    public const FIELD_FILTER_ONLY_FIELDS = 'only fields';
+    public const FIELD_FILTER_ACTIVE = 'only fields';
 
     /** @const string */
     public const VALIDATE_INTENT_SAVE = 'save';
@@ -223,10 +223,10 @@ class Model implements \IteratorAggregate
     public $caption;
 
     /**
-     * When using onlyFields() this property will contain list of desired
+     * When using setActiveFields() this property will contain list of desired
      * fields.
      *
-     * If you set onlyFields() before loading the data for this model, then
+     * If you set setActiveFields() before loading the data for this model, then
      * only that set of fields will be available. Attempt to access any other
      * field will result in exception. This is to ensure that you do not
      * accidentally access field that you have explicitly excluded.
@@ -234,11 +234,11 @@ class Model implements \IteratorAggregate
      * The default behavior is to return NULL and allow you to set new
      * fields even if addField() was not used to set the field.
      *
-     * onlyFields() always allows to access fields with system = true.
+     * setActiveFields() always allows to access fields with system = true.
      *
      * @var false|array
      */
-    public $only_fields = false;
+    public $activeFields = false;
 
     /**
      * When set to true, all the field types will be enforced and
@@ -559,10 +559,10 @@ class Model implements \IteratorAggregate
      *
      * @return $this
      */
-    public function onlyFields(array $fields = [])
+    public function setActiveFields(array $keys = [])
     {
-        $this->hook(self::HOOK_ONLY_FIELDS, [&$fields]);
-        $this->only_fields = $fields;
+        $this->hook(self::HOOK_ACTIVE_FIELDS, [&$keys]);
+        $this->activeFields = $keys;
 
         return $this;
     }
@@ -574,27 +574,27 @@ class Model implements \IteratorAggregate
      */
     public function allFields()
     {
-        $this->only_fields = false;
+        $this->activeFields = false;
 
         return $this;
     }
 
-    protected function assertOnlyField(string $key)
+    protected function assertActiveField(string $key)
     {
         $this->getField($key); // test if field exists
 
-        if ($this->only_fields) {
-            if (!in_array($key, $this->only_fields, true) && !$this->getField($key)->system) {
-                throw (new Exception('Attempt to use field outside of those set by onlyFields'))
+        if ($this->activeFields) {
+            if (!in_array($key, $this->activeFields, true) && !$this->getField($key)->system) {
+                throw (new Exception('Attempt to use field outside of those set by activeFields'))
                     ->addMoreInfo('field', $key)
-                    ->addMoreInfo('only_fields', $this->only_fields);
+                    ->addMoreInfo('activeFields', $this->activeFields);
             }
         }
     }
 
-    public function isOnlyField(string $key): bool
+    public function isActiveField(string $key): bool
     {
-        return !$this->only_fields || in_array($key, $this->only_fields, true);
+        return !$this->activeFields || in_array($key, $this->activeFields, true);
     }
 
     /**
@@ -602,18 +602,35 @@ class Model implements \IteratorAggregate
      *
      * @return Model\Field[]
      */
-    public function getFields($filters = null, bool $onlyFields = null): array
+    public function getFields($filters = null): array
     {
         if ($filters === null) {
-            return $onlyFields ? $this->getFields(self::FIELD_FILTER_ONLY_FIELDS) : $this->fields;
+            return $this->fields;
         } elseif (!is_array($filters)) {
             $filters = [$filters];
         }
 
-        $onlyFields ??= true;
+        return array_filter($this->fields, function (Model\Field $field, $name) use ($filters) {
+            foreach ($filters as $filter) {
+                if ($this->fieldMatchesFilter($field, $filter)) {
+                    return true;
+                }
+            }
 
-        return array_filter($this->fields, function (Model\Field $field, $name) use ($filters, $onlyFields) {
-            if ($onlyFields && !$this->isOnlyField($field->elementId)) {
+            return false;
+        }, \ARRAY_FILTER_USE_BOTH);
+    }
+
+    public function getActiveFields($filters = null)
+    {
+        if ($filters === null) {
+            return $this->getFields(self::FIELD_FILTER_ACTIVE);
+        } elseif (!is_array($filters)) {
+            $filters = [$filters];
+        }
+
+        return array_filter($this->fields, function (Model\Field $field, $name) use ($filters) {
+            if (!$this->isActiveField($field->elementId)) {
                 return false;
             }
 
@@ -642,14 +659,14 @@ class Model implements \IteratorAggregate
                 return $field->isEditable();
             case self::FIELD_FILTER_VISIBLE:
                 return $field->isVisible();
-            case self::FIELD_FILTER_ONLY_FIELDS:
-                return $this->isOnlyField($field->elementId);
+            case self::FIELD_FILTER_ACTIVE:
+                return $this->isActiveField($field->elementId);
             case self::FIELD_FILTER_PERSIST:
                 if (!$field->interactsWithPersistence()) {
                     return false;
                 }
 
-                return $field->system || $this->isOnlyField($field->elementId);
+                return $field->system || $this->isActiveField($field->elementId);
             default:
                 throw (new Exception('Filter is not supported'))
                     ->addMoreInfo('filter', $filter);
@@ -839,14 +856,14 @@ class Model implements \IteratorAggregate
         if ($key === null) {
             // Collect list of eligible fields
             $data = [];
-            foreach ($this->only_fields ?: array_keys($this->getFields(self::FIELD_FILTER_NOT_REFERENCE)) as $key) {
+            foreach ($this->activeFields ?: array_keys($this->getActiveFields(self::FIELD_FILTER_NOT_REFERENCE)) as $key) {
                 $data[$key] = $this->get($key);
             }
 
             return $data;
         }
 
-        $this->assertOnlyField($key);
+        $this->assertActiveField($key);
 
         return $this->getField($key)->get();
     }
@@ -888,7 +905,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->assertOnlyField($key);
+        $this->assertActiveField($key);
 
         $this->getField($key)->set($value);
 
@@ -899,7 +916,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->assertOnlyField($key);
+        $this->assertActiveField($key);
 
         $this->entry->reset($key);
 
@@ -910,7 +927,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->assertOnlyField($key);
+        $this->assertActiveField($key);
 
         $this->entry->set($key, null);
 
@@ -921,7 +938,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->assertOnlyField($key);
+        $this->assertActiveField($key);
 
         return $this->entry->isset($key);
     }
@@ -959,7 +976,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->assertOnlyField($key);
+        $this->assertActiveField($key);
 
         return $this->entry->isDirty($key);
     }
@@ -1449,7 +1466,7 @@ class Model implements \IteratorAggregate
         // @todo: why only persisting fields?
         // prepare array with field names
         if ($keys === null) {
-            $keys = array_keys($this->getFields(self::FIELD_FILTER_PERSIST));
+            $keys = array_keys($this->getActiveFields(self::FIELD_FILTER_PERSIST));
         }
 
         // no key field - then just do export

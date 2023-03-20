@@ -53,7 +53,7 @@ class HasOne extends Model\Field\Reference\HasOne
             [
                 // to be able to change field, but not save it
                 // afterSave hook will take care of the rest
-                'read_only' => false,
+                'readOnly' => false,
                 'never_save' => true,
             ]
         ));
@@ -194,7 +194,7 @@ class HasOne extends Model\Field\Reference\HasOne
             [
                 // to be able to change title field, but not save it
                 // afterSave hook will take care of the rest
-                'read_only' => false,
+                'readOnly' => false,
                 'never_save' => true,
             ]
         ));

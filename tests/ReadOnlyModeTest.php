@@ -26,7 +26,7 @@ class ReadOnlyModeTest extends Sql\TestCase
             ],
         ]);
 
-        $this->m = new Model($this->db, ['table' => 'user', 'read_only' => true]);
+        $this->m = new Model($this->db, ['table' => 'user', 'readOnly' => true]);
 
         $this->m->addFields(['name', 'gender']);
     }

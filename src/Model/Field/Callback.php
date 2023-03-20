@@ -21,7 +21,7 @@ class Callback extends Model\Field
      */
     public $expr;
 
-    public $access = self::ACCESS_GET;
+    public $readOnly = true;
 
     public $persist = self::PERSIST_NONE;
 

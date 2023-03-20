@@ -49,7 +49,7 @@ class HasOne extends Model\Field\Reference
      *
      * @var bool
      */
-    public $read_only = false;
+    public $readOnly = false;
 
     /**
      * Defines a label to go along with this field. Use getCaption() which
@@ -125,7 +125,7 @@ class HasOne extends Model\Field\Reference
                 'joinName' => $this->joinName,
                 'default' => $this->default,
                 'never_persist' => $this->never_persist,
-                'read_only' => $this->read_only,
+                'readOnly' => $this->readOnly,
                 'caption' => $this->caption,
                 'ui' => $this->ui,
                 'mandatory' => $this->mandatory,

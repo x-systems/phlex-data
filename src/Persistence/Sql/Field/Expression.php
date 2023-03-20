@@ -23,8 +23,8 @@ class Expression extends Sql\Field
     // Expressions can only load from persistence.
     public $persist = self::PERSIST_LOAD;
 
-    // Expressions are always read_only.
-    public $access = self::ACCESS_GET;
+    // Expressions are always readOnly.
+    public $readOnly = true;
 
     /**
      * Specifies how to aggregate this.

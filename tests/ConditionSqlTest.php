@@ -74,7 +74,7 @@ class ConditionSqlTest extends Sql\TestCase
         $this->assertSame('John', $e->get('name'));
 
         $this->expectException(\Phlex\Data\Exception::class);
-        $this->expectExceptionMessageMatches('~access field without permission~');
+        $this->expectExceptionMessageMatches('~set value of readOnly field~');
         $e->set('id', 2);
     }
 

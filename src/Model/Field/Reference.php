@@ -36,7 +36,7 @@ class Reference extends Model\Field
      */
     public const OPTION_ROOT_MODEL = self::class . '@root_model';
 
-    public $access = self::ACCESS_GET;
+    public $readOnly = true;
 
     public $persist = self::PERSIST_NONE;
 

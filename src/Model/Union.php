@@ -34,7 +34,7 @@ class Union extends Model
      *
      * @var bool
      */
-    public $read_only = true;
+    public $readOnly = true;
 
     public $table_alias = '_tu';
 

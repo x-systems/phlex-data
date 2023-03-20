@@ -49,7 +49,7 @@ class HasMany extends Model\Field\Reference
      *
      * @var bool
      */
-    public $read_only = false;
+    public $readOnly = false;
 
     protected $table_alias = 'sub';
 
@@ -127,7 +127,7 @@ class HasMany extends Model\Field\Reference
                 'joinName' => $this->joinName,
                 'default' => $this->default,
                 'never_persist' => $this->never_persist,
-                'read_only' => $this->read_only,
+                'readOnly' => $this->readOnly,
                 'caption' => $this->caption,
                 'ui' => $this->ui,
                 'mandatory' => $this->mandatory,

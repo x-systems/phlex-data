@@ -30,15 +30,6 @@ class Field
 
     public $persist = self::PERSIST_SAVE | self::PERSIST_LOAD;
 
-    public const ACCESS_NONE = 0;
-    public const ACCESS_GET = 1;
-    public const ACCESS_SET = 2;
-
-    /** @var int */
-    public $access = self::ACCESS_GET | self::ACCESS_SET;
-
-    // {{{ Properties
-
     /**
      * Default value of field.
      *
@@ -97,17 +88,11 @@ class Field
     public $required = false;
 
     /**
-     * Should we use serialization when saving/loading data to/from persistence.
+     * Defines if value can be set.
      *
-     * Value can be array [$encode_callback, $decode_callback].
-     *
-     * @var bool|array|string|null
+     * @var bool
      */
-    public $serialize;
-
-    // }}}
-
-    // {{{ Core functionality
+    public $readOnly = false;
 
     /**
      * Constructor. You can pass field properties as array.
@@ -214,7 +199,7 @@ class Field
             return $this;
         }
 
-        $this->assertSetAccess();
+        $this->assertNotReadOnly();
 
         // if value is same as loaded remove the dirty value, otherwise set
         if ($this->compare($value, $entry->getLoaded($key, $currentValue))) {
@@ -254,18 +239,30 @@ class Field
         $model->primaryKey = $this->getKey();
         $this->required = true;
         $this->system = true;
-        $this->access = self::ACCESS_GET;
+        $this->readOnly = true;
 
         return $this;
     }
 
-    public function setReadOnly($value = true): self
+    public function setReadOnly(bool $value = true): self
     {
-        $value ?
-            $this->denyAccess(self::ACCESS_SET) :
-            $this->grantAccess(self::ACCESS_SET);
+        $this->readOnly = $value;
 
         return $this;
+    }
+
+    public function isReadOnly(): bool
+    {
+        return $this->readOnly;
+    }
+
+    protected function assertNotReadOnly(): void
+    {
+        if ($this->readOnly) {
+            throw (new Exception('Attempting to set value of readOnly field ' . $this->elementId))
+                ->addMoreInfo('field', $this)
+                ->addMoreInfo('model', $this->owner);
+        }
     }
 
     /**
@@ -333,10 +330,6 @@ class Field
         return $this->getCodec($mutator)->decode($value);
     }
 
-    // }}}
-
-    // {{{ Handy methods used by UI
-
     public function isPrimaryKey(): bool
     {
         if (!$model = $this->getOwner()) {
@@ -351,7 +344,7 @@ class Field
      */
     public function isEditable(): bool
     {
-        return $this->ui['editable'] ?? $this->checkSetAccess() && $this->interactsWithPersistence() && !$this->system;
+        return $this->ui['editable'] ?? !$this->readOnly && $this->interactsWithPersistence() && !$this->system;
     }
 
     /**
@@ -376,66 +369,6 @@ class Field
     public function getCaption(): string
     {
         return $this->caption ?? $this->ui['caption'] ?? Utils::getReadableCaption($this->getKey());
-    }
-
-    // }}}
-
-    public function grantGetAccess()
-    {
-        return $this->grantAccess(self::ACCESS_GET);
-    }
-
-    public function grantSetAccess()
-    {
-        return $this->grantAccess(self::ACCESS_SET);
-    }
-
-    public function assertGetAccess(): void
-    {
-        $this->assertAccess(self::ACCESS_GET);
-    }
-
-    public function assertSetAccess(): void
-    {
-        $this->assertAccess(self::ACCESS_SET);
-    }
-
-    public function checkGetAccess(): bool
-    {
-        return $this->checkAccess(self::ACCESS_GET);
-    }
-
-    public function checkSetAccess(): bool
-    {
-        return $this->checkAccess(self::ACCESS_SET);
-    }
-
-    public function assertAccess(int $permission): void
-    {
-        if (!$this->checkAccess($permission)) {
-            throw (new Exception('Attempting to access field without permission' . $this->elementId))
-                ->addMoreInfo('field', $this)
-                ->addMoreInfo('model', $this->owner);
-        }
-    }
-
-    public function checkAccess(int $permission): bool
-    {
-        return (bool) ($this->access & $permission);
-    }
-
-    public function grantAccess(int $permission)
-    {
-        $this->access |= $permission;
-
-        return $this;
-    }
-
-    public function denyAccess(int $permission)
-    {
-        $this->access &= ~$permission;
-
-        return $this;
     }
 
     public function setNeverPersist($value = true)
@@ -503,8 +436,6 @@ class Field
         return $this;
     }
 
-    // {{{ Debug Methods
-
     /**
      * Returns array with useful debug info for var_dump.
      */
@@ -516,7 +447,7 @@ class Field
         ];
 
         foreach ([
-            'type', 'system', 'never_persist', 'never_save', 'read_only', 'ui', 'joinName',
+            'type', 'system', 'readOnly', 'ui', 'joinName',
         ] as $key) {
             if (isset($this->{$key})) {
                 $arr[$key] = $this->{$key};
@@ -525,6 +456,4 @@ class Field
 
         return $arr;
     }
-
-    // }}}
 }

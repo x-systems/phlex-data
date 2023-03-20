@@ -186,16 +186,16 @@ class Model implements \IteratorAggregate
     public $with = [];
 
     /**
-     * Setting model as read_only will protect you from accidentally
+     * Setting model as readOnly will protect you from accidentally
      * updating the model. This property is intended for UI and other code
      * detecting read-only models and acting accordingly.
      *
      * SECURITY WARNING: If you are looking for a RELIABLE way to restrict access
-     * to model data, please check Secure Enclave extension.
+     * to model data, please check phlex-access extension.
      *
      * @var bool
      */
-    public $read_only = false;
+    public $readOnly = false;
 
     /**
      * While in most cases your id field will be called 'id', sometimes
@@ -351,7 +351,7 @@ class Model implements \IteratorAggregate
             return; // don't declare actions for model without primaryKey
         }
 
-        if ($this->read_only) {
+        if ($this->readOnly) {
             return; // don't declare action for read-only model
         }
 
@@ -1278,7 +1278,7 @@ class Model implements \IteratorAggregate
             return $this->createEntity($data)->save();
         }
 
-        if ($this->read_only) {
+        if ($this->readOnly) {
             throw new Exception('Model is read-only and cannot be saved');
         }
 
@@ -1569,7 +1569,7 @@ class Model implements \IteratorAggregate
      */
     public function delete($id = null)
     {
-        if ($this->read_only) {
+        if ($this->readOnly) {
             throw new Exception('Model is read-only and cannot be deleted');
         }
 

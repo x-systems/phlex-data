@@ -212,7 +212,7 @@ class FieldTest extends Sql\TestCase
     public function testReadOnly1(): void
     {
         $m = new Model();
-        $m->addField('foo', ['access' => Model\Field::ACCESS_GET]);
+        $m->addField('foo', ['readOnly' => true]);
         $m = $m->createEntity();
         $this->expectException(Exception::class);
         $m->set('foo', 'bar');
@@ -221,7 +221,7 @@ class FieldTest extends Sql\TestCase
     public function testReadOnly2(): void
     {
         $m = new Model();
-        $m->addField('foo', ['read_only' => true, 'default' => 'abc']);
+        $m->addField('foo', ['readOnly' => true, 'default' => 'abc']);
         $m = $m->createEntity();
         $m->set('foo', 'abc');
         $this->assertSame('abc', $m->get('foo'));
@@ -947,27 +947,5 @@ class FieldTest extends Sql\TestCase
 
         $m->getField('never_save')->setNeverSave(false);
         $this->assertTrue($m->getField('never_save')->savesToPersistence());
-    }
-
-    public function testAccess()
-    {
-        $m = new Model();
-        $m->addField('normal');
-        $m->addField('read_only', ['read_only' => true]);
-
-        $this->assertTrue($m->getField('normal')->checkAccess(Model\Field::ACCESS_GET | Model\Field::ACCESS_SET));
-        $this->assertFalse($m->getField('read_only')->checkAccess(Model\Field::ACCESS_SET));
-
-        $m->getField('read_only')->grantAccess(Model\Field::ACCESS_SET);
-        $this->assertTrue($m->getField('read_only')->checkAccess(Model\Field::ACCESS_SET));
-
-        $m->getField('read_only')->denyAccess(Model\Field::ACCESS_SET);
-        $this->assertFalse($m->getField('read_only')->checkAccess(Model\Field::ACCESS_SET));
-
-        $m->getField('read_only')->setReadOnly(false);
-        $this->assertTrue($m->getField('read_only')->checkAccess(Model\Field::ACCESS_SET));
-
-        $m->getField('normal')->denyAccess(Model\Field::ACCESS_SET);
-        $this->assertFalse($m->getField('normal')->checkAccess(Model\Field::ACCESS_SET));
     }
 }

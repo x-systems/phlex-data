@@ -94,8 +94,6 @@ class Model implements \IteratorAggregate
     public const FIELD_FILTER_EDITABLE = 'editable';
     /** @const string */
     public const FIELD_FILTER_PERSIST = 'persist';
-    /** @const string */
-    public const FIELD_FILTER_ACTIVE = 'only fields';
 
     /** @const string */
     public const VALIDATE_INTENT_SAVE = 'save';
@@ -579,16 +577,12 @@ class Model implements \IteratorAggregate
         return $this;
     }
 
-    protected function assertActiveField(string $key)
+    protected function assertAccessibleField(string $key)
     {
-        $this->getField($key); // test if field exists
-
-        if ($this->activeFields) {
-            if (!in_array($key, $this->activeFields, true) && !$this->getField($key)->system) {
-                throw (new Exception('Attempt to use field outside of those set by activeFields'))
-                    ->addMoreInfo('field', $key)
-                    ->addMoreInfo('activeFields', $this->activeFields);
-            }
+        if (!$this->isActiveField($key) && !$this->getField($key)->system) {
+            throw (new Exception('Attempt to use field outside of those set by system or activeFields'))
+                ->addMoreInfo('field', $key)
+                ->addMoreInfo('activeFields', $this->activeFields);
         }
     }
 
@@ -604,44 +598,37 @@ class Model implements \IteratorAggregate
      */
     public function getFields($filters = null): array
     {
-        if ($filters === null) {
-            return $this->fields;
-        } elseif (!is_array($filters)) {
-            $filters = [$filters];
-        }
-
-        return array_filter($this->fields, function (Model\Field $field, $name) use ($filters) {
-            foreach ($filters as $filter) {
-                if ($this->fieldMatchesFilter($field, $filter)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }, \ARRAY_FILTER_USE_BOTH);
+        return $this->filterFields($this->fields, $filters);
     }
 
-    public function getActiveFields($filters = null)
+    /**
+     * @param string|array|null $filters
+     *
+     * @return Model\Field[]
+     */
+    public function getActiveFields($filters = null): array
     {
-        if ($filters === null) {
-            return $this->getFields(self::FIELD_FILTER_ACTIVE);
-        } elseif (!is_array($filters)) {
-            $filters = [$filters];
-        }
+        $fields = $this->activeFields ? array_intersect_key($this->fields, array_flip($this->activeFields)) : $this->fields;
 
-        return array_filter($this->fields, function (Model\Field $field, $name) use ($filters) {
-            if (!$this->isActiveField($field->elementId)) {
-                return false;
-            }
+        return $this->filterFields($fields, $filters);
+    }
 
-            foreach ($filters as $filter) {
+    /**
+     * @param string|array|null $filters
+     *
+     * @return Model\Field[]
+     */
+    protected function filterFields(array $fields, $filters = null): array
+    {
+        return $filters ? array_filter($fields, function (Model\Field $field) use ($filters) {
+            foreach ((array) $filters as $filter) {
                 if ($this->fieldMatchesFilter($field, $filter)) {
                     return true;
                 }
             }
 
             return false;
-        }, \ARRAY_FILTER_USE_BOTH);
+        }) : $fields;
     }
 
     protected function fieldMatchesFilter(Model\Field $field, string $filter): bool
@@ -659,8 +646,6 @@ class Model implements \IteratorAggregate
                 return $field->isEditable();
             case self::FIELD_FILTER_VISIBLE:
                 return $field->isVisible();
-            case self::FIELD_FILTER_ACTIVE:
-                return $this->isActiveField($field->elementId);
             case self::FIELD_FILTER_PERSIST:
                 if (!$field->interactsWithPersistence()) {
                     return false;
@@ -861,7 +846,7 @@ class Model implements \IteratorAggregate
             return $data;
         }
 
-        $this->assertActiveField($key);
+        $this->assertAccessibleField($key);
 
         return $this->getField($key)->get();
     }
@@ -903,7 +888,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->assertActiveField($key);
+        $this->assertAccessibleField($key);
 
         $this->getField($key)->set($value);
 
@@ -914,7 +899,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->assertActiveField($key);
+        $this->assertAccessibleField($key);
 
         $this->entry->reset($key);
 
@@ -925,7 +910,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->assertActiveField($key);
+        $this->assertAccessibleField($key);
 
         $this->entry->set($key, null);
 
@@ -936,7 +921,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->assertActiveField($key);
+        $this->assertAccessibleField($key);
 
         return $this->entry->isset($key);
     }
@@ -974,7 +959,7 @@ class Model implements \IteratorAggregate
     {
         $this->assertIsEntity();
 
-        $this->assertActiveField($key);
+        $this->assertAccessibleField($key);
 
         return $this->entry->isDirty($key);
     }

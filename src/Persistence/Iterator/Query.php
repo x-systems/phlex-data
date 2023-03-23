@@ -45,13 +45,7 @@ class Query extends Persistence\Query
 
             $keys = array_flip((array) $this->fields);
 
-            $this->fx = function (\Iterator $iterator) use ($keys) {
-                return new Query\Result(function () use ($iterator, $keys) {
-                    foreach ($iterator as $id => $row) {
-                        yield $id => array_intersect_key($row, $keys);
-                    }
-                });
-            };
+            $this->fx = fn (\Iterator $iterator) => new Query\Result(new CallableIterator($iterator, fn ($row) => array_intersect_key($row, $keys)));
         }
     }
 

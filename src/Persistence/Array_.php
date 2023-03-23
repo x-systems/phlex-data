@@ -7,6 +7,7 @@ namespace Phlex\Data\Persistence;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
+use Phlex\Data\Persistence\Iterator\CallableIterator;
 
 /**
  * Implements persistence driver that can save data into array and load
@@ -32,11 +33,7 @@ class Array_ extends Persistence
 
     public function getRawDataIterator(Model $model): \Iterator
     {
-        return (function ($iterator) use ($model) {
-            foreach ($iterator as $id => $row) {
-                yield $id => $this->getRowWithId($model, $row, $id);
-            }
-        })(new \ArrayIterator($this->data[$model->table]));
+        return new CallableIterator(new \ArrayIterator($this->data[$model->table]), fn ($row, $id) => $this->getRowWithId($model, $row, $id));
     }
 
     public function setRawData(Model $model, array $row, $id = null)

@@ -92,7 +92,7 @@ abstract class Persistence implements MutatorInterface
         $rawData = $query->getRow();
 
         if ($rawData === null) {
-            throw new Model\RecordNotFoundException();
+            throw new Model\RecordNotFoundException($model, $id);
         }
 
         return $this->decodeRow($model, $rawData);

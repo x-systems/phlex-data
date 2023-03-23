@@ -9,12 +9,7 @@ use Phlex\Data\Model;
 
 class RecordNotFoundException extends Exception
 {
-    public function __construct(string $message = '', int $code = 0, \Throwable $previous = null)
-    {
-        parent::__construct($message ?: 'Record not found', $code ?: 404, $previous);
-    }
-
-    public function setRecordParameters(Model $model, $id = null)
+    public function __construct(Model $model, $id = null)
     {
         $this
             ->addMoreInfo('model', $model)
@@ -24,6 +19,6 @@ class RecordNotFoundException extends Exception
             $this->addMoreInfo('id', $id);
         }
 
-        return $this;
+        parent::__construct('Record not found', 404);
     }
 }

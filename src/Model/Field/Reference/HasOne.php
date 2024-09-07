@@ -16,7 +16,7 @@ class HasOne extends Model\Field\Reference
      *
      * @var string
      */
-    public $type = 'integer';
+    public $type = 'reference_integerkey';
 
     /**
      * Is it system field?
@@ -120,7 +120,7 @@ class HasOne extends Model\Field\Reference
 
         if (!$ourModel->hasField($this->ourKey)) {
             $ourModel->addField($this->ourKey, [
-                'type' => $this->type,
+                'type' => $this->getOurFieldType(),
                 'system' => $this->system,
                 'joinName' => $this->joinName,
                 'default' => $this->default,

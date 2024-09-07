@@ -29,6 +29,18 @@ class PersistentSqlTest extends Sql\TestCase
             Model\Field\Type\Text::class => [Persistence\Sql\Codec\Text::class],
         ], $persistence->getCodecs());
 
+        $this->assertSame([
+            Model\Field\Type\Reference\IntegerKey::resolveFromRegistry($persistence->getCodecs()),
+            Model\Field\Type\Reference\MultipleKeys::resolveFromRegistry($persistence->getCodecs()),
+            Model\Field\Type\Reference\SingleRecord::resolveFromRegistry($persistence->getCodecs()),
+            Model\Field\Type\Reference\MultipleRecords::resolveFromRegistry($persistence->getCodecs()),
+        ], [
+            [Persistence\Sql\Codec\Integer::class],
+            [Persistence\Sql\Codec\Selectable::class],
+            [Persistence\Sql\Platform\Oracle\Codec\Array_::class],
+            [Persistence\Sql\Platform\Oracle\Codec\Array_::class],
+        ]);
+
         $persistence->setCodecs([
             Model\Field\Type\Object_::class => ['fake_class'],
         ]);

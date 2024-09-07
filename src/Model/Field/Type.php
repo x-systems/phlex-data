@@ -31,6 +31,10 @@ abstract class Type
         'list' => [Type\Selectable::class, 'allowMultipleSelection' => true],
         'array' => [Type\Array_::class],
         'object' => [Type\Object_::class],
+        'reference_integerkey' => [Type\Reference\IntegerKey::class],
+        'reference_multiplekeys' => [Type\Reference\MultipleKeys::class],
+        'reference_singlerecord' => [Type\Reference\SingleRecord::class],
+        'reference_multiplerecords' => [Type\Reference\MultipleRecords::class],
     ];
 
     /**

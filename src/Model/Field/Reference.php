@@ -139,6 +139,11 @@ class Reference extends Model\Field
         return $this->ourKey ?: $this->getOurModel()->primaryKey;
     }
 
+    public function getOurFieldType(): Type\ReferenceInterface
+    {
+        return Factory::factory(Factory::mergeSeeds(Type::resolve($this->type), ['reference' => $this]));
+    }
+
     /**
      * Create destination model that is linked through this reference. Will apply
      * necessary conditions.

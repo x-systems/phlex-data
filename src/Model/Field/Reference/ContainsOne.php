@@ -17,7 +17,7 @@ class ContainsOne extends Model\Field\Reference
      *
      * @var string
      */
-    public $type = 'array';
+    public $type = 'reference_singlerecord';
 
     /**
      * Is it system field?
@@ -60,7 +60,7 @@ class ContainsOne extends Model\Field\Reference
 
         if (!$ourModel->hasElement($ourKey)) {
             $ourModel->addField($ourKey, [
-                'type' => $this->type,
+                'type' => $this->getOurFieldType(),
                 'system' => $this->system,
                 'caption' => $this->caption, // it's ref models caption, but we can use it here for field too
                 'ui' => array_merge([

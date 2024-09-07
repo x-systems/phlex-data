@@ -12,6 +12,8 @@ use Phlex\Data\Persistence;
  */
 class ContainsMany extends ContainsOne
 {
+    public $type = 'reference_multiplerecords';
+
     protected function getDefaultPersistence(Model $theirModel)
     {
         $persistence = new Persistence\Array_([

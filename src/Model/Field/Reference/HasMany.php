@@ -16,7 +16,7 @@ class HasMany extends Model\Field\Reference
      *
      * @var string
      */
-    public $type = 'list';
+    public $type = 'reference_multiplekeys';
 
     /**
      * Is it system field?
@@ -122,7 +122,7 @@ class HasMany extends Model\Field\Reference
 
         if (!$ourModel->hasField($this->ourKey)) {
             $ourModel->addField($this->ourKey, [
-                'type' => $this->type,
+                'type' => $this->getOurFieldType(),
                 'system' => $this->system,
                 'joinName' => $this->joinName,
                 'default' => $this->default,

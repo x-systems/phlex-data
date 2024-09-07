@@ -17,10 +17,10 @@ use Phlex\Data\MutatorInterface;
  */
 class Field
 {
+    use ElementTrait;
     use Field\TypeTrait;
     use InjectableTrait;
     use JoinLinkTrait;
-    use Model\ElementTrait;
     use OptionsTrait;
     use TrackableTrait;
 
@@ -277,9 +277,9 @@ class Field
      */
     public function compare($value, $value2 = null): bool
     {
-//         if (func_num_args() === 1) {
-//             $value2 = $this->get();
-//         }
+        //         if (func_num_args() === 1) {
+        //             $value2 = $this->get();
+        //         }
 
         // TODO code below is not nice, we want to replace it, the purpose of the code is simply to
         // compare if typecasted values are the same using strict comparison (===) or nor

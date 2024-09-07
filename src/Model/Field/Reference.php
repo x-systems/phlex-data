@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Model\Field;
 
 use Phlex\Core\Factory;
+use Phlex\Core\InitializerTrait;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
@@ -20,7 +21,7 @@ use Phlex\Data\Persistence;
  */
 class Reference extends Model\Field
 {
-    use \Phlex\Core\InitializerTrait;
+    use InitializerTrait;
 
     /**
      * Option to use for linking a model to this reference when it is theirModel.

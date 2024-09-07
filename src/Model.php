@@ -277,7 +277,7 @@ class Model implements \IteratorAggregate
      */
     public function __construct(Persistence $persistence = null, array $defaults = [])
     {
-        $this->scope = \Closure::bind(fn () => new Model\Scope\RootScope(), null, Model\Scope\RootScope::class)()
+        $this->scope = \Closure::bind(static fn () => new Model\Scope\RootScope(), null, Model\Scope\RootScope::class)()
             ->setModel($this);
 
         $this->setDefaults($defaults);
@@ -372,7 +372,7 @@ class Model implements \IteratorAggregate
         $this->addUserAction('delete', [
             'appliesTo' => Model\UserAction::APPLIES_TO_SINGLE_RECORD,
             'modifier' => Model\UserAction::MODIFIER_DELETE,
-            'callback' => fn ($model) => $model->delete(),
+            'callback' => static fn ($model) => $model->delete(),
         ]);
 
         $this->addUserAction('validate', [
@@ -676,7 +676,7 @@ class Model implements \IteratorAggregate
     {
         $key = $this->titleKey && $this->hasField($this->titleKey) ? $this->titleKey : $this->primaryKey;
 
-        return array_map(fn ($row) => $row[$key], $this->export([$key], $this->primaryKey));
+        return array_map(static fn ($row) => $row[$key], $this->export([$key], $this->primaryKey));
     }
 
     /**
@@ -1653,14 +1653,14 @@ class Model implements \IteratorAggregate
      */
     public function __debugInfo(): array
     {
-//         if ($this->isEntity()) {
-//             return [
-//                 'entityId' => $this->primaryKey && $this->hasField($this->primaryKey)
-//                     ? (($this->entityId !== null ? $this->entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null'))
-//                     : 'no id field',
-//                 'model' => $this->__debugInfo(),
-//             ];
-//         }
+        //         if ($this->isEntity()) {
+        //             return [
+        //                 'entityId' => $this->primaryKey && $this->hasField($this->primaryKey)
+        //                     ? (($this->entityId !== null ? $this->entityId . ($this->getId() !== null ? '' : ' (unloaded)') : 'null'))
+        //                     : 'no id field',
+        //                 'model' => $this->__debugInfo(),
+        //             ];
+        //         }
 
         return [
             'table' => $this->table,

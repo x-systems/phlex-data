@@ -285,7 +285,7 @@ class TypecastingTest extends Sql\TestCase
         $m->addField('float', ['type' => 'float']);
         $m->addField('integer', ['type' => 'integer']);
 
-        $rot = fn ($v) => str_rot13($v);
+        $rot = static fn ($v) => str_rot13($v);
 
         $m->addField('rot13', ['type' => ['string', 'codec' => [Persistence\Sql\Codec\Dynamic::class, 'encodeFx' => $rot, 'decodeFx' => $rot]]]);
 

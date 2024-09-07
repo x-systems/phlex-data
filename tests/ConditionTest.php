@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
+use Phlex\Core\Exception;
+use Phlex\Core\PHPUnit\TestCase;
 use Phlex\Data\Model;
 
-class ConditionTest extends \Phlex\Core\PHPUnit\TestCase
+class ConditionTest extends TestCase
 {
     public function testException1()
     {
@@ -14,7 +16,7 @@ class ConditionTest extends \Phlex\Core\PHPUnit\TestCase
         $m = new Model();
         $m->addField('name');
 
-        $this->expectException(\Phlex\Core\Exception::class);
+        $this->expectException(Exception::class);
         $m->addCondition('last_name', 'Smith');
     }
 

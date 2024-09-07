@@ -63,7 +63,7 @@ class SoftDeleteController
             return $active ? 'Active' : 'Deactivated';
         };
 
-        $value = function (Model\Scope\Condition $condition) {
+        $value = function (Scope\Condition $condition) {
             $active = $condition->getModel()->getOption(self::OPTION_RETRIEVE, $this->defaultRetrieveMode);
 
             if ($active === null) {
@@ -73,7 +73,7 @@ class SoftDeleteController
             return $active;
         };
 
-        $model->addCondition($this->useFieldName, new Model\Scope\Placeholder($caption, $value));
+        $model->addCondition($this->useFieldName, new Scope\Placeholder($caption, $value));
 
         $model->addMethod('deactivate', \Closure::fromCallable([self::class, 'deactivate']));
         $model->addMethod('reactivate', \Closure::fromCallable([self::class, 'reactivate']));

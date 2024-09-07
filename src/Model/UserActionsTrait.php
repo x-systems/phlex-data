@@ -15,7 +15,7 @@ trait UserActionsTrait
      *
      * @var string|array
      */
-    public $_default_seed_action = [Model\UserAction::class];
+    public $_default_seed_action = [UserAction::class];
 
     /**
      * @var array Collection of user actions - using key as action system name
@@ -29,7 +29,7 @@ trait UserActionsTrait
      * @param string         $name     Action name
      * @param array|\Closure $defaults
      */
-    public function addUserAction(string $name, $defaults = []): Model\UserAction
+    public function addUserAction(string $name, $defaults = []): UserAction
     {
         if ($defaults instanceof \Closure) {
             $defaults = ['callback' => $defaults];
@@ -39,7 +39,7 @@ trait UserActionsTrait
             $defaults['caption'] = Utils::getReadableCaption($name);
         }
 
-        /** @var Model\UserAction $action */
+        /** @var UserAction $action */
         $action = Factory::factory($this->_default_seed_action, $defaults);
 
         $this->_addIntoCollection($name, $action, 'userActions');
@@ -55,7 +55,7 @@ trait UserActionsTrait
      */
     public function getUserActions(string $appliesTo = null): array
     {
-        return array_filter($this->userActions, fn ($action) => !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo));
+        return array_filter($this->userActions, static fn ($action) => !$action->system && ($appliesTo === null || $action->appliesTo === $appliesTo));
     }
 
     /**
@@ -73,7 +73,7 @@ trait UserActionsTrait
      *
      * @param string $name Action name
      */
-    public function getUserAction(string $name): Model\UserAction
+    public function getUserAction(string $name): UserAction
     {
         return $this->_getFromCollection($name, 'userActions');
     }

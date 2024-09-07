@@ -105,7 +105,7 @@ class Union extends Model
         return $this;
     }
 
-    public function addField(string $key, $seed = []): Model\Field
+    public function addField(string $key, $seed = []): Field
     {
         $field = parent::addField($key, $seed);
 
@@ -122,7 +122,7 @@ class Union extends Model
         return $field;
     }
 
-    protected function addNestedModelField(string $nestedModelAlias, Model\Field $unionField)
+    protected function addNestedModelField(string $nestedModelAlias, Field $unionField)
     {
         $actual = $unionField->getOption(self::OPTION_FIELD_ACTUAL);
 

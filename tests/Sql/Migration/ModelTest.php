@@ -8,8 +8,10 @@ use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
 use Phlex\Data\Model;
+use Phlex\Data\Persistence\Sql\Codec\Blob;
+use Phlex\Data\Tests\Sql\TestCase;
 
-class ModelTest extends \Phlex\Data\Tests\Sql\TestCase
+class ModelTest extends TestCase
 {
     /**
      * @doesNotPerformAssertions
@@ -77,26 +79,26 @@ class ModelTest extends \Phlex\Data\Tests\Sql\TestCase
         $this->assertSame($q1, $q2);
     }
 
-//     /**
-//      * @doesNotPerformAssertions
-//      */
-//     public function testMigrateTable()
-//     {
-//         $this->dropTableIfExists('user');
-//         $migrator = $this->createMigrator();
-//         $migrator->table('user')->id()
-//             ->field('foo')
-//             ->field('bar', ['type' => 'integer'])
-//             ->field('baz', ['type' => 'text'])
-//             ->create();
-//         $this->db->dsql()->table('user')
-//             ->set([
-//                 'id' => 1,
-//                 'foo' => 'foovalue',
-//                 'bar' => 123,
-//                 'baz' => 'long text value',
-//             ])->insert();
-//     }
+    //     /**
+    //      * @doesNotPerformAssertions
+    //      */
+    //     public function testMigrateTable()
+    //     {
+    //         $this->dropTableIfExists('user');
+    //         $migrator = $this->createMigrator();
+    //         $migrator->table('user')->id()
+    //             ->field('foo')
+    //             ->field('bar', ['type' => 'integer'])
+    //             ->field('baz', ['type' => 'text'])
+    //             ->create();
+    //         $this->db->dsql()->table('user')
+    //             ->set([
+    //                 'id' => 1,
+    //                 'foo' => 'foovalue',
+    //                 'bar' => 123,
+    //                 'baz' => 'long text value',
+    //             ])->insert();
+    //     }
 
     public function testCreateModel()
     {
@@ -135,7 +137,7 @@ class ModelTest extends \Phlex\Data\Tests\Sql\TestCase
         $model = new Model($this->db, ['table' => 'user']);
         $model->addField('string');
         $model->addField('text', ['type' => 'text']);
-        $model->addField('blob', ['type' => ['text', 'codec' => \Phlex\Data\Persistence\Sql\Codec\Blob::class]]);
+        $model->addField('blob', ['type' => ['text', 'codec' => Blob::class]]);
         $model->setOrder('id');
 
         $model->migrate();
@@ -160,7 +162,7 @@ class ModelTest extends \Phlex\Data\Tests\Sql\TestCase
     }
 }
 
-class TestUser extends \Phlex\Data\Model
+class TestUser extends Model
 {
     public $table = 'user';
 
@@ -177,7 +179,7 @@ class TestUser extends \Phlex\Data\Model
     }
 }
 
-class TestRole extends \Phlex\Data\Model
+class TestRole extends Model
 {
     public $table = 'role';
 

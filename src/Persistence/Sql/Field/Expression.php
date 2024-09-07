@@ -64,9 +64,7 @@ class Expression extends Sql\Field
      * Possibly that user will attempt to insert values here. If that is the case, then
      * we would need to inject it into related WithMany relationship.
      */
-    public function afterSave()
-    {
-    }
+    public function afterSave() {}
 
     public function getAlias(): ?string
     {

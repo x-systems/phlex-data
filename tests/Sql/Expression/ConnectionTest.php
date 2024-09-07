@@ -8,21 +8,13 @@ use Phlex\Core\Exception;
 use Phlex\Core\PHPUnit;
 use Phlex\Data\Persistence;
 
-class DummyConnection extends Persistence\Sql
-{
-}
+class DummyConnection extends Persistence\Sql {}
 
-class DummyConnection2 extends Persistence\Sql
-{
-}
+class DummyConnection2 extends Persistence\Sql {}
 
-class DummyConnection3 extends Persistence\Sql
-{
-}
+class DummyConnection3 extends Persistence\Sql {}
 
-class DummyConnection4 extends Persistence\Sql
-{
-}
+class DummyConnection4 extends Persistence\Sql {}
 
 class ConnectionTest extends PHPUnit\TestCase
 {
@@ -112,23 +104,23 @@ class ConnectionTest extends PHPUnit\TestCase
         Persistence\Sql::connect('');
     }
 
-//     public function testException3()
-//     {
-//         $this->expectException(\PDOException::class);
-//         new Persistence\Sql\Platform\Sqlite('sqlite::memory');
-//     }
+    //     public function testException3()
+    //     {
+    //         $this->expectException(\PDOException::class);
+    //         new Persistence\Sql\Platform\Sqlite('sqlite::memory');
+    //     }
 
-//     public function testException4()
-//     {
-//         $c = new Persistence\Sql\Platform\Sqlite();
-//         $q = $c->expr('select (2+2)');
+    //     public function testException4()
+    //     {
+    //         $c = new Persistence\Sql\Platform\Sqlite();
+    //         $q = $c->expr('select (2+2)');
 
-//         $this->assertSame(
-//             'select (2+2)',
-//             $q->render()
-//         );
+    //         $this->assertSame(
+    //             'select (2+2)',
+    //             $q->render()
+    //         );
 
-//         $this->expectException(Exception::class);
-//         $q->execute();
-//     }
+    //         $this->expectException(Exception::class);
+    //         $q->execute();
+    //     }
 }

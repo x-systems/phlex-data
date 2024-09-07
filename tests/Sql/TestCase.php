@@ -7,6 +7,7 @@ namespace Phlex\Data\Tests\Sql;
 use Doctrine\DBAL\Logging\SQLLogger;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Platforms\MySQLPlatform;
+use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
@@ -62,9 +63,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                         echo "\n" . $sql . "\n" . print_r($params, true) . "\n\n";
                     }
 
-                    public function stopQuery(): void
-                    {
-                    }
+                    public function stopQuery(): void {}
                 }
             );
         }
@@ -207,7 +206,7 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
                     }
 
                     if (is_resource($v) && get_resource_type($v) === 'stream'
-                        && $this->db->connection->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\OraclePlatform) {
+                        && $this->db->connection->getDatabasePlatform() instanceof OraclePlatform) {
                         $v = stream_get_contents($v);
                     }
                 }

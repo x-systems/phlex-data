@@ -9,6 +9,4 @@ use Phlex\Data\Persistence;
 /**
  * Class to perform queries on Csv persistence.
  */
-class Query extends Persistence\Iterator\Query
-{
-}
+class Query extends Persistence\Iterator\Query {}

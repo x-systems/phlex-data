@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Phlex\Data\Model;
+use Phlex\Data\Tests\Model\User;
 
 /**
  * @method deactivate()
@@ -12,7 +13,7 @@ use Phlex\Data\Model;
  * @method isActive()
  * @method ignoringSoftDeleteFlag(\Closure $fx)
  */
-class SD_User extends \Phlex\Data\Tests\Model\User
+class SD_User extends User
 {
     public $table = 'user';
 
@@ -105,7 +106,7 @@ class ModelSoftDeleteTest extends Sql\TestCase
 
         $users = new SD_User($this->db);
 
-        $users->ignoringSoftDeleteFlag(function ($users) {
+        $users->ignoringSoftDeleteFlag(static function ($users) {
             $users->load(2)->reactivate();
         });
 

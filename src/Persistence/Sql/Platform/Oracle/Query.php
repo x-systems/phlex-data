@@ -15,7 +15,7 @@ class Query extends Persistence\Sql\Query
 {
     public function doGetRows(): array
     {
-        return array_map(function ($row) {
+        return array_map(static function ($row) {
             unset($row['__phlex_rownum']);
 
             return $row;

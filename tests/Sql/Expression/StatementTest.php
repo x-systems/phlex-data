@@ -1275,11 +1275,11 @@ class StatementTest extends PHPUnit\TestCase
     /**
      * Value [false] is not supported by SQL.
      */
-//     public function testSetException1()
-//     {
-//         $this->expectException(Exception::class);
-//         $this->q()->set('name', false);
-//     }
+    //     public function testSetException1()
+    //     {
+    //         $this->expectException(Exception::class);
+    //         $this->q()->set('name', false);
+    //     }
 
     /**
      * Field name can be Sql\Expression.

@@ -170,14 +170,14 @@ class ExpressionTest extends PHPUnit\TestCase
     }
 
     /**
-     * @dataProvider provideNoTemplatingInSqlStringData
+     * @dataProvider provideNoTemplatingInSqlStringCases
      */
     public function testNoTemplatingInSqlString(string $expectedStr, string $exprStr, array $exprArgs)
     {
         $this->assertSame($expectedStr, $this->e($exprStr, $exprArgs)->render());
     }
 
-    public function provideNoTemplatingInSqlStringData()
+    public function provideNoTemplatingInSqlStringCases(): iterable
     {
         $testStrs = [];
         foreach (['\'', '"', '`'] as $enclosureChar) {

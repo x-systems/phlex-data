@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field\Type;
 
+use Phlex\Data\Model\Field\Type;
+
 /**
  * Basic numeric field type. Think of it as field type "float" in past.
  */
-class Float_ extends \Phlex\Data\Model\Field\Type
+class Float_ extends Type
 {
     /**
      * @var int specify how many decimal numbers should be saved

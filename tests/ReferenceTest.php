@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Phlex\Core\Exception;
+use Phlex\Core\PHPUnit\TestCase;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
+class ReferenceTest extends TestCase
 {
     public function testBasicReferences()
     {
@@ -29,7 +30,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame(20, $o->get('amount'));
         $this->assertSame(1, $o->get('user_id'));
 
-        $user->withMany('BigOrders', ['theirModel' => function () {
+        $user->withMany('BigOrders', ['theirModel' => static function () {
             $m = new Model();
             $m->addField('amount', ['default' => 100]);
             $m->addField('user_id');
@@ -98,9 +99,9 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
     {
         $db = new Persistence\Array_();
         $order = new Model($db, ['table' => 'order']);
-        $order->addReference('archive', ['theirModel' => fn () => new $order(null, ['table' => $order->table . '_archive'])]);
+        $order->addReference('archive', ['theirModel' => static fn () => new $order(null, ['table' => $order->table . '_archive'])]);
         $this->expectException(Exception::class);
-        $order->addReference('archive', ['theirModel' => fn () => new $order(null, ['table' => $order->table . '_archive'])]);
+        $order->addReference('archive', ['theirModel' => static fn () => new $order(null, ['table' => $order->table . '_archive'])]);
     }
 
     public function testCustomRef(): void
@@ -108,7 +109,7 @@ class ReferenceTest extends \Phlex\Core\PHPUnit\TestCase
         $p = new Persistence\Array_();
 
         $m = new Model($p, ['table' => 'user']);
-        $m->addReference('archive', ['theirModel' => fn () => new $m(null, ['table' => $m->table . '_archive'])]);
+        $m->addReference('archive', ['theirModel' => static fn () => new $m(null, ['table' => $m->table . '_archive'])]);
 
         $this->assertSame('user_archive', $m->ref('archive')->table);
     }

@@ -93,9 +93,6 @@ class Array_ extends Persistence
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function add(Model $model, array $defaults = []): Model
     {
         if (isset($defaults[0])) {
@@ -170,7 +167,7 @@ class Array_ extends Persistence
         return (string) ($this->autoIncrement['$'] ?? null);
     }
 
-    public function query(Model $model): Persistence\Query
+    public function query(Model $model): Query
     {
         return new Array_\Query($model);
     }

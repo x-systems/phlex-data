@@ -35,7 +35,7 @@ class Query extends Persistence\Query
 
         $this->iterator = $this->getPersistence()->getRawDataIterator($model);
 
-        $this->fx = fn (\Iterator $iterator) => new Query\Result($iterator);
+        $this->fx = static fn (\Iterator $iterator) => new Query\Result($iterator);
     }
 
     protected function initSelect($fields = null): void
@@ -45,7 +45,7 @@ class Query extends Persistence\Query
 
             $keys = array_flip((array) $this->fields);
 
-            $this->fx = fn (\Iterator $iterator) => new Query\Result(new CallableIterator($iterator, fn ($row) => array_intersect_key($row, $keys)));
+            $this->fx = static fn (\Iterator $iterator) => new Query\Result(new CallableIterator($iterator, static fn ($row) => array_intersect_key($row, $keys)));
         }
     }
 
@@ -211,7 +211,7 @@ class Query extends Persistence\Query
 
                 break;
             case 'AVG':
-                $column = $coalesce ? $column : array_filter($column, fn ($value) => $value !== null);
+                $column = $coalesce ? $column : array_filter($column, static fn ($value) => $value !== null);
 
                 $result = array_sum($column) / count($column);
 
@@ -266,7 +266,7 @@ class Query extends Persistence\Query
         $match = false;
 
         // simple condition
-        if ($condition instanceof Model\Scope\Condition) {
+        if ($condition instanceof Condition) {
             $args = $condition->toQueryArguments();
 
             $field = $args[0];

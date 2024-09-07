@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests\Hintable;
 
+use Phlex\Core\PHPUnit\TestCase;
 use Phlex\Data\Exception;
 use Phlex\Data\Persistence;
+use Phlex\Data\Persistence\Array_;
 
-class HintableModelArrayTest extends \Phlex\Core\PHPUnit\TestCase
+class HintableModelArrayTest extends TestCase
 {
     public function testKey(): void
     {
@@ -35,14 +37,14 @@ class HintableModelArrayTest extends \Phlex\Core\PHPUnit\TestCase
 
     protected function createPersistence(): Persistence
     {
-        return new \Phlex\Data\Persistence\Array_();
+        return new Array_();
     }
 
     protected function createDatabaseForRefTest(): Persistence
     {
         $db = $this->createPersistence();
 
-        $db->atomic(function () use ($db) {
+        $db->atomic(static function () use ($db) {
             $simple1 = (new Model\Simple($db))->createEntity()
                 ->set(Model\Simple::hint()->key()->x, 'a')
                 ->save();
@@ -126,7 +128,7 @@ class HintableModelArrayTest extends \Phlex\Core\PHPUnit\TestCase
         $this->assertSame(1, $model->simpleMany->loadAny()->id);
         $this->assertSame(2, $model->load(12)->simpleMany->loadAny()->id);
 
-        $this->assertSame([2 => 2, 3 => 3], array_map(fn (Model\Simple $model) => $model->id, iterator_to_array($model->load(12)->simpleMany)));
+        $this->assertSame([2 => 2, 3 => 3], array_map(static fn (Model\Simple $model) => $model->id, iterator_to_array($model->load(12)->simpleMany)));
     }
 
     public function testRefManyIsNotEntity(): void

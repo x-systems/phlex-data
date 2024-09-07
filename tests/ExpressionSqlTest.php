@@ -69,7 +69,7 @@ class ExpressionSqlTest extends Sql\TestCase
         ]);
 
         $i = (new Model($this->db, ['table' => 'invoice']))->addFields(['total_net', 'total_vat']);
-        $i->addExpression('total_gross', fn ($i) => '[total_net]+[total_vat]');
+        $i->addExpression('total_gross', static fn ($i) => '[total_net]+[total_vat]');
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
@@ -141,7 +141,7 @@ class ExpressionSqlTest extends Sql\TestCase
                 'select `id`,`name`,`surname`,`cached_name`,(concat(`name`,\' \',`surname`)) `full_name` from `user` where ((concat(`name`,\' \',`surname`)) != `cached_name`)',
                 $m->toQuery()->select()->getDebugQuery()
             );
-        } elseif ($this->getDatabasePlatform() instanceof SQlitePlatform) {
+        } elseif ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSame(
                 'select "id","name","surname","cached_name",("name" || \' \' || "surname") "full_name" from "user" where (("name" || \' \' || "surname") != "cached_name")',
                 $m->toQuery()->select()->getDebugQuery()

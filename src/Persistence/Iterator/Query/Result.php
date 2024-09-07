@@ -126,9 +126,7 @@ class Result extends \Doctrine\DBAL\Result
         return count($firstRow);
     }
 
-    public function free(): void
-    {
-    }
+    public function free(): void {}
 
     protected function getFreshIterator(): ?\Traversable
     {

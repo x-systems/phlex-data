@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests;
 
 use Doctrine\DBAL\Platforms\SQLServer2012Platform;
+use Phlex\Core\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Util\DeepCopy;
 use Phlex\Data\Util\DeepCopyException;
@@ -282,7 +283,7 @@ class DeepCopyTest extends Sql\TestCase
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function ($m) {
             if (!$m->get('ref')) {
-                throw new \Phlex\Core\Exception('no ref');
+                throw new Exception('no ref');
             }
         });
 
@@ -323,7 +324,7 @@ class DeepCopyTest extends Sql\TestCase
         $invoice = new DcInvoice();
         $invoice->onHook(DeepCopy::HOOK_AFTER_COPY, static function ($m) {
             if (!$m->get('ref')) {
-                throw new \Phlex\Core\Exception('no ref');
+                throw new Exception('no ref');
             }
         });
 
@@ -341,7 +342,7 @@ class DeepCopyTest extends Sql\TestCase
                 ->to($invoice)
                 ->with(['Lines'])
                 ->copy();
-        } catch (\Phlex\Data\Util\DeepCopyException $e) {
+        } catch (DeepCopyException $e) {
             $this->assertSame('Mandatory field value cannot be null', $e->getPrevious()->getMessage());
 
             throw $e;

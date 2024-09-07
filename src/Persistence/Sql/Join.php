@@ -55,7 +55,7 @@ class Join extends Model\Join implements Expressionable
     {
         parent::doInitialize();
 
-        $this->getOwner()->setOption(Persistence\Sql\Query::OPTION_FIELD_PREFIX);
+        $this->getOwner()->setOption(Query::OPTION_FIELD_PREFIX);
 
         // If kind is not specified, figure out join type
         if (!isset($this->kind)) {
@@ -101,7 +101,7 @@ class Join extends Model\Join implements Expressionable
     /**
      * Returns DSQL query.
      */
-    public function statement(): Persistence\Sql\Statement
+    public function statement(): Statement
     {
         $statement = $this->getPersistence()->query($this->getOwner())->getStatement(); // @phpstan-ignore-line
 

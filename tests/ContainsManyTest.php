@@ -256,7 +256,7 @@ class ContainsManyTest extends Sql\TestCase
 
         // let's test how it all looks in persistence without encoding
         $exp_lines = $i->setOrder($i->key()->id)->export(null, null, false)[0][$i->key()->lines_data];
-        $formatDtForCompareFunc = function (\DateTimeInterface $dt): string {
+        $formatDtForCompareFunc = static function (\DateTimeInterface $dt): string {
             $dt = (clone $dt)->setTimeZone(new \DateTimeZone('UTC')); // @phpstan-ignore-line
 
             return $dt->format('Y-m-d H:i:s.u');

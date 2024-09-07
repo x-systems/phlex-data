@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Util;
 
-class DeepCopyException extends \Phlex\Data\Exception
+use Phlex\Data\Exception;
+
+class DeepCopyException extends Exception
 {
     public function addDepth(string $prefix)
     {

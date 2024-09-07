@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field\Type;
 
-class Text extends \Phlex\Data\Model\Field\Type
+use Phlex\Data\Model\Field\Type;
+
+class Text extends Type
 {
     /**
      * @var int|null specify a maximum length for this text

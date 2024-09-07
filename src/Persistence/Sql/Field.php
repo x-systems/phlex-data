@@ -10,7 +10,7 @@ use Phlex\Data\Persistence;
 use Phlex\Data\Persistence\Query;
 
 /**
- * @property Persistence\Sql\Join $join
+ * @property Join $join
  */
 class Field extends Model\Field implements Expressionable
 {

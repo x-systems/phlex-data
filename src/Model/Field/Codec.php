@@ -109,7 +109,7 @@ class Codec implements CodecInterface
     /**
      * Get field source value type.
      */
-    public function getValueType(): Model\Field\Type
+    public function getValueType(): Type
     {
         return $this->field->getValueType();
     }

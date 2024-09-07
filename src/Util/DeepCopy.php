@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Util;
 
+use Phlex\Core\DebugTrait;
+use Phlex\Core\Exception;
 use Phlex\Data\Model;
 
 /**
@@ -18,7 +20,7 @@ use Phlex\Data\Model;
  */
 class DeepCopy
 {
-    use \Phlex\Core\DebugTrait;
+    use DebugTrait;
 
     /** @const string */
     public const HOOK_AFTER_COPY = self::class . '@afterCopy';
@@ -296,7 +298,7 @@ class DeepCopy
             return $destination;
         } catch (DeepCopyException $e) {
             throw $e;
-        } catch (\Phlex\Core\Exception $e) {
+        } catch (Exception $e) {
             $this->debug('noticed a problem');
 
             throw (new DeepCopyException('Problem cloning model', 0, $e))

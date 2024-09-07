@@ -6,6 +6,7 @@ namespace Phlex\Data\Tests;
 
 use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
 use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Phlex\Data\Exception;
 use Phlex\Data\Model;
 
 class ConditionSqlTest extends Sql\TestCase
@@ -54,8 +55,8 @@ class ConditionSqlTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'user']);
         $scope = $m->scope();
         $this->assertNotSame($scope, $m->createEntity()->scope());
-//         $this->expectException(\Phlex\Data\Exception::class);
-//         $m->createEntity()->scope();
+        //         $this->expectException(\Phlex\Data\Exception::class);
+        //         $m->createEntity()->scope();
     }
 
     public function testEntityReloadWithDifferentIdException()
@@ -73,7 +74,7 @@ class ConditionSqlTest extends Sql\TestCase
         $e = $m->tryLoad(1);
         $this->assertSame('John', $e->get('name'));
 
-        $this->expectException(\Phlex\Data\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessageMatches('~set value of readOnly field~');
         $e->set('id', 2);
     }

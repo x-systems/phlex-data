@@ -7,6 +7,7 @@ namespace Phlex\Data\Tests;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
+use Phlex\Data\Persistence\Sql\Field;
 
 class Model_Rate extends Model
 {
@@ -324,24 +325,24 @@ class RandomTest extends Sql\TestCase
 
     // @todo: activate when morphing of seeds to more specific class tested
     // e.g. \Phlex\Data\Model\Field should be transformed to Phlex\Data\Persistence\Sql\Field for the persistence in Model::addField
-//     public function testNonSqlFieldClass()
-//     {
-//         $db = new Persistence\Sql($this->db->connection);
-//         $this->setDb([
-//             'rate' => [
-//                 ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
-//             ],
-//         ]);
+    //     public function testNonSqlFieldClass()
+    //     {
+    //         $db = new Persistence\Sql($this->db->connection);
+    //         $this->setDb([
+    //             'rate' => [
+    //                 ['dat' => '18/12/12', 'bid' => 3.4, 'ask' => 9.4, 'x1' => 'y1', 'x2' => 'y2'],
+    //             ],
+    //         ]);
 
-//         $m = new Model_Rate($db);
-//         $m->addField('x1', new \Phlex\Data\Persistence\Sql\Field());
-//         $m->addField('x2', new \Phlex\Data\Model\Field());
-//         $m->load(1);
+    //         $m = new Model_Rate($db);
+    //         $m->addField('x1', new \Phlex\Data\Persistence\Sql\Field());
+    //         $m->addField('x2', new \Phlex\Data\Model\Field());
+    //         $m->load(1);
 
-//         $this->assertEquals(3.4, $m->get('bid'));
-//         $this->assertSame('y1', $m->get('x1'));
-//         $this->assertSame('y2', $m->get('x2'));
-//     }
+    //         $this->assertEquals(3.4, $m->get('bid'));
+    //         $this->assertSame('y1', $m->get('x1'));
+    //         $this->assertSame('y2', $m->get('x2'));
+    //     }
 
     public function testModelCaption(): void
     {
@@ -520,6 +521,4 @@ class RandomTest extends Sql\TestCase
     }
 }
 
-class CustomField extends \Phlex\Data\Persistence\Sql\Field
-{
-}
+class CustomField extends Field {}

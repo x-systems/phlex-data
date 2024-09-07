@@ -8,6 +8,7 @@ use Doctrine\DBAL;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
+use PHPUnit\Framework\TestCase;
 
 class Oracle extends Persistence\Sql
 {
@@ -82,8 +83,8 @@ class Oracle extends Persistence\Sql
         // is shown randomly when a lot of connections are created in tests,
         // so for CI, fix this issue by reusing the previous PDO connection
         // TODO remove once phlex-data tests can be run consistently without errors
-        if (class_exists(\PHPUnit\Framework\TestCase::class, false)) { // called from phpunit
-            $notReusableFunc = function (string $message): void {
+        if (class_exists(TestCase::class, false)) { // called from phpunit
+            $notReusableFunc = static function (string $message): void {
                 echo "\n" . 'connection for CI can not be reused:' . "\n" . $message . "\n";
                 self::$ciLastConnectPdo = null;
             };

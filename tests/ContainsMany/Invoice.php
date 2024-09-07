@@ -33,7 +33,7 @@ class Invoice extends Model
         $this->containsMany($this->key()->lines, ['theirModel' => [Line::class], 'caption' => 'My Invoice Lines']);
 
         // total_gross - calculated by php callback not by SQL expression
-        $this->addCalculatedField($this->key()->total_gross, function (self $m) {
+        $this->addCalculatedField($this->key()->total_gross, static function (self $m) {
             $total = 0;
             foreach ($m->lines as $line) {
                 $total += $line->total_gross;
@@ -43,7 +43,7 @@ class Invoice extends Model
         });
 
         // discounts_total_sum - calculated by php callback not by SQL expression
-        $this->addCalculatedField($this->key()->discounts_total_sum, function (self $m) {
+        $this->addCalculatedField($this->key()->discounts_total_sum, static function (self $m) {
             $total = 0;
             foreach ($m->lines as $line) {
                 $total += (float) $line->total_gross * (float) $line->discounts_percent / 100;

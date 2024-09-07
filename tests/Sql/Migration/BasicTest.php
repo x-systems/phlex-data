@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Phlex\Data\Tests\Sql\Migration;
 
 use Phlex\Data\Model;
+use Phlex\Data\Tests\Sql\TestCase;
 
-class BasicTest extends \Phlex\Data\Tests\Sql\TestCase
+class BasicTest extends TestCase
 {
     /**
      * Test constructor.

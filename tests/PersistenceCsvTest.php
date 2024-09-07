@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
+use Phlex\Core\PHPUnit\TestCase;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 use Phlex\Data\Tests\Model\Person;
 
-class PersistenceCsvTest extends \Phlex\Core\PHPUnit\TestCase
+class PersistenceCsvTest extends TestCase
 {
     /** @var \SplFileObject */
     protected $file;

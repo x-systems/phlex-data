@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
+use Phlex\Core\PHPUnit\TestCase;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class PersistentArrayOfStringsTest extends \Phlex\Core\PHPUnit\TestCase
+class PersistentArrayOfStringsTest extends TestCase
 {
     /**
      * Test typecasting.

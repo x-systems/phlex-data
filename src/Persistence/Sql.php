@@ -267,7 +267,7 @@ abstract class Sql extends Persistence
 
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-        \Closure::bind(function () use ($pdoConnection, $pdo): void {
+        \Closure::bind(static function () use ($pdoConnection, $pdo): void {
             $pdoConnection->connection = $pdo;
         }, null, DBAL\Driver\PDO\Connection::class)();
 
@@ -275,7 +275,7 @@ abstract class Sql extends Persistence
             'driver' => 'pdo_' . $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME),
         ]);
 
-        \Closure::bind(function () use ($dbalConnection, $pdoConnection): void {
+        \Closure::bind(static function () use ($dbalConnection, $pdoConnection): void {
             $dbalConnection->_conn = $pdoConnection;
         }, null, DBAL\Connection::class)();
 
@@ -334,7 +334,7 @@ abstract class Sql extends Persistence
         $model->addMethod('expr', static function (Model $m, $expr, $args = []) {
             preg_replace_callback(
                 '/\[[a-z0-9_]*\]|{[a-z0-9_]*}/i',
-                function ($matches) use (&$args, $m) {
+                static function ($matches) use (&$args, $m) {
                     $identifier = substr($matches[0], 1, -1);
                     if ($identifier && !isset($args[$identifier])) {
                         $args[$identifier] = $m->getField($identifier);
@@ -527,7 +527,7 @@ abstract class Sql extends Persistence
         ));
     }
 
-    public function query(Model $model = null): Persistence\Query
+    public function query(Model $model = null): Query
     {
         return new Sql\Query($model);
     }

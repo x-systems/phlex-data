@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field\Type;
 
+use Phlex\Data\Model\Field\Type;
+
 /**
  * Object field type. Think of it as field type "object" in past.
  */
-class Object_ extends \Phlex\Data\Model\Field\Type
+class Object_ extends Type
 {
     protected function doNormalize($value)
     {

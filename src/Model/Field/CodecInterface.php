@@ -14,5 +14,5 @@ interface CodecInterface
 
     public function getField(): Model\Field;
 
-    public function getValueType(): Model\Field\Type;
+    public function getValueType(): Type;
 }

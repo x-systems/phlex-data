@@ -191,7 +191,7 @@ class Csv extends Persistence
             return $this->fileObject->current();
         });
 
-        return array_map(fn ($name) => preg_replace('/[^a-z0-9_-]+/i', '_', $name), $header ?: []);
+        return array_map(static fn ($name) => preg_replace('/[^a-z0-9_-]+/i', '_', $name), $header ?: []);
     }
 
     private function executeRestoringPointer(\Closure $fx, array $args = [])
@@ -220,7 +220,7 @@ class Csv extends Persistence
         return (string) $this->lastInsertId;
     }
 
-    public function query(Model $model): Persistence\Query
+    public function query(Model $model): Query
     {
         return new Csv\Query($model);
     }

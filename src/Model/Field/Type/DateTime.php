@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field\Type;
 
+use Phlex\Data\Model\Field\Type;
+
 /**
  * Basic datetime field type. Think of it as field type "datetime" in past.
  */
-class DateTime extends \Phlex\Data\Model\Field\Type
+class DateTime extends Type
 {
     /**
      * DateTime class used for type = 'data', 'datetime', 'time' fields.

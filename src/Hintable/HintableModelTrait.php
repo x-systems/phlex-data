@@ -173,9 +173,9 @@ trait HintableModelTrait
     // TODO we can check once initialized (init was called for the 1st time), but not sooner,
     // otherwise init can not be overridden
     //    protected function doInitialize(): void
-//    {
-//        $this->checkRequireAllFieldsHintable(true);
-//    }
+    //    {
+    //        $this->checkRequireAllFieldsHintable(true);
+    //    }
 
     /**
      * Returns a magic class that pretends to be instance of this class, but in reality

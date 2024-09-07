@@ -86,10 +86,6 @@ class Email extends Model\Field\Type
 
     /**
      * Return translated address.
-     *
-     * @param string $domain
-     *
-     * @return string
      */
     protected function idn_to_ascii(?string $domain): ?string
     {

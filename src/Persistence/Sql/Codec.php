@@ -30,7 +30,7 @@ class Codec extends Persistence\Codec
     protected function isEncodable($value): bool
     {
         return parent::isEncodable($value)
-            && !$value instanceof Persistence\Sql\Expressionable;
+            && !$value instanceof Expressionable;
     }
 
     public function migrate(Migration $migrator): Column

@@ -31,12 +31,12 @@ class Line extends Model
         $this->addField($this->key()->qty, ['type' => 'float', 'required' => true]);
         $this->addField($this->key()->add_date, ['type' => 'datetime']);
 
-        $this->addExpression($this->key()->total_gross, fn (self $m) => $m->price * $m->qty * (1 + $m->vat_rate->rate / 100));
+        $this->addExpression($this->key()->total_gross, static fn (self $m) => $m->price * $m->qty * (1 + $m->vat_rate->rate / 100));
 
         // each line can have multiple discounts and calculate total of these discounts
         $this->containsMany($this->key()->discounts, ['theirModel' => [Discount::class]]);
 
-        $this->addCalculatedField($this->key()->discounts_percent, function ($m) {
+        $this->addCalculatedField($this->key()->discounts_percent, static function ($m) {
             $total = 0;
             foreach ($m->discounts as $d) {
                 $total += $d->percent;

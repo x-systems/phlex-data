@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests\Sql\Migration;
 
-class TestCaseTest extends \Phlex\Data\Tests\Sql\TestCase
+use Phlex\Data\Tests\Sql\TestCase;
+
+class TestCaseTest extends TestCase
 {
     public function testInit()
     {

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field\Type;
 
-class Selectable extends \Phlex\Data\Model\Field\Type
+use Phlex\Data\Model\Field\Type;
+
+class Selectable extends Type
 {
     /**
      * For fields that can be selected, values can represent interpretation of the values,

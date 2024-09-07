@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace Phlex\Data;
 
+use Phlex\Core\ContainerTrait;
+use Phlex\Core\DynamicMethodTrait;
 use Phlex\Core\Factory;
+use Phlex\Core\HookTrait;
+use Phlex\Core\InjectableTrait;
+use Phlex\Core\NameTrait;
 
 abstract class Persistence implements MutatorInterface
 {
-    use MutatorTrait;
-    use \Phlex\Core\ContainerTrait {
+    use ContainerTrait {
         add as _add;
     }
-    use \Phlex\Core\DynamicMethodTrait;
-    use \Phlex\Core\HookTrait;
-    use \Phlex\Core\InjectableTrait;
-    use \Phlex\Core\NameTrait;
+    use DynamicMethodTrait;
+    use HookTrait;
+    use InjectableTrait;
+    use MutatorTrait;
+    use NameTrait;
 
     /** @const string */
     public const HOOK_AFTER_ADD = self::class . '@afterAdd';
@@ -63,9 +68,7 @@ abstract class Persistence implements MutatorInterface
      * you can define additional methods or store additional data. This method
      * is executed before Model::doInitialize().
      */
-    protected function configure(Model $model)
-    {
-    }
+    protected function configure(Model $model) {}
 
     abstract public function query(Model $model): Persistence\Query;
 
@@ -167,7 +170,5 @@ abstract class Persistence implements MutatorInterface
 
     abstract public function lastInsertId(Model $model = null): string;
 
-    protected function syncIdSequence(Model $model): void
-    {
-    }
+    protected function syncIdSequence(Model $model): void {}
 }

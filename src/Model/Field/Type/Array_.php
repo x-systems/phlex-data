@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field\Type;
 
-class Array_ extends \Phlex\Data\Model\Field\Type
+use Phlex\Data\Model\Field\Type;
+
+class Array_ extends Type
 {
     protected function doNormalize($value)
     {

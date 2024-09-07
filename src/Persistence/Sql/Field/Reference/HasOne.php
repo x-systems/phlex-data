@@ -211,9 +211,9 @@ class HasOne extends Model\Field\Reference\HasOne
         }, [], 20);
 
         // Set ourField as not visible in grid by default
-//         if (!array_key_exists('visible', $this->getOurField()->ui)) {
-//             $this->getOurField()->ui['visible'] = false;
-//         }
+        //         if (!array_key_exists('visible', $this->getOurField()->ui)) {
+        //             $this->getOurField()->ui['visible'] = false;
+        //         }
 
         return $fieldExpression;
     }

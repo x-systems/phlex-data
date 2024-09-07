@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
+use Phlex\Data\Model;
 use Phlex\Data\Model\Field\Reference;
 
 /**
@@ -58,7 +59,7 @@ trait ReferencesTrait
      */
     protected function doAddReference(array $seed, string $key, array $defaults = []): Reference
     {
-        return $this->addField($key, Field\Reference::fromSeed($seed, $defaults));
+        return $this->addField($key, Reference::fromSeed($seed, $defaults));
     }
 
     /**
@@ -122,7 +123,7 @@ trait ReferencesTrait
     /**
      * Traverse to related model.
      *
-     * @return \Phlex\Data\Model
+     * @return Model
      */
     public function ref(string $key, array $defaults = []): self
     {
@@ -132,7 +133,7 @@ trait ReferencesTrait
     /**
      * Returns model that can be used for generating sub-query actions.
      *
-     * @return \Phlex\Data\Model
+     * @return Model
      */
     public function refLink(string $key, array $defaults = []): self
     {
@@ -152,7 +153,7 @@ trait ReferencesTrait
      */
     public function getReferences(): array
     {
-        return array_filter($this->getFields(), fn ($field) => $field instanceof Field\Reference);
+        return array_filter($this->getFields(), static fn ($field) => $field instanceof Reference);
     }
 
     /**

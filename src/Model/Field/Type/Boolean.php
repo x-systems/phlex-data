@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field\Type;
 
-class Boolean extends \Phlex\Data\Model\Field\Type
+use Phlex\Data\Model\Field\Type;
+
+class Boolean extends Type
 {
     /**
      * Value which will be used for "true".

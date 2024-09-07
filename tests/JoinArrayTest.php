@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
+use Phlex\Core\PHPUnit\TestCase;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class JoinArrayTest extends \Phlex\Core\PHPUnit\TestCase
+class JoinArrayTest extends TestCase
 {
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {

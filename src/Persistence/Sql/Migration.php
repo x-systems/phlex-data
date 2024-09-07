@@ -108,7 +108,7 @@ class Migration
     {
         $codec = $field->getCodec($this->persistence);
 
-        if (!$codec instanceof Persistence\Sql\Codec) {
+        if (!$codec instanceof Codec) {
             throw new Exception('Only fields with Persistence\Sql\Codec can be migrated to Persistence\Sql');
         }
 

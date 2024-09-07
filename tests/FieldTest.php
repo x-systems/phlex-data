@@ -477,7 +477,7 @@ class FieldTest extends Sql\TestCase
         $m = new Model($this->db, ['table' => 'invoice']);
         $m->addField('net', ['type' => 'money']);
         $m->addField('vat', ['type' => 'money']);
-        $m->addCalculatedField('total', fn ($m) => $m->get('net') + $m->get('vat'));
+        $m->addCalculatedField('total', static fn ($m) => $m->get('net') + $m->get('vat'));
         $m->insert(['net' => 30, 'vat' => 8]);
 
         $mm = $m->load(1);
@@ -509,7 +509,7 @@ class FieldTest extends Sql\TestCase
             ],
         ]);
 
-        $encrypt = function ($value, $field) {
+        $encrypt = static function ($value, $field) {
             if (!$field->getOwner()->persistence instanceof Persistence\Sql) {
                 return $value;
             }
@@ -524,7 +524,7 @@ class FieldTest extends Sql\TestCase
             return base64_encode($value);
         };
 
-        $decrypt = function ($value, $field) {
+        $decrypt = static function ($value, $field) {
             if (!$field->getOwner()->persistence instanceof Persistence\Sql) {
                 return $value;
             }
@@ -897,7 +897,7 @@ class FieldTest extends Sql\TestCase
         $this->assertNull($m->get('c'));
 
         // invalid value for set() - normalization must fail
-        $this->expectException(\Phlex\Data\Exception::class);
+        $this->expectException(Exception::class);
         $m->set('c', null); // @TODO even "b"/mandatory field should fail!
     }
 

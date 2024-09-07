@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Tests;
 
+use Phlex\Core\PHPUnit\TestCase;
 use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 use Phlex\Data\Tests\Model\Female;
 use Phlex\Data\Tests\Model\Male;
 
-class PersistentArrayTest extends \Phlex\Core\PHPUnit\TestCase
+class PersistentArrayTest extends TestCase
 {
     private function getInternalPersistenceData(Persistence\Array_ $db): array
     {

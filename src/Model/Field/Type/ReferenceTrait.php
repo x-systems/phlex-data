@@ -8,10 +8,10 @@ use Phlex\Data\Model;
 
 trait ReferenceTrait
 {
-    /** @var Model\Field */
+    /** @var Model\Field\Reference */
     protected $reference;
 
-    public function getReference(): Model\Field
+    public function getReference(): Model\Field\Reference
     {
         return $this->reference;
     }

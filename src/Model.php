@@ -287,6 +287,36 @@ class Model implements \IteratorAggregate
         }
     }
 
+    public function issetPersistence(): bool
+    {
+        $this->assertNotEntity();
+
+        return $this->persistence !== null;
+    }
+
+    public function getPersistence(): Persistence
+    {
+        $this->assertNotEntity();
+
+        return $this->persistence;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setPersistence(Persistence $persistence)
+    {
+        if ($this->issetPersistence()) {
+            throw new Exception('Persistence is already set');
+        }
+
+        $persistence->add($this);
+
+        $this->assertHasPersistence();
+
+        return $this;
+    }
+
     /**
      * Check if model has persistence with specified method.
      */

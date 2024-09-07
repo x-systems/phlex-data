@@ -4,9 +4,4 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field\Type\Reference;
 
-use Phlex\Data\Model\Field\Type;
-
-class SingleRecord extends Type\Array_ implements Type\ReferenceInterface
-{
-    use Type\ReferenceTrait;
-}
+class SingleRecord extends ContainedRecords {}

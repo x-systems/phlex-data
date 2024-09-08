@@ -113,7 +113,7 @@ abstract class Type
             $codecSeed = $this->codecs[$mutatorClass] = Core\Factory::factory(Core\Factory::mergeSeeds((array) $this->codec, $codecSeedFieldType, $codecSeedMutator), [$mutator, $field]);
         }
 
-        return Core\Factory::factory($codecSeed, (array) $this->codec);
+        return Core\Factory::factory($codecSeed, [$mutator, $field] + (array) $this->codec);
     }
 
     public static function resolveFromRegistry(array $registry, string $searchClass = null)

@@ -30,10 +30,10 @@ class PersistentSqlTest extends Sql\TestCase
         ], $persistence->getCodecs());
 
         $this->assertSame([
-            Model\Field\Type\Reference\IntegerKey::resolveFromRegistry($persistence->getCodecs()),
-            Model\Field\Type\Reference\MultipleKeys::resolveFromRegistry($persistence->getCodecs()),
-            Model\Field\Type\Reference\SingleRecord::resolveFromRegistry($persistence->getCodecs()),
-            Model\Field\Type\Reference\MultipleRecords::resolveFromRegistry($persistence->getCodecs()),
+            Model\Field\Type\ReferenceData\IntegerKey::resolveFromRegistry($persistence->getCodecs()),
+            Model\Field\Type\ReferenceData\MultipleKeys::resolveFromRegistry($persistence->getCodecs()),
+            Model\Field\Type\ReferenceData\SingleRecord::resolveFromRegistry($persistence->getCodecs()),
+            Model\Field\Type\ReferenceData\MultipleRecords::resolveFromRegistry($persistence->getCodecs()),
         ], [
             [Persistence\Sql\Codec\Integer::class],
             [Persistence\Sql\Codec\Selectable::class],

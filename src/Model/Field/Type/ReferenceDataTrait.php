@@ -6,7 +6,7 @@ namespace Phlex\Data\Model\Field\Type;
 
 use Phlex\Data\Model;
 
-trait ReferenceTrait
+trait ReferenceDataTrait
 {
     /** @var Model\Field\Reference */
     protected $reference;

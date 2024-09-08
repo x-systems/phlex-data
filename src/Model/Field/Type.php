@@ -31,11 +31,11 @@ abstract class Type
         'list' => [Type\Selectable::class, 'allowMultipleSelection' => true],
         'array' => [Type\Array_::class],
         'object' => [Type\Object_::class],
-        'reference_integerkey' => [Type\Reference\IntegerKey::class],
-        'reference_stringkey' => [Type\Reference\StringKey::class],
-        'reference_multiplekeys' => [Type\Reference\MultipleKeys::class],
-        'reference_singlerecord' => [Type\Reference\SingleRecord::class],
-        'reference_multiplerecords' => [Type\Reference\MultipleRecords::class],
+        'reference_integerkey' => [Type\ReferenceData\IntegerKey::class],
+        'reference_stringkey' => [Type\ReferenceData\StringKey::class],
+        'reference_multiplekeys' => [Type\ReferenceData\MultipleKeys::class],
+        'reference_singlerecord' => [Type\ReferenceData\SingleRecord::class],
+        'reference_multiplerecords' => [Type\ReferenceData\MultipleRecords::class],
     ];
 
     /**

@@ -6,7 +6,7 @@ namespace Phlex\Data\Model\Field\Type;
 
 use Phlex\Data\Model;
 
-interface ReferenceInterface
+interface ReferenceData
 {
     public function getReference(): Model\Field\Reference;
 }

@@ -139,7 +139,7 @@ class Reference extends Model\Field
         return $this->ourKey ?: $this->getOurModel()->primaryKey;
     }
 
-    public function getOurFieldType(): Type\ReferenceInterface
+    public function getOurFieldType(): Type\ReferenceData
     {
         return Factory::factory(Factory::mergeSeeds(Type::resolve($this->type), ['reference' => $this]));
     }

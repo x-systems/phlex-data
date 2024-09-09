@@ -18,7 +18,7 @@ use Phlex\Data\Tests\ContainsMany\VatRate;
  */
 
 /**
- * ATK Data has support of containsOne / containsMany.
+ * Phlex Data has support of containsOne / containsMany.
  * Basically data model can contain other data models with one or many records.
  */
 class ContainsManyTest extends Sql\TestCase

@@ -16,7 +16,7 @@ Iterate through model data
 
 Create your persistence object first then iterate it::
 
-    $db = \Atk4\Data\Persistence::connect($dsn);
+    $db = \Phlex\Data\Persistence::connect($dsn);
     $m = new Model_Client($db);
 
     foreach($m as $id => $item) {
@@ -31,7 +31,7 @@ each iteration like this::
         $item->sendReminder();
     }
 
-.. warning:: Currently ATK Data does not create new copy of your model object for
+.. warning:: Currently Phlex Data does not create new copy of your model object for
     every row. Instead the same object is re-used, simply $item->data is modified
     by the iterator. For new users this may be surprising that $item is the same
     object through the iterator, but for now it's the most CPU-efficient way.

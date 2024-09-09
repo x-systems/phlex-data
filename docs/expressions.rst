@@ -114,12 +114,12 @@ might be out of sync and you might need your SQL to recalculate those expression
 To simplify your life, Agile Data implements smart model reloading. Consider
 the following model::
 
-    class Model_Math extends \Atk4\Data\Model
+    class Model_Math extends \Phlex\Data\Model
     {
         public $table = 'math';
-        function init(): void
+        function doInitialize(): void
         {
-            parent::init();
+            parent::doInitialize();
 
             $this->addFields(['a', 'b']);
 
@@ -162,12 +162,12 @@ is another scenario when your database defines default fields:
 
 Then try the following code::
 
-    class Model_Math extends \Atk4\Data\Model
+    class Model_Math extends \Phlex\Data\Model
     {
         public $table = 'math';
-        function init(): void
+        function doInitialize(): void
         {
-            parent::init();
+            parent::doInitialize();
 
             $this->addFields(['a', 'b']);
         }

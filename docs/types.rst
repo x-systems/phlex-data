@@ -1,11 +1,11 @@
 
-.. php:namespace:: Atk4\Data\Field
+.. php:namespace:: Phlex\Data\Field
 
 ==========
 Data Types
 ==========
 
-ATK Data framework implements a consistent and extensible type system with the
+Phlex Data framework implements a consistent and extensible type system with the
 following goals:
 
 Type specification
@@ -23,12 +23,12 @@ inside a Table or Form and can be exported through RestAPI::
 
 We also allow use of custom Field implementation::
 
-    $this->addField('encrypted_password', new \Atk4\Login\Field\Password());
+    $this->addField('encrypted_password', new \Phlex\Login\Field\Password());
 
 A properly implemented type will still be able to offer some means to present
-it in human-readable format, however in some cases, if you plan on using ATK UI,
+it in human-readable format, however in some cases, if you plan on using Phlex UI,
 you would have to create a custom decorators/FormField to properly read and
-present your type value. See :php:attr:`\\Atk4\\Ui\\Field::ui`.
+present your type value. See :php:attr:`\\Phlex\\Ui\\Field::ui`.
 
 Persistence mechanics and Serialization
 =======================================
@@ -60,12 +60,12 @@ but also allows for an easy way to override::
 
 Although some configuration of the field may appear irrelevant (prefix/postfix)
 to operations with data from inside PHP, those properties can be used by
-ATK UI or data export routines to properly input or display values.
+Phlex UI or data export routines to properly input or display values.
 
 Typecasting
 ===========
 
-ATK Data uses PHP native types and classes. For example, 'time' type is using
+Phlex Data uses PHP native types and classes. For example, 'time' type is using
 DateTime object.
 
 When storing or displaying a type-casting takes place which will format the
@@ -76,7 +76,7 @@ to the user a regional format is used instead.
 Supported Types
 ===============
 
-ATK Data prior to 1.5 supports the following types:
+Phlex Data prior to 1.5 supports the following types:
 
  - string
  - boolean ([':php:class:`Boolean`'])
@@ -90,7 +90,7 @@ ATK Data prior to 1.5 supports the following types:
  - array
  - object
 
-In ATK Data the number of supported types has been extended with:
+In Phlex Data the number of supported types has been extended with:
 
  - percent (34.2%) ([':php:class:`Number`', 'format'=>function($v){ return $v*100; }, 'postfix'=>'%'])
  - rating (3 out of 5) ([':php:class:`Number`', 'max'=>5, 'precision'=>0])
@@ -122,7 +122,7 @@ All measurements are implemented with :php:class:`Units` and can be further exte
 Supported Serialization
 =======================
 
-ATK Data prior to 1.5 supported:
+Phlex Data prior to 1.5 supported:
 
  - 'serialize' - for storing PHP objects, uses `serialize`, `unserialize`
  - 'json' - for storing objects and arrays, uses `json_encode`, `json_decode`

@@ -7,13 +7,13 @@ Model
 
 .. php:class:: Model
 
-Probably the most significant class in ATK Data - Model - acts as a Parent for all your
+Probably the most significant class in Phlex Data - Model - acts as a Parent for all your
 entity classes::
 
-   class User extends \Atk4\Data\Model
+   class User extends \Phlex\Data\Model
 
 You must define individual classes for all your business entities. Other frameworks may rely
-on XML or annotations, in ATK everything is defined inside your "Model" class through
+on XML or annotations, in Phlex everything is defined inside your "Model" class through
 pure PHP (See Initialization below)
 
 Once you create instance of your model class, it can be recycled. With a single
@@ -46,21 +46,21 @@ into database that does support a field type (Serialization)
 Furthermore, because you define Models as a class, it is very easy to introduce your own
 extensions which may include Hooks and Actions.
 
-There are many advanced topics that ATK Data covers, such as References, Joins, Aggregation,
+There are many advanced topics that Phlex Data covers, such as References, Joins, Aggregation,
 SQL actions, Unions, Deep Traversal and Containment.
 
 The design is also very extensible allowing you to introduce new Field types, Join strategies,
 Reference patterns, Action types.
 
 I suggest you to read the next section to make sure you fully understand the Model and its role
-in ATK Data.
+in Phlex Data.
 
 
 Understanding Model
 ===================
 
-Please understand that Model in ATK Data is unlike models in other data frameworks. The
-Model class can be seen as a "gateway" between your code and many other features of ATK Data.
+Please understand that Model in Phlex Data is unlike models in other data frameworks. The
+Model class can be seen as a "gateway" between your code and many other features of Phlex Data.
 
 For example - you may define fields and relations for the model::
 
@@ -101,7 +101,7 @@ implementations. Still - Model will be a good place to deposit some meta-informa
 
    $model->addField('age', ['ui'=>['caption'=>'Put your age here']]);
 
-Model and Field class will simply store the "ui" property which may (or may not) be used by ATK UI
+Model and Field class will simply store the "ui" property which may (or may not) be used by Phlex UI
 component or some add-on.
 
 
@@ -132,11 +132,11 @@ We actually recommend you to use namespaces instead::
 
    namespace yourapp\Model;
 
-   use \Atk4\Data\Model;
+   use \Phlex\Data\Model;
 
    class User extends Model {
-      function init(): void {
-         parent::init();
+      function doInitialize(): void {
+         parent::doInitialize();
 
          $this->addField('name');
 
@@ -156,13 +156,13 @@ Initialization
 
 .. php:method:: init
 
-Method init() will automatically be called when your Model is associated with
+Method doInitialize() will automatically be called when your Model is associated with
 Persistence object. It is commonly used to declare fields, conditions, relations, hooks and more::
 
-    class Model_User extends Atk4\Data\Model
+    class Model_User extends Phlex\Data\Model
     {
-        function init(): void {
-            parent::init();
+        function doInitialize(): void {
+            parent::doInitialize();
 
             $this->addField('name');
             $this->addField('surname');
@@ -171,7 +171,7 @@ Persistence object. It is commonly used to declare fields, conditions, relations
 
 You may safely rely on `$this->persistence` property to make choices::
 
-   if ($this->persistence instanceof \Atk4\Data\Persistence\Sql) {
+   if ($this->persistence instanceof \Phlex\Data\Persistence\Sql) {
 
       // Calculating on SQL server is more efficient!!
       $this->addExpression('total', '[amount] + [vat]');
@@ -183,7 +183,7 @@ You may safely rely on `$this->persistence` property to make choices::
       } );
    }
 
-To invoke code from `init()` methods of ALL models (for example soft-delete logic),
+To invoke code from `doInitialize()` methods of ALL models (for example soft-delete logic),
 you use Persistence's "afterAdd" hook. This will not affect ALL models but just models
 which are associated with said persistence::
 
@@ -206,7 +206,7 @@ Each model field is represented by a Field object::
    var_dump($model->getField('name'));
 
 Other persistence framework will use "properties", because individual objects may impact
-performance. In ATK Data this is not an issue, because "Model" is re-usable::
+performance. In Phlex Data this is not an issue, because "Model" is re-usable::
 
    foreach(new User($db) as $user) {
 
@@ -309,8 +309,8 @@ This can also be useful for calculating relative times::
    class MyModel extends Model {
       use HumanTiming; // See https://stackoverflow.com/questions/2915864/php-how-to-find-the-time-elapsed-since-a-date-time
 
-      function init(): void {
-         parent::init();
+      function doInitialize(): void {
+         parent::doInitialize();
 
          $this->addCalculatedField('event_ts_human_friendly', function($m) {
             return $this->humanTiming($m->get('event_ts'));
@@ -334,14 +334,14 @@ If you set `strict_fields` to false, then the check will not be performed.
 
 Actions
 -------
-Another common thing to define inside :php:meth:`Model::init()` would be
+Another common thing to define inside :php:meth:`Model::doInitialize()` would be
 a user invokable actions::
 
    class User extends Model {
 
-      function init(): void {
+      function doInitialize(): void {
 
-         parent::init();
+         parent::doInitialize();
 
          $this->addField('name');
          $this->addField('email');
@@ -366,7 +366,7 @@ With a method alone, you can generate and send passwords::
    $user->load(3);
    $user->send_new_password();
 
-but using `$this->addUserAction()` exposes that method to the ATK UI wigets,
+but using `$this->addUserAction()` exposes that method to the Phlex UI wigets,
 so if your admin is using `Crud`, a new button will be available allowing
 passwords to be generated and sent to the users::
 
@@ -378,7 +378,7 @@ Hooks
 -----
 Hooks (behaviours) can allow you to define callbacks which would trigger
 when data is loaded, saved, deleted etc. Hooks are typically defined in
-:php:meth:`Model::init()` but will be executed accordingly.
+:php:meth:`Model::doInitialize()` but will be executed accordingly.
 
 There are countless uses for hooks and even more opportunities to use
 hook by all sorts of extensions.
@@ -414,11 +414,11 @@ Other uses for model hooks are explained in :ref:`Hooks`
 
 Inheritance
 -----------
-ATK Data models are really good for structuring hierarchically. Here is example::
+Phlex Data models are really good for structuring hierarchically. Here is example::
 
    class VipUser extends User {
-      function init(): void {
-         parent::init();
+      function doInitialize(): void {
+         parent::doInitialize();
 
          $this->addCondition('purchases', '>', 1000);
 
@@ -435,7 +435,7 @@ inherit all the fields, methods and actions of "User" class but will introduce o
 action - `send_gift`.
 
 There are some advanced techniques like "SubTypes" or class substitution,
-for example, this hook may be placed in the "User" class init()::
+for example, this hook may be placed in the "User" class doInitialize()::
 
    $this->onHookShort(Model::HOOK_AFTER_LOAD, function() {
       if ($this->get('purchases') > 1000) {
@@ -454,7 +454,7 @@ with persistence. In the most basic form, model is associated with persistence l
 
    $m = new User($db);
 
-If model was created without persistence :php:meth:`Model::init()` will not fire. You can
+If model was created without persistence :php:meth:`Model::doInitialize()` will not fire. You can
 explicitly associate model with persistence like this::
 
    $m = new User();
@@ -543,7 +543,7 @@ When you normally work with your model then all fields are available and will be
 loaded / saved. You may, however, specify that you wish to load only a sub-set
 of fields.
 
-(In ATK4.3 we call those fields "Actual Fields")
+(In Phlex4.3 we call those fields "Actual Fields")
 
 .. php:method:: onlyFields($fields)
 
@@ -789,7 +789,7 @@ Setting limit and sort order
 
     Keep in mind - `true` means `desc`, desc means descending. Otherwise it will be ascending order by default.
 
-    You can also use \Atk4\Dsql\Expression or array of expressions instead of field name here.
+    You can also use \Phlex\Data\Persistence\Sql\Expression or array of expressions instead of field name here.
     Or even mix them together::
 
         $m->setOrder($m->expr('[net]*[vat]'));

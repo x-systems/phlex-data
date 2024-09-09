@@ -17,8 +17,9 @@ fields. The pattern suggest you should add a new table "transaction_transfer" an
 store extra fields there. In your code::
 
     class Transaction_Transfer extends Transaction {
-        function init(): void {
-            parent::init();
+        function doInitialize(): void
+        {
+            parent::doInitialize();
             $j = $this->join('transaction_transfer.transaction_id');
             $j->addField('destination_account');
         }
@@ -57,7 +58,7 @@ that should be pretty safe.
 Type substitution on loading
 ----------------------------
 
-Another technique is for ATK Data to replace your object when data is being
+Another technique is for Phlex Data to replace your object when data is being
 loaded. You can treat "Transaction" class as a "shim"::
 
     $obj = $account->ref('Transactions')->load(123);
@@ -74,8 +75,8 @@ Another scenario which could benefit by type substitution would be::
         echo get_class($tr)."\n";
     }
 
-ATK Data allow class substitution during load and iteration by breaking "afterLoad"
-hook. Place the following inside Transaction::init()::
+Phlex Data allow class substitution during load and iteration by breaking "afterLoad"
+hook. Place the following inside Transaction::doInitialize()::
 
     $this->onHookShort(Model::HOOK_AFTER_LOAD, function () {
         if (get_class($this) != $this->getClassName()) {
@@ -94,7 +95,7 @@ of the record. Finally to help with performance, you can implement a switch::
 
     ...
 
-    function init(): void {
+    function doInitialize(): void {
         ..
 
         if ($this->typeSubstitution) {
@@ -134,22 +135,20 @@ To implement the above, I'll create a new class::
 
     class Controller_Audit {
 
-        use \Atk4\Core\InitializerTrait {
-            init as _init;
-        }
-        use \Atk4\Core\TrackableTrait;
-        use \Atk4\Core\AppScopeTrait;
+        use \Phlex\Core\InitializerTrait;
+        use \Phlex\Core\TrackableTrait;
+        use \Phlex\Core\AppScopeTrait;
 
     }
 
 TrackableTrait means that I'll be able to add this object inside model with
 ``$model->add(new Controller_Audit())`` and that will automatically populate
-$owner, and $app values (due to AppScopeTrait) as well as execute init() method,
+$owner, and $app values (due to AppScopeTrait) as well as execute doInitialize() method,
 which I want to define like this::
 
 
-    protected function init(): void {
-        $this->_init();
+    protected function doInitialize(): void {
+        $this->initialize();
 
         if(isset($this->getOwner()->no_audit)){
             return;
@@ -177,7 +176,7 @@ which I want to define like this::
 In order to add your defined behavior to the model. The first check actually
 allows you to define models that will bypass audit altogether::
 
-    $u1 = new Model_User($db);   // Model_User::init() includes audit
+    $u1 = new Model_User($db);   // Model_User::doInitialize() includes audit
 
     $u2 = new Model_User($db, ['no_audit' => true]);  // will exclude audit features
 
@@ -215,13 +214,13 @@ Start by creating a class::
 
     class Controller_SoftDelete {
 
-        use \Atk4\Core\InitializerTrait {
+        use \Phlex\Core\InitializerTrait {
             init as _init;
         }
-        use \Atk4\Core\TrackableTrait;
+        use \Phlex\Core\TrackableTrait;
 
-        function init(): void {
-            $this->_init();
+        function doInitialize(): void {
+            $this->initialize();
 
             if(isset($this->getOwner()->no_soft_delete)){
                 return;
@@ -240,7 +239,7 @@ Start by creating a class::
 
         function softDelete($m) {
             if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
+                throw (new \Phlex\Core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
 
             $id = $m->getId();
@@ -259,7 +258,7 @@ Start by creating a class::
 
         function restore($m) {
             if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception(['Model must be loaded before restoring'))->addMoreInfo('model', $m);
+                throw (new \Phlex\Core\Exception(['Model must be loaded before restoring'))->addMoreInfo('model', $m);
             }
 
             $id = $m->getId();
@@ -324,13 +323,11 @@ before and just slightly modifying it::
 
     class Controller_SoftDelete {
 
-        use \Atk4\Core\InitializerTrait {
-            init as _init;
-        }
-        use \Atk4\Core\TrackableTrait;
+        use \Phlex\Core\InitializerTrait;
+        use \Phlex\Core\TrackableTrait;
 
-        function init(): void {
-            $this->_init();
+        function doInitialize(): void {
+            $this->initialize();
 
             if(isset($this->getOwner()->no_soft_delete)){
                 return;
@@ -349,7 +346,7 @@ before and just slightly modifying it::
 
         function softDelete(Model $m) {
             if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
+                throw (new \Phlex\Core\Exception('Model must be loaded before soft-deleting'))->addMoreInfo('model', $m);
             }
 
             $id = $m->getId();
@@ -366,7 +363,7 @@ before and just slightly modifying it::
 
         function restore($m) {
             if (!$m->loaded()) {
-                throw (new \Atk4\Core\Exception('Model must be loaded before restoring'))->addMoreInfo('model', $m);
+                throw (new \Phlex\Core\Exception('Model must be loaded before restoring'))->addMoreInfo('model', $m);
             }
 
             $id = $m->getId();
@@ -410,15 +407,15 @@ With Agile Data you can create controller that will ensure that certain fields
 inside your model are unique::
 
     class Controller_UniqueFields {
-        use \Atk4\Core\InitializerTrait {
+        use \Phlex\Core\InitializerTrait {
             init as _init;
         }
-        use \Atk4\Core\TrackableTrait;
+        use \Phlex\Core\TrackableTrait;
 
         protected $fields = null;
 
-        function init(): void {
-            $this->_init();
+        function doInitialize(): void {
+            $this->initialize();
 
             // by default make 'name' unique
             if (!$this->fields) {
@@ -437,7 +434,7 @@ inside your model are unique::
                     $mm->tryLoadBy($field, $m->get($field));
 
                     if ($mm->loaded()) {
-                        throw (new \Atk4\Core\Exception('Duplicate record exists'))
+                        throw (new \Phlex\Core\Exception('Duplicate record exists'))
                             ->addMoreInfo('field', $field)
                             ->addMoreInfo('value', $m->get($field));
                     }
@@ -492,11 +489,11 @@ Here is what I need to do:
 
 Create new Model::
 
-    class Model_InvoicePayment extends \Atk4\Data\Model {
+    class Model_InvoicePayment extends \Phlex\Data\Model {
         public $table='invoice_payment';
-        function init(): void
+        function doInitialize(): void
         {
-            parent::init();
+            parent::doInitialize();
             $this->hasOne('invoice_id', 'Model_Invoice');
             $this->hasOne('payment_id', 'Model_Payment');
             $this->addField('amount_closed');
@@ -607,10 +604,10 @@ adding invoice, I want to make it possible to specify 'Category' through the
 name, not only category_id. First, let me illustrate how can I do that with
 category_id::
 
-    class Model_Invoice extends \Atk4\Data\Model {
-        function init(): void {
+    class Model_Invoice extends \Phlex\Data\Model {
+        function doInitialize(): void {
 
-            parent::init();
+            parent::doInitialize();
 
             ...
 
@@ -778,7 +775,7 @@ different for the extended class::
 
     $this->hasOne('client_id', ['model' => [$this->client_class]]);
 
-Alternatively you can replace model in the init() method of Model_Invoice::
+Alternatively you can replace model in the doInitialize() method of Model_Invoice::
 
     $this->getRef('client_id')->model = 'Model_Client';
 

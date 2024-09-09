@@ -138,7 +138,7 @@ You may actually drop validation exception inside save, insert or update hooks::
 
     $m->onHook(Model::HOOK_BEFORE_SAVE, function($m) {
         if ($m->get('name') === 'Yagi') {
-            throw new \Atk4\Data\ValidationException(['name' => "We don't serve like you"]);
+            throw new \Phlex\Data\ValidationException(['name' => "We don't serve like you"]);
         }
     });
 
@@ -195,7 +195,7 @@ effective, you can implement this through a hook::
 
     $m->onHook(Persistence\Sql::HOOK_AFTER_UPDATE_QUERY, function($m, $update, $st) {
         if (!$st->rowCount()) {
-            throw (new \Atk4\Core\Exception('Update didn\'t affect any records'))
+            throw (new \Phlex\Core\Exception('Update didn\'t affect any records'))
                 ->addMoreInfo('query', $update->getDebugQuery())
                 ->addMoreInfo('statement', $st)
                 ->addMoreInfo('model', $m)
@@ -243,7 +243,7 @@ Save information into auditLog about failure:
 
 Upgrade schema:
 
-    use Atk4\Dsql\Exception as DsqlException;
+    use Phlex\Dsql\Exception as DsqlException;
 
     $m->onHook(Model::HOOK_ROLLBACK, function($m, $exception) { 
         if ($exception instanceof DsqlException) {

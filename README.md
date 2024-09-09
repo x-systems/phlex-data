@@ -1,4 +1,4 @@
-# ATK Data - Data Model Abstraction for Agile Toolkit
+# Phlex Data - Data Model Abstraction for Agile Toolkit
 
 [Agile Toolkit](https://agiletoolkit.org/) is a Low Code framework written in PHP. Agile UI implement server side rendering engine and over 50 UI generic components for interacting with your Data Model.
 
@@ -17,9 +17,9 @@ Agile Data is a framework for defining your "business layer" which is separate f
 [![GitHub release](https://img.shields.io/github/release/x-systems/phlex-data.svg)](https://github.com/x-systems/phlex-data/releases)
 [![PHPStan enabled](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://phpstan.org)
 
-Quick-Links: [Documentation](http://phlex-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [ATK UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
+Quick-Links: [Documentation](http://phlex-data.readthedocs.io). [Namespaces](http://www.agiletoolkit.org/dox/namespaces.html). [Example](https://github.com/atk4/data-primer). [Phlex UI](https://github.com/atk4/ui). [Forum](https://forum.agiletoolkit.org/). [Chat](https://gitter.im/atk4/atk4). [Commercial support](https://www.agiletoolkit.org/contact). [Udemy Course](https://www.udemy.com/web-apps-with-php-and-atk/).
 
-## Is ATK Data similar to ORM?
+## Is Phlex Data similar to ORM?
 
 Yes and no.
 
@@ -37,7 +37,7 @@ echo $total_due->getOne();
 
 In other ORM the similar implementation would be either [slow, clumsy, limited or flawed](https://medium.com/@romaninsh/pragmatic-approach-to-reinventing-orm-d9e1bdc336e3).
 
-## How ATK Data integrates with UI (or API)
+## How Phlex Data integrates with UI (or API)
 
 Agile Toolkit is a low-code framework. Once you have defined your business object, it can be associated with a UI widget:
 
@@ -53,13 +53,13 @@ $api->rest('/clients', new Client($db));
 
 ## Extensibility and Add-ons
 
-ATK Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation/Reporting](https://github.com/atk4/report). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database. 
+Phlex Data is extensible and offers wide range of add-ons ranging from [Audit](https://github.com/atk4/audit) and [Aggregation/Reporting](https://github.com/atk4/report). Developer may also implement advanced DB concepts like "[disjoint subtypes](https://nearly.guru/blog/data/disjoint-subtypes-in-php)" - allowing to efficiently persist object-oriented data in your database. 
 
 Regardless of how your model is constructed and what database backend is used, it can easily be used in conjunction with any 3rd party add-on, like [Charts](https://github.com/atk4/chart).
 
-### Benefits of using ATK Data
+### Benefits of using Phlex Data
 
-Designed for medium to large PHP applications and frameworks, ATK Data is a clean implementation of Data Mapper that will:
+Designed for medium to large PHP applications and frameworks, Phlex Data is a clean implementation of Data Mapper that will:
 
 -   Make your application really database-agnostic. SQL? NoSQL? RestAPI? Cache? Load and store your data with any of these, without refactoring your code.
 -   Execute more on the server. Agile Data converts query logic into server-specific language (e.g. SQL) then delivers you the exact data rows / columns which you need from a single statement, no matter how complex.
@@ -75,7 +75,7 @@ Since the initial introduction of Agile Data back in [2016](https://www.reddit.c
 
 Watch [Quick Start](http://agile-data.readthedocs.io/en/develop/quickstart.html) or [Screencasts](https://www.youtube.com/watch?v=o16xwkFfnuA&t=182s&index=1&list=PLUUKFD-IBZWaaN_CnQuSP0iwWeHJxPXKS). There is also our [Official Udemy Course](https://forum.agiletoolkit.org/t/udemy-com-atk-course-early-access-limited-time-free/413) and [Full Documentation](http://agile-data.readthedocs.io) ([PDF](https://media.readthedocs.org/pdf/agile-data/develop/agile-data.pdf)). 
 
-ATK Data relies on ATK Core and can be greatly complimented by ATK UI:
+Phlex Data relies on Phlex Core and can be greatly complimented by Phlex UI:
 
 -   [Agile Core](http://agile-core.readthedocs.io/en/develop/) - documents various low-level traits and features such as Containers, Hooks or Exceptions ([PDF](https://media.readthedocs.org/pdf/agile-core/develop/agile-core.pdf))
 -   [Agile UI](http://agile-ui.readthedocs.io/en/latest/) - documents optional UI components and how to build Web App with them. ([PDF](http://readthedocs.org/projects/agile-ui/downloads/pdf/latest/))
@@ -126,8 +126,8 @@ This next example builds a complex "Job Profitability Report" by only relying on
 
 ``` php
 class JobReport extends Job {
-  function init(): void {
-    parent::init();
+  function doInitialize(): void {
+    parent::doInitialize();
 
     // Invoice contains Lines that may relevant to this job
     $invoice = new Invoice($this->persistence);
@@ -351,8 +351,8 @@ Agile Data uses vendor-independent and lightweight `Model` class to describe you
 ``` php
 class Client extends \Atk4\Data\Model {
   public $table = 'client';
-  function init(): void {
-    parent::init();
+  function doInitialize(): void {
+    parent::doInitialize();
 
     $this->addFields(['name','address']);
 
@@ -568,9 +568,9 @@ namespace my;
 class User extends \Atk4\Data\Model
 {
     public $table = 'user';
-    function init(): void
+    function doInitialize(): void
     {
-        parent::init();
+        parent::doInitialize();
 
         $this->addFields(['email','name','password']);
         // use your table fields here

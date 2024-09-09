@@ -2,7 +2,7 @@
 .. _DataSet:
 .. _conditions:
 
-.. php:namespace:: Atk4\Data
+.. php:namespace:: Phlex\Data
 
 ======================
 Conditions and DataSet
@@ -119,20 +119,20 @@ Defining your classes
 ---------------------
 
 Although I have used in-line addition of the arguments, normally you would want
-to set those conditions inside the init() method of your model::
+to set those conditions inside the doInitialize() method of your model::
 
 
     class Model_Girl extends Model_User
     {
-        function init(): void
+        function doInitialize(): void
         {
-            parent::init();
+            parent::doInitialize();
 
             $this->addCondition('gender', 'F');
         }
     }
 
-Note that the field 'gender' should be defined inside Model_User::init().
+Note that the field 'gender' should be defined inside Model_User::doInitialize().
 
 Vendor-dependent logic
 ======================
@@ -233,7 +233,7 @@ Expression as first argument
 Supported by: SQL, (Planned: Array, Mongo)
 
 The $field of addCondition() can be passed as either an expression or any
-object implementing Atk4\Dsql\Expressionable interface. Same logic applies
+object implementing Phlex\Data\Persistence\Sql\Expressionable interface. Same logic applies
 to the $value::
 
     $m->addCondition($m->getField('name'), '!=', $this->getField('surname'));
@@ -348,7 +348,7 @@ Checks if scope components are joined by OR
 
 Checks if scope components are joined by AND
 
-.. php:namespace:: Atk4\Data\Model\Scope
+.. php:namespace:: Phlex\Data\Model\Scope
 
 .. php:class:: Condition
 

@@ -13,12 +13,12 @@ what database you are using and how data is stored in there. This decouples your
 from the data storage (Persistence). If in the future you will want to change database
 server or structure of your database, you can do it without affecting your application.
 
-Data Persistence frameworks (like ATK Data) provide the bridge between "Model" and the
+Data Persistence frameworks (like Phlex Data) provide the bridge between "Model" and the
 actual database. There is balance between performance, simplicity and consistency. While
-other persistence frameworks insist on strict isolation, ATK Data prefers practicality
+other persistence frameworks insist on strict isolation, Phlex Data prefers practicality
 and simplicity.
 
-ATK Data couples Model and Persistence, they have some intimate knowledge of each-other
+Phlex Data couples Model and Persistence, they have some intimate knowledge of each-other
 and work as a unit. Persistence object is created first and by the time Model is created,
 you specify persistence to the model.
 
@@ -31,7 +31,7 @@ Associating with Persistence
 
 Create your persistence object first::
 
-    $db = \Atk4\Data\Persistence::connect($dsn);
+    $db = \Phlex\Data\Persistence::connect($dsn);
 
 There are several ways to link your model up with the persistence::
 
@@ -277,7 +277,7 @@ of application.
 Finally, even though we are storing "id" for the currency we want to make use
 of References.
 
-Your init() method for a Field_Currency might look like this::
+Your doInitialize() method for a Field_Currency might look like this::
 
 
     function doInit(): void {
@@ -799,7 +799,7 @@ you can implement it like this::
         $_SESSION['ad'] = []; // initialize
     }
 
-    $sess = new \Atk4\Data\Persistence\Array_($_SESSION['ad']);
+    $sess = new \Phlex\Data\Persistence\Array_($_SESSION['ad']);
     $logged_user = new User($sess);
     $logged_user->load('active_user');
 

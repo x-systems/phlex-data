@@ -245,7 +245,7 @@ Alternatively you may also specify either 'aggregate'::
 
 or 'field'::
 
-    ->addField('paid_amount', ['aggregate'=>'count', 'field'=>new \Atk4\Dsql\Expression('*')]);
+    ->addField('paid_amount', ['aggregate'=>'count', 'field'=>new \Phlex\Data\Persistence\Sql\Expression('*')]);
 
 .. note:: as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 
@@ -536,10 +536,10 @@ Additionally you can pass table_alias as second argument into :php:meth:`Model::
 or :php:meth:`Model::refLink()`. This can help you in creating a recursive models
 that relate to itself. Here is example::
 
-    class Model_Item3 extends \Atk4\Data\Model {
+    class Model_Item3 extends \Phlex\Data\Model {
         public $table='item';
-        function init(): void {
-            parent::init();
+        function doInitialize(): void {
+            parent::doInitialize();
 
             $m = new Model_Item3();
 
@@ -599,20 +599,20 @@ Agile Data takes extra care to help you link your new records with new related
 entities.
 Consider the following two models::
 
-    class Model_User extends \Atk4\Data\Model {
+    class Model_User extends \Phlex\Data\Model {
         public $table = 'user';
-        function init(): void {
-            parent::init();
+        function doInitialize(): void {
+            parent::doInitialize();
             $this->addField('name');
 
             $this->hasOne('contact_id', ['model' => [Model_Contact::class]]);
         }
     }
 
-    class Model_Contact extends \Atk4\Data\Model {
+    class Model_Contact extends \Phlex\Data\Model {
         public $table = 'contact';
-        function init(): void {
-            parent::init();
+        function doInitialize(): void {
+            parent::doInitialize();
 
             $this->addField('address');
         }

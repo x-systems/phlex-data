@@ -40,7 +40,7 @@ SQL Field
 
     SQL Fields can be used inside other SQL expressions::
 
-        $q = new \Atk4\Dsql\Expression('[age] + [birth_year]', [
+        $q = new \Phlex\Data\Persistence\Sql\Expression('[age] + [birth_year]', [
                 'age'        => $m->getField('age'),
                 'birth_year' => $m->getField('birth_year'),
             ]);
@@ -200,14 +200,14 @@ Custom Expressions
     Persistence\Sql so the most convenient way to use this method is by calling
     `$model->expr('foo')`.
 
-This method is quite similar to \Atk4\Dsql\Query::expr() method explained here:
+This method is quite similar to \Phlex\Dsql\Query::expr() method explained here:
 http://dsql.readthedocs.io/en/stable/expressions.html
 
 There is, however, one difference. Expression class requires all named arguments
 to be specified. Use of Model::expr() allows you to specify field names and those
 field expressions will be automatically substituted. Here is long / short format::
 
-    $q = new \Atk4\Dsql\Expression('[age] + [birth_year]', [
+    $q = new \Phlex\Data\Persistence\Sql\Expression('[age] + [birth_year]', [
             'age' => $m->getField('age'),
             'birth_year' => $m->getField('birth_year')
         ]);
@@ -333,7 +333,7 @@ will loose ability to use the same model with non-sql persistences.
 
 Sometimes you can fence the code like this::
 
-    if ($this->persistence instanceof \Atk4\Data\Persistence\Sql) {
+    if ($this->persistence instanceof \Phlex\Data\Persistence\Sql) {
         .. sql code ..
     }
 
@@ -362,8 +362,8 @@ Depending on the statement you can also use your statement to retrieve data::
 This can be handy if you wish to create a method for your Model to abstract away
 the data::
 
-    class Client extends \Atk4\Data\Model {
-        function init(): void {
+    class Client extends \Phlex\Data\Model {
+        function doInitialize(): void {
             ...
         }
 
@@ -381,8 +381,8 @@ the data::
 
 Here is another example using PHP generator::
 
-    class Client extends \Atk4\Data\Model {
-        function init(): void {
+    class Client extends \Phlex\Data\Model {
+        function doInitialize(): void {
             ...
         }
 
@@ -409,10 +409,10 @@ as a Model Field
 any expression for your field query. You can use SQL stored function for data
 fetching like this::
 
-    class Category extends \Atk4\Data\Model {
+    class Category extends \Phlex\Data\Model {
         public $table = 'category';
-        function init(): void {
-            parent::init();
+        function doInitialize(): void {
+            parent::doInitialize();
 
             $this->hasOne('parent_id', ['model' => [self::class]]);
             $this->addField('name');
@@ -437,13 +437,13 @@ Method :php:meth:`Persistence\\Sql::action` and :php:meth:`Model::action`
 generates queries for most of model operations.  By re-defining this method,
 you can significantly affect the query building of an SQL model::
 
-    class CompanyProfit extends \Atk4\Data\Model {
+    class CompanyProfit extends \Phlex\Data\Model {
 
         public $company_id = null; // inject company_id, which will act as a condition/argument
         public $read_only  = true; // instructs rest of the app, that this model is read-only
 
-        function init(): void {
-            parent::init();
+        function doInitialize(): void {
+            parent::doInitialize();
 
             $this->addField('date_period');
             $this->addField('profit');
@@ -467,7 +467,7 @@ you can significantly affect the query building of an SQL model::
                 ]);
             }
 
-            throw (new \Atk4\Core\Exception('You may only perform "select" or "count" action on this model'))
+            throw (new \Phlex\Core\Exception('You may only perform "select" or "count" action on this model'))
                 ->addMoreInfo('action', $mode);
         }
     }
@@ -477,14 +477,14 @@ as a Temporary Table
 
 A most convenient (although inefficient) way for stored procedures is to place
 output data inside a temporary table. You can perform an actual call to stored
-procedure inside Model::init() then set $table property to a temporary table::
+procedure inside Model::doInitialize() then set $table property to a temporary table::
 
-    class NominalReport extends \Atk4\Data\Model {
+    class NominalReport extends \Phlex\Data\Model {
         public $table = 'temp_nominal_sheet';
         public $read_only = true; // instructs rest of the app, that this model is read-only
 
-        function init(): void {
-            parent::init();
+        function doInitialize(): void {
+            parent::doInitialize();
 
             $q = $this->expr("call get_nominal_sheet([],[],'2014-10-01','2015-09-30',0)", [
                 $this->getApp()->system->getId(),
@@ -505,13 +505,13 @@ as an Model Source
 
 Technically you can also specify expression as a $table property of your model::
 
-    class ClientReport extends \Atk4\Data\Model {
+    class ClientReport extends \Phlex\Data\Model {
 
-        public $table = null; // will be set in init()
+        public $table = null; // will be set in doInitialize()
         public $read_only = true; // instructs rest of the app, that this model is read-only
 
-        function init(): void {
-            parent::init();
+        function doInitialize(): void {
+            parent::doInitialize();
 
             $this->init = $this->expr("call get_report_data()");
 

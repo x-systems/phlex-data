@@ -133,13 +133,13 @@ Remember that it had nothing to do with your database structure, right?
 
 A code to declare a model::
 
-    class Model_User extends \Atk4\Data\Model { }
+    class Model_User extends \Phlex\Data\Model { }
 
     class Model_Client extends Model_User { }
 
     class Model_Admin extends Model_User { }
 
-    class Model_Order extends \Atk4\Data\Model { }
+    class Model_Order extends \Phlex\Data\Model { }
 
 Domain Model Methods
 --------------------
@@ -201,9 +201,9 @@ behavior.
 
 Code to declare fields::
 
-    class Model_Order extends \Atk4\Data\Model {
-        protected function init(): void {
-            parent::init();
+    class Model_Order extends \Phlex\Data\Model {
+        protected function doInitialize(): void {
+            parent::doInitialize();
 
             $this->addField('description');
             $this->addField('amount')->type('money');
@@ -230,19 +230,19 @@ has one Client.
 There are no "many-to-many" relationship in Domain Model because relationships
 work from a specific record, but more on that later.
 
-Code (add inside `init()`)::
+Code (add inside `doInitialize()`)::
 
     class Model_Client extends Model_User {
-        protected function init(): void {
-            parent::init();
+        protected function doInitialize(): void {
+            parent::doInitialize();
 
             $this->hasMany('Order', ['model' => [Model_Order::class]]);
         }
     }
 
-    class Model_Order extends \Atk4\Data\Model {
-        protected function init(): void {
-            parent::init();
+    class Model_Order extends \Phlex\Data\Model {
+        protected function doInitialize(): void {
+            parent::doInitialize();
 
             $this->hasOne('Client', ['model' => [Model_Client::class]]);
 
@@ -311,9 +311,9 @@ This is, however, a good point for you to write the initial batch of the code.
 
 Code::
 
-    class Model_User extends \Atk4\Data\Model {
-        protected function init(): void {
-            parent::init();
+    class Model_User extends \Phlex\Data\Model {
+        protected function doInitialize(): void {
+            parent::doInitialize();
 
             $this->addField('password');
             $this->addField('password_change_date');
@@ -331,9 +331,9 @@ Persistence Hooks
 Hooks can help you perform operations when object is being persisted::
 
 
-    class Model_User extends \Atk4\Data\Model {
-        protected function init(): void {
-            parent::init();
+    class Model_User extends \Phlex\Data\Model {
+        protected function doInitialize(): void {
+            parent::doInitialize();
 
             // addField() declaration
             // addExpression('is_password_expired')
@@ -491,7 +491,7 @@ While with MongoDB, the query could be different::
 
 Finally the code above will work even if you use a simple Array as a data source::
 
-    $db = new \Atk4\Data\Persistence\Array_([
+    $db = new \Phlex\Data\Persistence\Array_([
         'client'=>[
             [
                 'name'=>'Joe',
@@ -516,7 +516,7 @@ So getting back to the operation above, lets look at it in more details::
 
 While "vip_orders" is actually a DataSet, executing count() will cross you over
 into persistence layer. However this method is returning a new object, which is then
-executed when you call getOne(). For SQL persistences it returns \Atk4\Dsql\Query
+executed when you call getOne(). For SQL persistences it returns \Phlex\Dsql\Query
 object, for example.
 
 Even though for a brief moment you had your hands on a "database-vendor specific"

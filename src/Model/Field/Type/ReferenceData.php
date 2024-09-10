@@ -8,5 +8,5 @@ use Phlex\Data\Model;
 
 interface ReferenceData
 {
-    public function getReference(): Model\Field\Reference;
+    public function getReference(Model\Field $field): Model\Field\Reference;
 }

@@ -315,6 +315,15 @@ class Field
         return $this->getCodec()->getQueryArguments($operator, $value);
     }
 
+    public function getReference(): ?Field\Reference
+    {
+        $fieldValueType = $this->getValueType();
+
+        return $fieldValueType instanceof Field\Type\ReferenceData
+            ? $fieldValueType->getReference($this)
+            : null;
+    }
+
     public function getCodec(MutatorInterface $mutator = null): Field\Codec
     {
         return $this->getValueType()->createCodec($this, $mutator ?? $this->getPersistence());
@@ -434,6 +443,13 @@ class Field
         });
 
         return $this;
+    }
+
+    public function __clone()
+    {
+        if (is_object($this->type)) {
+            $this->type = clone $this->type;
+        }
     }
 
     /**

@@ -8,11 +8,22 @@ use Phlex\Data\Model;
 
 trait ReferenceDataTrait
 {
-    /** @var Model\Field\Reference */
-    protected $reference;
+    /** @var string */
+    protected $referenceFieldKey;
 
-    public function getReference(): Model\Field\Reference
+    public function setReference($reference)
     {
-        return $this->reference;
+        if ($reference instanceof Model\Field) {
+            $reference = $reference->getKey();
+        }
+
+        $this->referenceFieldKey = $reference;
+
+        return $this;
+    }
+
+    public function getReference(Model\Field $field): Model\Field\Reference
+    {
+        return $field->getOwner()->getReference($this->referenceFieldKey);
     }
 }

@@ -141,7 +141,7 @@ class Reference extends Model\Field
 
     public function getOurFieldType(): Type\ReferenceData
     {
-        return Factory::factory(Factory::mergeSeeds(Type::resolve($this->type), ['reference' => $this]));
+        return Factory::factory(Factory::mergeSeeds(Type::resolve($this->type), ['referenceFieldKey' => $this->getKey()]));
     }
 
     /**

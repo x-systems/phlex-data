@@ -158,7 +158,7 @@ class Model implements \IteratorAggregate
     /**
      * Persistence driver inherited from Phlex\Data\Persistence.
      *
-     * @var Persistence|Persistence\Sql|null
+     * @var Persistence|Sql|null
      */
     public $persistence;
 

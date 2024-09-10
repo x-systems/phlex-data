@@ -19,7 +19,7 @@ class Codec implements CodecInterface
     /** @var Model\Field */
     protected $field;
 
-    /** @var Model\Field\Serializer|string|array|null */
+    /** @var Serializer|string|array|null */
     protected $serialize;
 
     public function __construct(Data\MutatorInterface $mutator, Model\Field $field)

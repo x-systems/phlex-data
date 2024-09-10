@@ -24,8 +24,8 @@ class ConnectionTest extends PHPUnit\TestCase
     public function testInit()
     {
         $this->assertSame(
-            '4',
-            Persistence\Sql::connect('sqlite::memory:')->execute(new Persistence\Sql\Expression('select (2+2)'))->fetchOne()
+            4,
+            (int) Persistence\Sql::connect('sqlite::memory:')->execute(new Persistence\Sql\Expression('select (2+2)'))->fetchOne()
         );
     }
 

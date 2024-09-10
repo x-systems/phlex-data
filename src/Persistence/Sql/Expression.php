@@ -588,7 +588,7 @@ class Expression implements Expressionable, \ArrayAccess, \IteratorAggregate
             } elseif ($val === null) {
                 $replacement = 'NULL\1';
             } else {
-                $replacement = $val . '\\1';
+                $replacement = $val . '\1';
             }
 
             $result = preg_replace('~' . $key . '([^_]|$)~', $replacement, $result);

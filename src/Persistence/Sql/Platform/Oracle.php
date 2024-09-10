@@ -48,7 +48,7 @@ class Oracle extends Persistence\Sql
         // https://stackoverflow.com/questions/12980038/ora-00932-inconsistent-datatypes-expected-got-clob#12980560
         // fix this Oracle inconsistency by using VARCHAR/VARBINARY instead (but limited to 4000 bytes)
         \Closure::bind(function () use ($dbalConnection) {
-            $dbalConnection->platform = new class() extends DBAL\Platforms\OraclePlatform {
+            $dbalConnection->platform = new class extends DBAL\Platforms\OraclePlatform {
                 private function forwardTypeDeclarationSQL(string $targetMethodName, array $column): string
                 {
                     $backtrace = debug_backtrace(\DEBUG_BACKTRACE_PROVIDE_OBJECT | \DEBUG_BACKTRACE_IGNORE_ARGS);

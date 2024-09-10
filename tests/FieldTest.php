@@ -205,7 +205,7 @@ class FieldTest extends Sql\TestCase
         $f = $m->addField('newNASA_module');
         $this->assertSame('New NASA Module', $f->getCaption());
 
-        $f = $m->addField('this\\ _isNASA_MyBigBull shit_123\Foo');
+        $f = $m->addField('this\ _isNASA_MyBigBull shit_123\Foo');
         $this->assertSame('This Is NASA My Big Bull Shit 123 Foo', $f->getCaption());
     }
 

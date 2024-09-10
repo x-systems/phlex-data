@@ -177,7 +177,7 @@ class ExpressionTest extends PHPUnit\TestCase
         $this->assertSame($expectedStr, $this->e($exprStr, $exprArgs)->render());
     }
 
-    public function provideNoTemplatingInSqlStringCases(): iterable
+    public static function provideNoTemplatingInSqlStringCases(): iterable
     {
         $testStrs = [];
         foreach (['\'', '"', '`'] as $enclosureChar) {
@@ -187,7 +187,7 @@ class ExpressionTest extends PHPUnit\TestCase
                 '\'{{}}\'',
                 '\'[a]\'',
                 '\'\\\'[]\'',
-                '\'\\\\[]\'',
+                '\'\\\[]\'',
                 '\'[\'\']\'',
                 '\'\'\'[]\'',
                 '\'[]\'\'\'',

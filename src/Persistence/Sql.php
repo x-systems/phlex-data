@@ -553,7 +553,7 @@ abstract class Sql extends Persistence
 
     protected function getAutolocateExpressionClass(Sql\Expression $expression): string
     {
-        return static::class . '\\Expression\\' . class_basename($expression);
+        return static::class . '\Expression\\' . class_basename($expression);
     }
 
     protected function getIdSequenceName(Model $model): ?string

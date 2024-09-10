@@ -87,9 +87,9 @@ class TestCase extends \Phlex\Core\PHPUnit\TestCase
     private function convertSqlFromSqlite(string $sql): string
     {
         return preg_replace_callback(
-            '~\'(?:[^\'\\\\]+|\\\\.)*\'|"(?:[^"\\\\]+|\\\\.)*"~s',
+            '~\'(?:[^\'\\\]+|\\\.)*\'|"(?:[^"\\\]+|\\\.)*"~s',
             function ($matches) {
-                $str = substr(preg_replace('~\\\\(.)~s', '$1', $matches[0]), 1, -1);
+                $str = substr(preg_replace('~\\\(.)~s', '$1', $matches[0]), 1, -1);
                 if (substr($matches[0], 0, 1) === '"') {
                     return $this->getDatabasePlatform()->quoteSingleIdentifier($str);
                 }

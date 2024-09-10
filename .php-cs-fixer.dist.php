@@ -16,6 +16,8 @@ return (new PhpCsFixer\Config())
         '@PHP74Migration:risky' => true,
         '@PHP74Migration' => true,
 
+        'static_lambda' => false,
+
         // required by PSR-12
         'concat_space' => [
             'spacing' => 'one',

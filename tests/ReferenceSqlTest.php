@@ -38,7 +38,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $u->withMany('Orders', ['theirModel' => $o]);
 
-        $oo = $u->load(1)->ref('Orders');
+        $oo = $u->load(1)->getTheirEntity('Orders');
         $ooo = $oo->tryLoad(1);
         $this->assertEquals(20, $ooo->get('amount'));
         $ooo = $oo->tryLoad(2);
@@ -46,7 +46,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $ooo = $oo->tryLoad(3);
         $this->assertEquals(5, $ooo->get('amount'));
 
-        $oo = $u->load(2)->ref('Orders');
+        $oo = $u->load(2)->getTheirEntity('Orders');
         $ooo = $oo->tryLoad(1);
         $this->assertNull($ooo->get('amount'));
         $ooo = $oo->tryLoad(2);
@@ -54,7 +54,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $ooo = $oo->tryLoad(3);
         $this->assertNull($ooo->get('amount'));
 
-        $oo = $u->addCondition('id', '>', '1')->ref('Orders');
+        $oo = $u->addCondition('id', '>', '1')->getTheirEntity('Orders');
 
         $this->assertSameSql(
             'select "id","amount","user_id" from "order" where "user_id" in (select "id" from "user" where "id" > :a)',
@@ -63,7 +63,7 @@ class ReferenceSqlTest extends Sql\TestCase
     }
 
     /**
-     * Tests to make sure refLink properly generates field links.
+     * Tests to make sure createTheirModelLinked method generates field links properly.
      */
     public function testLink(): void
     {
@@ -74,7 +74,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $this->assertSameSql(
             'select "id","amount","user_id" from "order" where "user_id" = "user"."id"',
-            $u->refLink('Orders')->toQuery()->select()->render()
+            $u->createTheirModelLinked('Orders')->toQuery()->select()->render()
         );
     }
 
@@ -97,11 +97,11 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $u->withMany('cur', ['theirModel' => $c, 'ourKey' => 'currency', 'theirKey' => 'currency']);
 
-        $cc = $u->load(1)->ref('cur');
+        $cc = $u->load(1)->getTheirEntity('cur');
         $cc = $cc->tryLoadAny();
         $this->assertSame('Euro', $cc->get('name'));
 
-        $cc = $u->load(2)->ref('cur');
+        $cc = $u->load(2)->getTheirEntity('cur');
         $cc = $cc->tryLoadAny();
         $this->assertSame('Pound', $cc->get('name'));
     }
@@ -138,7 +138,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $user->hasMany('reference', ['theirModel' => $reference]);
 
-        $oo = $user->load(1)->ref('reference');
+        $oo = $user->load(1)->getTheirEntity('reference');
         $ooo = $oo->tryLoadAny();
         $this->assertEquals(20, $ooo->get('amount'));
         $ooo = $oo->tryLoad('order/2');
@@ -148,7 +148,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $reference->addField('amount');
 
-        $oo = $user->load(2)->ref('reference');
+        $oo = $user->load(2)->getTheirEntity('reference');
         $ooo = $oo->tryLoad('order/1');
         $this->assertNull($ooo->get('amount'));
         $ooo = $oo->tryLoad('order/2');
@@ -156,7 +156,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $ooo = $oo->tryLoad('order/3');
         $this->assertNull($ooo->get('amount'));
 
-        $oo = $user->addCondition('id', '>', '2')->ref('reference');
+        $oo = $user->addCondition('id', '>', '2')->getTheirEntity('reference');
 
         if ($this->getDatabasePlatform() instanceof SqlitePlatform) {
             $this->assertSameSql(
@@ -177,7 +177,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $this->assertSameSql(
             'select "id","code","name" from "currency" where "code" = "user"."currency_code"',
-            $u->refLink('cur')->toQuery()->select()->render()
+            $u->createTheirModelLinked('cur')->toQuery()->select()->render()
         );
     }
 
@@ -206,17 +206,17 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $o->hasOne('user', ['theirModel' => $u]);
 
-        $this->assertSame('John', $o->load(1)->ref('user')->get('name'));
-        $this->assertSame('Peter', $o->load(2)->ref('user')->get('name'));
-        $this->assertSame('John', $o->load(3)->ref('user')->get('name'));
-        $this->assertSame('Joe', $o->load(5)->ref('user')->get('name'));
+        $this->assertSame('John', $o->load(1)->getTheirEntity('user')->get('name'));
+        $this->assertSame('Peter', $o->load(2)->getTheirEntity('user')->get('name'));
+        $this->assertSame('John', $o->load(3)->getTheirEntity('user')->get('name'));
+        $this->assertSame('Joe', $o->load(5)->getTheirEntity('user')->get('name'));
 
         $o->addCondition('amount', '>', 6);
         $o->addCondition('amount', '<', 9);
 
         $this->assertSameSql(
             'select "id","name" from "user" where "id" in (select "user_id" from "order" where ("amount" > :a and "amount" < :b))',
-            $o->ref('user')->toQuery()->select()->render()
+            $o->getTheirEntity('user')->toQuery()->select()->render()
         );
 
         $o->addCondition('user', 1);
@@ -291,7 +291,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $l = (new Model($this->db, ['table' => 'invoice_line']))->addFields(['invoice_id', 'total_net', 'total_vat', 'total_gross']);
         $i->withMany('line', ['theirModel' => $l]);
 
-        $i->addExpression('total_net', $i->refLink('line')->toQuery()->aggregate('sum', 'total_net'));
+        $i->addExpression('total_net', $i->createTheirModelLinked('line')->toQuery()->aggregate('sum', 'total_net'));
 
         $this->assertSameSql(
             'select "invoice"."id","invoice"."ref_no",(select sum("total_net") from "invoice_line" where "invoice_id" = "invoice"."id") "total_net" from "invoice"',
@@ -342,7 +342,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $this->assertEquals(9.2, $i->get('total_vat'));
         $this->assertEquals(49.2, $i->get('total_gross'));
 
-        $i->ref('line')->import([
+        $i->getTheirEntity('line')->import([
             ['total_net' => ($n = 1), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1))],
             ['total_net' => ($n = 2), 'total_vat' => ($n * $vat), 'total_gross' => ($n * ($vat + 1))],
         ]);
@@ -352,7 +352,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $this->assertEquals($n * $vat, $i->get('total_vat'));
         $this->assertEquals($n * ($vat + 1), $i->get('total_gross'));
 
-        $i->ref('line')->import([
+        $i->getTheirEntity('line')->import([
             ['total_net' => null, 'total_vat' => null, 'total_gross' => 1],
         ]);
         $i->reload();
@@ -454,7 +454,7 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $user = $user->load(1);
 
-        $firstUserOrders = $user->ref('Company')->ref('Orders');
+        $firstUserOrders = $user->getTheirEntity('Company')->getTheirEntity('Orders');
         $firstUserOrders->setOrder('id');
 
         $this->assertEquals([
@@ -473,7 +473,7 @@ class ReferenceSqlTest extends Sql\TestCase
             ['id' => '1', 'company_id' => 1, 'description' => 'Vinny Company Order 1', 'amount' => 50.0],
             ['id' => '2', 'company_id' => 2, 'description' => 'Zoe Company Order', 'amount' => 10.0],
             ['id' => '3', 'company_id' => 1, 'description' => 'Vinny Company Order 2', 'amount' => 15.0],
-        ], $user->ref('Company')->ref('Orders')->setOrder('id')->export());
+        ], $user->getTheirEntity('Company')->getTheirEntity('Orders')->setOrder('id')->export());
     }
 
     public function testReferenceHook(): void
@@ -498,25 +498,25 @@ class ReferenceSqlTest extends Sql\TestCase
 
         $uu = $u->load(1);
         $this->assertSame('John contact', $uu->get('address'));
-        $this->assertSame('John contact', $uu->ref('contact')->get('address'));
+        $this->assertSame('John contact', $uu->getTheirEntity('contact')->get('address'));
 
         $uu = $u->load(2);
         $this->assertNull($uu->get('address'));
         $this->assertNull($uu->get('contact_id'));
-        $this->assertNull($uu->ref('contact')->get('address'));
+        $this->assertNull($uu->getTheirEntity('contact')->get('address'));
 
         $uu = $u->load(3);
         $this->assertSame('Joe contact', $uu->get('address'));
-        $this->assertSame('Joe contact', $uu->ref('contact')->get('address'));
+        $this->assertSame('Joe contact', $uu->getTheirEntity('contact')->get('address'));
 
         $uu = $u->load(2);
-        $uu->ref('contact')->save(['address' => 'Peters new contact']);
+        $uu->getTheirEntity('contact')->save(['address' => 'Peters new contact']);
 
         $this->assertNotNull($uu->get('contact_id'));
-        $this->assertSame('Peters new contact', $uu->ref('contact')->get('address'));
+        $this->assertSame('Peters new contact', $uu->getTheirEntity('contact')->get('address'));
 
         $uu->save()->reload();
-        $this->assertSame('Peters new contact', $uu->ref('contact')->get('address'));
+        $this->assertSame('Peters new contact', $uu->getTheirEntity('contact')->get('address'));
         $this->assertSame('Peters new contact', $uu->get('address'));
     }
 
@@ -546,16 +546,16 @@ class ReferenceSqlTest extends Sql\TestCase
         $p->hasOne('stadium', ['theirModel' => $s, 'ourKey' => 'id', 'theirKey' => 'player_id']);
 
         $p = $p->load(2);
-        $p->ref('stadium')->import([['name' => 'Nou camp nou']]);
-        $this->assertSame('Nou camp nou', $p->ref('stadium')->get('name'));
-        $this->assertSame(2, $p->ref('stadium')->get('player_id'));
+        $p->getTheirEntity('stadium')->import([['name' => 'Nou camp nou']]);
+        $this->assertSame('Nou camp nou', $p->getTheirEntity('stadium')->get('name'));
+        $this->assertSame(2, $p->getTheirEntity('stadium')->get('player_id'));
     }
 
     public function testModelProperty(): void
     {
         $user = new Model($this->db, ['table' => 'user']);
         $user->withMany('Orders', ['theirModel' => [Model::class, 'table' => 'order'], 'theirKey' => 'id']);
-        $o = $user->ref('Orders');
+        $o = $user->getTheirEntity('Orders');
         $this->assertSame('order', $o->table);
     }
 
@@ -653,7 +653,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', ['theirModel' => $u, 'ourKey' => 'user_id'])->addTitle();
 
-        // change order user by changing ref field value
+        // change order user by changing reference field value
         $o = $o->load(1);
         $o->set('my_user_name', 'Foo');
         $this->assertEquals(1, $o->get('user_id'));
@@ -670,7 +670,7 @@ class ReferenceSqlTest extends Sql\TestCase
         $o = (new Model($this->db, ['table' => 'order']));
         $o->hasOne('my_user', ['theirModel' => $u, 'ourKey' => 'user_id'])->addTitle();
 
-        // change order user by changing ref field value
+        // change order user by changing reference field value
         $o = $o->load(1);
         $o->set('my_user_name', 'Foo'); // user_id=2
         $o->set('user_id', 3);     // user_id=3 (this will take precedence)

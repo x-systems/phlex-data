@@ -140,7 +140,7 @@ class HasOne extends Model\Field\Reference
      * If our model is loaded, then return their model with respective record loaded.
      *
      * If our model is not loaded, then return their model with condition set.
-     * This can happen in case of deep traversal $model->ref('Many')->ref('one_id'), for example.
+     * This can happen in case of deep traversal $model->getTheirEntity('Many')->getTheirEntity('one_id'), for example.
      */
     public function getTheirEntity(array $defaults = []): Model
     {

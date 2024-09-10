@@ -126,7 +126,7 @@ trait HintableModelTrait
             $hProp = $hProps[$name];
             if ($hProp->refType === HintablePropertyDef::REF_TYPE_ONE
                 || $hProp->refType === HintablePropertyDef::REF_TYPE_MANY) {
-                $resNoRef = $this->ref($hProp->key);
+                $resNoRef = $this->getTheirEntity($hProp->key);
             } else {
                 $resNoRef = $this->get($hProp->key);
             }

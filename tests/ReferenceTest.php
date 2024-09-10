@@ -25,7 +25,7 @@ class ReferenceTest extends TestCase
         $order->addField('user_id');
 
         $user->withMany('Orders', ['theirModel' => $order, 'caption' => 'My Orders']);
-        $o = $user->ref('Orders')->createEntity();
+        $o = $user->getTheirEntity('Orders')->createEntity();
 
         $this->assertSame(20, $o->get('amount'));
         $this->assertSame(1, $o->get('user_id'));
@@ -38,7 +38,7 @@ class ReferenceTest extends TestCase
             return $m;
         }]);
 
-        $this->assertSame(100, $user->ref('BigOrders')->createEntity()->get('amount'));
+        $this->assertSame(100, $user->getTheirEntity('BigOrders')->createEntity()->get('amount'));
     }
 
     /**
@@ -61,7 +61,7 @@ class ReferenceTest extends TestCase
 
         // test caption of containsOne reference
         $this->assertSame('My Orders', $user->getReference('Orders')->createTheirModel()->getCaption());
-        $this->assertSame('My Orders', $user->ref('Orders')->getCaption());
+        $this->assertSame('My Orders', $user->getTheirEntity('Orders')->getCaption());
     }
 
     public function testModelProperty(): void
@@ -71,7 +71,7 @@ class ReferenceTest extends TestCase
         $user = $user->createEntity();
         $user->setId(1);
         $user->hasOne('order', ['theirModel' => [Model::class, 'table' => 'order']]);
-        $o = $user->ref('order');
+        $o = $user->getTheirEntity('order');
         $this->assertSame('order', $o->table);
     }
 
@@ -104,13 +104,13 @@ class ReferenceTest extends TestCase
         $order->addReference('archive', ['theirModel' => static fn () => new $order(null, ['table' => $order->table . '_archive'])]);
     }
 
-    public function testCustomRef(): void
+    public function testCustomgetTheirEntity(): void
     {
         $p = new Persistence\Array_();
 
         $m = new Model($p, ['table' => 'user']);
         $m->addReference('archive', ['theirModel' => static fn () => new $m(null, ['table' => $m->table . '_archive'])]);
 
-        $this->assertSame('user_archive', $m->ref('archive')->table);
+        $this->assertSame('user_archive', $m->getTheirEntity('archive')->table);
     }
 }

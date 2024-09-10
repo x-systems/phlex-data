@@ -8,12 +8,12 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class WithMany extends Model\Field\Reference\WithMany
+class WithMany extends Model\Field\Reference\WithMany implements Model\Field\Reference\LinkInterface
 {
     /**
      * Creates model that can be used for generating sub-queries.
      */
-    public function refLink(array $defaults = []): Model
+    public function createTheirModelLinked(array $defaults = []): Model
     {
         $theirModel = $this->createTheirModel($defaults);
 
@@ -50,7 +50,7 @@ class WithMany extends Model\Field\Reference\WithMany
 
         if (isset($defaults['expr'])) {
             $fx = function () use ($defaults, $alias) {
-                $theirModelLinked = $this->refLink();
+                $theirModelLinked = $this->createTheirModelLinked();
 
                 return $theirModelLinked->toQuery()->field($theirModelLinked->expr(
                     $defaults['expr'],
@@ -59,13 +59,13 @@ class WithMany extends Model\Field\Reference\WithMany
             };
             unset($defaults['args']);
         } elseif (is_object($defaults['aggregate'])) {
-            $fx = fn () => $this->refLink()->toQuery()->field($defaults['aggregate'], $alias);
+            $fx = fn () => $this->createTheirModelLinked()->toQuery()->field($defaults['aggregate'], $alias);
         } elseif ($defaults['aggregate'] === 'count' && !isset($defaults['field'])) {
-            $fx = fn () => $this->refLink()->toQuery()->count($alias);
+            $fx = fn () => $this->createTheirModelLinked()->toQuery()->count($alias);
         } elseif (in_array($defaults['aggregate'], ['sum', 'avg', 'min', 'max', 'count'], true)) {
-            $fx = fn () => $this->refLink()->toQuery()->aggregate($defaults['aggregate'], $field, null, true);
+            $fx = fn () => $this->createTheirModelLinked()->toQuery()->aggregate($defaults['aggregate'], $field, null, true);
         } else {
-            $fx = fn () => $this->refLink()->toQuery()->aggregate($defaults['aggregate'], $field);
+            $fx = fn () => $this->createTheirModelLinked()->toQuery()->aggregate($defaults['aggregate'], $field);
         }
 
         return $this->getOurModel()->addExpression($key, array_merge([$fx], $defaults));

@@ -442,10 +442,10 @@ As per our database design - one user can have multiple 'system' records::
 Next you can load a specific user and traverse into System model::
 
     $m->loadBy('username', 'john');
-    $s = $m->ref('System');
+    $s = $m->getTheirEntity('System');
 
 Unlike most ORM and ActiveRecord implementations today - instead of returning
-array of objects, :php:meth:`Model::ref()` actually returns another Model to
+array of objects, :php:meth:`Model::getTheirEntity()` actually returns another Model to
 you, however it will add one extra Condition. This type of reference traversal
 is called "Active Record to DataSet" or One to Many.
 
@@ -464,7 +464,7 @@ Many to Many
 Agile Data also supports another type of traversal - 'DataSet to DataSet' or
 Many to Many::
 
-    $c = $m->ref('System')->ref('Client');
+    $c = $m->getTheirEntity('System')->getTheirEntity('Client');
 
 This will create a Model_Client instance with a DataSet corresponding to all
 the Clients that are contained in all of the Systems that belong to user john.
@@ -478,14 +478,14 @@ You can examine the this model further::
 By looking at the code - both MtM and OtM references are defined with 'hasMany'.
 The only difference is the loaded() state of the source model.
 
-Calling ref()->ref() is also called Deep Traversal.
+Calling getTheirEntity()->getTheirEntity() is also called Deep Traversal.
 
 One to One
 ----------
 
 The third and final reference traversal type is "Active Record to Active Record"::
 
-    $cc = $m->ref('country_id');
+    $cc = $m->getTheirEntity('country_id');
 
 This results in an instance of Model_Country with Active Record set to the
 country of user john::
@@ -502,10 +502,10 @@ the new object is created and added into Model of class :php:class:`Reference\Wi
 or :php:class:`Reference\\HasOne` (or :php:class:`Reference\\HasOneSql` in case you
 use SQL database). The object itself is quite simple and you can fetch it from
 the model if you keep the return value of hasOne() / hasMany() or call
-:php:meth:`Model::getRef()` with the same identifier later on.
-You can also use :php:meth:`Model::hasRef()` to check if reference exists in model.
+:php:meth:`Model::getTheirEntity()` with the same identifier later on.
+You can also use :php:meth:`Model::hasgetTheirEntity()` to check if reference exists in model.
 
-Calling :php:meth:`Model::ref()` will proxy into the ref() method of reference
+Calling :php:meth:`Model::getTheirEntity()` will proxy into the getTheirEntity() method of reference
 object which will in turn figure out what to do.
 
 Additionally you can call :php:meth:`Model::addField()` on the reference model
@@ -537,19 +537,19 @@ Aggregation actions can be used in Expressions with hasMany references and they
 can be brought into the original model as fields::
 
     $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('max_delivery', ['aggregate'=>'max', 'field'=>'shipping']);
-    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
+    $m->getTheirEntity('Invoice')->addField('max_delivery', ['aggregate'=>'max', 'field'=>'shipping']);
+    $m->getTheirEntity('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
     $m->export(['name','max_delivery','total_paid']);
 
 The above code is more concise and can be used together with reference declaration,
 although this is how it works::
 
     $m = new Model_Client($db);
-    $m->addExpression('max_delivery', $m->refLink('Invoice')->action('fx', ['max', 'shipping']));
-    $m->addExpression('total_paid', $m->refLink('Payment')->action('fx', ['sum', 'amount']));
+    $m->addExpression('max_delivery', $m->createTheirModelLinked('Invoice')->action('fx', ['max', 'shipping']));
+    $m->addExpression('total_paid', $m->createTheirModelLinked('Payment')->action('fx', ['sum', 'amount']));
     $m->export(['name','max_delivery','total_paid']);
 
-In this example calling refLink is similar to traversing reference but instead
+In this example calling createTheirModelLinked is similar to traversing reference but instead
 of calculating DataSet based on Active Record or DataSet it references the actual
 field, making it ideal for placing into sub-query which SQL action is using.
 So when calling like above, action() will produce expression for calculating
@@ -572,14 +572,14 @@ Field referencing allows you to fetch a specific field from related model::
 This is useful with hasMany references::
 
     $m = new Model_User($db);
-    $m->getRef('country_id')->addField('country', 'name');
+    $m->getTheirEntity('country_id')->addField('country', 'name');
     $m->loadAny();
     $m->get();  // look for 'country' field
 
 hasMany::addField() again is a short-cut for creating expression, which you can
 also build manually::
 
-    $m->addExpression('country', $m->refLink('country_id')->action('field',['name']));
+    $m->addExpression('country', $m->createTheirModelLinked('country_id')->action('field',['name']));
 
 Multi-record actions
 --------------------
@@ -592,8 +592,8 @@ console once away::
     $m = new Model_User($db);
     $m->loadBy('username','john');
     $m->hasMany('System');
-    $c = $m->ref('System')->ref('Client');
-    $s = $m->ref('System')->ref('Supplier');
+    $c = $m->getTheirEntity('System')->getTheirEntity('Client');
+    $s = $m->getTheirEntity('System')->getTheirEntity('Supplier');
 
     $c->action('update')->set('status', 'suspended')->execute();
     $s->action('update')->set('status', 'suspended')->execute();
@@ -636,8 +636,8 @@ will continue to work even without SQL (although might be more performance-expen
 however if you're stuck with SQL you can use free-form pattern-based expressions::
 
     $m = new Model_Client($db);
-    $m->getRef('Invoice')->addField('total_purchase', ['aggregate'=>'sum', 'field'=>'total']);
-    $m->getRef('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
+    $m->getTheirEntity('Invoice')->addField('total_purchase', ['aggregate'=>'sum', 'field'=>'total']);
+    $m->getTheirEntity('Payment')->addField('total_paid', ['aggregate'=>'sum', 'field'=>'amount']);
 
     $m->addExpression('balance','[total_purchase]+[total_paid]');
     $m->export(['name','balance']);

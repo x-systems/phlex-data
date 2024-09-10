@@ -49,7 +49,7 @@ code pattern when dealing with multiple types::
 
 You can then use type-specific reference::
 
-    $account->ref('Transaction:Deposit')->insert(['amount'=>10]);
+    $account->getTheirEntity('Transaction:Deposit')->insert(['amount'=>10]);
 
 and the code would be clean. If you introduce new type, you would have to add
 extra line to your "Account" model, but it will not be impacting anything, so
@@ -61,7 +61,7 @@ Type substitution on loading
 Another technique is for Phlex Data to replace your object when data is being
 loaded. You can treat "Transaction" class as a "shim"::
 
-    $obj = $account->ref('Transactions')->load(123);
+    $obj = $account->getTheirEntity('Transactions')->load(123);
 
 Normally $obj would be instance of `Transaction` class, however we want this
 class to be selected based on transaction type. Therefore a more broad
@@ -71,7 +71,7 @@ would work without a change.
 
 Another scenario which could benefit by type substitution would be::
 
-    foreach($accoutn->ref('Transactions') as $tr) {
+    foreach($accoutn->getTheirEntity('Transactions') as $tr) {
         echo get_class($tr)."\n";
     }
 
@@ -108,14 +108,14 @@ of the record. Finally to help with performance, you can implement a switch::
 Now, every time you iterate (or load) you can decide if you want to invoke type
 substitution::
 
-    foreach($account->ref('Transactions', ['typeSubstitution'=>true]) as $tr) {
+    foreach($account->getTheirEntity('Transactions', ['typeSubstitution'=>true]) as $tr) {
 
         $tr->verify();  // verify() method can be overloaded!
     }
 
 
     // however, for export, we don't need expensive substitution
-    $transaction_data = $account->ref('Transaction')->export();
+    $transaction_data = $account->getTheirEntity('Transaction')->export();
 
 Audit Fields
 ============
@@ -515,10 +515,10 @@ Next we need to define reference. Inside Model_Invoice add::
     }, 'theirFieldName' => 'invoice_id']);
 
     $this->onHookShort(Model::HOOK_BEFORE_DELETE, function(){
-        $this->ref('InvoicePayment')->action('delete')->execute();
+        $this->getTheirEntity('InvoicePayment')->action('delete')->execute();
 
         // If you have important per-row hooks in InvoicePayment
-        // $payment = $this->ref('InvoicePayment'); $payment->each(function () use ($payment) { $payment->delete(); });
+        // $payment = $this->getTheirEntity('InvoicePayment'); $payment->each(function () use ($payment) { $payment->delete(); });
     });
 
 You'll have to do a similar change inside Payment model. The code for '$j->'
@@ -531,7 +531,7 @@ have to be duplicated until we implement method Join->importModel().
 Here are some use-cases. First lets add payment to existing invoice. Obviously
 we cannot close amount that is bigger than invoice's total::
 
-    $i->ref('Payment')->insert([
+    $i->getTheirEntity('Payment')->insert([
         'amount'=>$paid,
         'amount_closed'=> min($paid, $i->get('total')),
         'payment_code'=>'XYZ'
@@ -554,7 +554,7 @@ payment towards a most suitable invoice::
     function autoAllocate()
     {
         $client = $this->ref['client_id'];
-        $invoices = $client->ref('Invoice');
+        $invoices = $client->getTheirEntity('Invoice');
 
         // we are only interested in unpaid invoices
         $invoices->addCondition('amount_due', '>', 0);
@@ -581,7 +581,7 @@ payment towards a most suitable invoice::
 
             // How much we can allocate to this invoice
             $alloc = min($this->get('amount_due'), $invoices->get('amount_due'))
-            $this->ref('InvoicePayment')->insert(['amount_closed'=>$alloc, 'invoice_id'=>$invoices->getId()]);
+            $this->getTheirEntity('InvoicePayment')->insert(['amount_closed'=>$alloc, 'invoice_id'=>$invoices->getId()]);
 
             // Reload ourselves to refresh amount_due
             $this->reload();
@@ -626,8 +626,8 @@ API call) this approach will require us to perform 2 extra queries::
     $m = new Model_Invoice($db);
     $m->insert([
         'total'=>20,
-        'client_id'=>$m->ref('client_id')->loadBy('code', $client_code)->getId(),
-        'category_id'=>$m->ref('category_id')->loadBy('name', $category)->getId(),
+        'client_id'=>$m->getTheirEntity('client_id')->loadBy('code', $client_code)->getId(),
+        'category_id'=>$m->getTheirEntity('category_id')->loadBy('name', $category)->getId(),
     ]);
 
 The ideal way would be to create some "non-persistable" fields that can be used
@@ -740,11 +740,11 @@ so::
 
     $this->onHookShort(Model::HOOK_AFTER_SAVE, function($is_update){
         if($this->_isset('payment')) {
-            $this->ref('Payment')->insert($this->get('payment'));
+            $this->getTheirEntity('Payment')->insert($this->get('payment'));
         }
 
         if($this->_isset('lines')) {
-            $this->ref('Line')->import($this->get('lines'));
+            $this->getTheirEntity('Line')->import($this->get('lines'));
         }
     });
 
@@ -777,12 +777,12 @@ different for the extended class::
 
 Alternatively you can replace model in the doInitialize() method of Model_Invoice::
 
-    $this->getRef('client_id')->model = 'Model_Client';
+    $this->getTheirEntity('client_id')->model = 'Model_Client';
 
 You can also use array here if you wish to pass additional information into
 related model::
 
-    $this->getRef('client_id')->model = ['Model_Client', 'no_audit'=>true];
+    $this->getTheirEntity('client_id')->model = ['Model_Client', 'no_audit'=>true];
 
 Combined with our "Audit" handler above, this should allow you to relate
 with deleted clients.
@@ -795,7 +795,7 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
     $this->hasOne('client_id', 'Client');
 
     $this->hasOne('payment_invoice_id', ['model' => function($m){
-        return $m->ref('client_id')->ref('Payment');
+        return $m->getTheirEntity('client_id')->getTheirEntity('Payment');
     }]);
 
     /// how to use
@@ -803,14 +803,14 @@ field only to offer payments made by the same client. Inside Model_Invoice add::
     $m = new Model_Invoice($db);
     $m->set('client_id', 123);
 
-    $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->getId());
+    $m->set('payment_invoice_id', $m->getTheirEntity('payment_invoice_id')->tryLoadAny()->getId());
 
 In this case the payment_invoice_id will be set to ID of any payment by client
 123. There also may be some better uses::
 
-    $cl->ref('Invoice')->each(function($m) {
+    $cl->getTheirEntity('Invoice')->each(function($m) {
 
-        $m->set('payment_invoice_id', $m->ref('payment_invoice_id')->tryLoadAny()->getId());
+        $m->set('payment_invoice_id', $m->getTheirEntity('payment_invoice_id')->tryLoadAny()->getId());
         $m->save();
 
     });
@@ -823,13 +823,13 @@ sometimes that can be quite useful. Consider adding this inside your Model_Conta
 
     $this->withMany('Invoice', 'Model_Invoice');
     $this->withMany('OverdueInvoice', ['model' => function($m){
-        return $m->ref('Invoice')->addCondition('due','<',date('Y-m-d'))
+        return $m->getTheirEntity('Invoice')->addCondition('due','<',date('Y-m-d'))
     }]);
 
 This way if you extend your class into 'Model_Client' and modify the 'Invoice'
 reference to use different model::
 
-    $this->getRef('Invoice')->model = 'Model_Invoice_Sale';
+    $this->getTheirEntity('Invoice')->model = 'Model_Invoice_Sale';
 
 The 'OverdueInvoice' reference will be also properly adjusted.
 

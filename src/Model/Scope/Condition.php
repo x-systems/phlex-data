@@ -206,7 +206,7 @@ class Condition extends AbstractScope
                     $refModels = [];
                     $refModel = $model;
                     foreach ($references as $link) {
-                        $refModel = $refModel->refLink($link);
+                        $refModel = $refModel->createTheirModelLinked($link);
                         $refModels[] = $refModel;
                     }
 
@@ -315,7 +315,7 @@ class Condition extends AbstractScope
                 foreach ($references as $link) {
                     $words[] = 'that has reference ' . Core\Utils::getReadableCaption($link);
 
-                    $model = $model->refLink($link);
+                    $model = $model->createTheirModelLinked($link);
                 }
 
                 $words[] = 'where';
@@ -391,7 +391,7 @@ class Condition extends AbstractScope
                 $field = array_pop($references);
 
                 foreach ($references as $link) {
-                    $model = $model->refLink($link);
+                    $model = $model->createTheirModelLinked($link);
                 }
             }
 

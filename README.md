@@ -29,7 +29,7 @@ Agile Data is data persistence framework - like ORM it helps you escape raw SQL.
 $vip_clients = (new Client($db))->addCondition('is_vip', true);
 
 // express total for all VIP client invoices. The value of the variable is an object
-$total_due = $vip_clients->ref('Invoice')->action('fx', ['sum', 'total']);
+$total_due = $vip_clients->getTheirEntity('Invoice')->action('fx', ['sum', 'total']);
 
 // Single database query is executed here, but not before!
 echo $total_due->getOne();
@@ -136,7 +136,7 @@ class JobReport extends Job {
     $invoice->addCondition('status', '!=', 'draft');
 
     // Each invoice may have multiple lines, which is what we want
-    $invoice_lines = $invoice->ref('Lines');
+    $invoice_lines = $invoice->getTheirEntity('Lines');
 
     // Build relation between job and invoice line
     $this->hasMany('InvoiceLines', ['model' => $invoice_lines])
@@ -146,7 +146,7 @@ class JobReport extends Job {
     $timesheet = new Timesheet($this->persistence);
 
     // Timesheet relates to client. Import client.hourly_rate as expression.
-    $timesheet->getRef('client_id')->addField('hourly_rate');
+    $timesheet->getTheirEntity('client_id')->addField('hourly_rate');
 
     // Calculate timesheet cost expression
     $timesheet->addExpression('cost', '[hours]*[hourly_rate]');
@@ -294,7 +294,7 @@ You get to manipulate your objects first before query is invoked. The next code 
 ``` php
 $m = new Client($db);
 echo $m->addCondition('vip', true)
-  ->ref('Order')->ref('Line')->action('fx', ['sum', 'total'])->getOne();
+  ->getTheirEntity('Order')->getTheirEntity('Line')->action('fx', ['sum', 'total'])->getOne();
 ```
 
 Resulting Query will always use parametric variables if vendor driver supports them (such as PDO):
@@ -318,9 +318,9 @@ My next example demonstrates how simple and clean your code looks when you store
 ``` php
 $m = new Client($db);
 $m->loadBy('name', 'Pear Company');
-$m->ref('Order')
+$m->getTheirEntity('Order')
    ->save(['ref'=>'TBL1', 'delivery'=>new DateTime('+1 month')])
-   ->ref('Lines')->import([
+   ->getTheirEntity('Lines')->import([
       ['Table', 'category'=>'furniture', 'qty'=>2, 'price'=>10.50],
       ['Chair', 'category'=>'furniture', 'qty'=>10, 'price'=>3.25],
 ]);
@@ -496,7 +496,7 @@ If you wonder how those advanced features may impact performance of loading and 
 
 
 ``` php
-foreach($client->ref('Project') as $project) {
+foreach($client->getTheirEntity('Project') as $project) {
     echo $project->get('name')."\n"
 }
 
@@ -534,7 +534,7 @@ This code will fail, because our earlier condition that "Latvia" does not satisf
 
 ```php
 $client->load(3);
-$client->ref('Order')->insert($_POST);
+$client->getTheirEntity('Order')->insert($_POST);
 ```
 
 Regardless of what's inside the `$_POST`, the new record will have `client_id = 3` .
@@ -543,7 +543,7 @@ Finally, the following is also possible:
 
 ``` php
 $client->addCondition('is_vip');
-$client->ref('Order')->insert($_POST);
+$client->getTheirEntity('Order')->insert($_POST);
 ```
 
 

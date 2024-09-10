@@ -275,7 +275,7 @@ Defines a field as server-side expression (e.g. SQL)::
 The above code is executed on the server (SQL) and can be very powerful.
 You must make sure that expression is valid for current `$this->persistence`::
 
-   $product->addExpression('discount', $this->refLink('category_id')->fieldQuery('default_discount'));
+   $product->addExpression('discount', $this->createTheirModelLinked('category_id')->fieldQuery('default_discount'));
    // expression as a sub-select from referenced model (Category) imported as a read-only field
    // of $product model
 

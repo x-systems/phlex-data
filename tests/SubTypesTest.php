@@ -39,7 +39,7 @@ class StAccount extends Model
         $m->save(['name' => $name]);
 
         if ($amount) {
-            $m->ref('Transactions:Ob')->save(['amount' => $amount]);
+            $m->getTheirEntity('Transactions:Ob')->save(['amount' => $amount]);
         }
 
         return $m;
@@ -47,12 +47,12 @@ class StAccount extends Model
 
     public function deposit(float $amount): Model
     {
-        return $this->ref('Transactions:Deposit')->save(['amount' => $amount]);
+        return $this->getTheirEntity('Transactions:Deposit')->save(['amount' => $amount]);
     }
 
     public function withdraw(float $amount): Model
     {
-        return $this->ref('Transactions:Withdrawal')->save(['amount' => $amount]);
+        return $this->getTheirEntity('Transactions:Withdrawal')->save(['amount' => $amount]);
     }
 
     /**
@@ -60,8 +60,8 @@ class StAccount extends Model
      */
     public function transferTo(self $account, float $amount): array
     {
-        $out = $this->ref('Transactions:TransferOut')->save(['amount' => $amount]);
-        $in = $account->ref('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->getId()]);
+        $out = $this->getTheirEntity('Transactions:TransferOut')->save(['amount' => $amount]);
+        $in = $account->getTheirEntity('Transactions:TransferIn')->save(['amount' => $amount, 'link_id' => $out->getId()]);
         $out->set('link_id', $in->getId());
         $out->save();
 
@@ -165,13 +165,13 @@ class SubTypesTest extends Sql\TestCase
         $inheritance->transferTo($current, 500);
         $current->withdraw(350);
 
-        $this->assertInstanceOf(StTransaction_Ob::class, $inheritance->ref('Transactions')->load(1));
-        $this->assertInstanceOf(StTransaction_TransferOut::class, $inheritance->ref('Transactions')->load(2));
-        $this->assertInstanceOf(StTransaction_TransferIn::class, $current->ref('Transactions')->load(3));
-        $this->assertInstanceOf(StTransaction_Withdrawal::class, $current->ref('Transactions')->load(4));
+        $this->assertInstanceOf(StTransaction_Ob::class, $inheritance->getTheirEntity('Transactions')->load(1));
+        $this->assertInstanceOf(StTransaction_TransferOut::class, $inheritance->getTheirEntity('Transactions')->load(2));
+        $this->assertInstanceOf(StTransaction_TransferIn::class, $current->getTheirEntity('Transactions')->load(3));
+        $this->assertInstanceOf(StTransaction_Withdrawal::class, $current->getTheirEntity('Transactions')->load(4));
 
         $cl = [];
-        foreach ($current->ref('Transactions') as $tr) {
+        foreach ($current->getTheirEntity('Transactions') as $tr) {
             $cl[] = get_class($tr);
         }
 

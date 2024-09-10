@@ -7,7 +7,7 @@ References
 
 .. php:class:: Model
 
-.. php:method:: ref($link, $details = []);
+.. php:method:: getTheirEntity($link, $details = []);
 
 Models can relate one to another. The logic of traversing references, however,
 is slightly different to the traditional ORM implementation, because in Agile
@@ -21,7 +21,7 @@ use::
     $m->hasMany('Orders', ['model' => [Model_Order::class]]);
     $m->load(13);
 
-    $orders_for_user_13 = $m->ref('Orders');
+    $orders_for_user_13 = $m->getTheirEntity('Orders');
 
 As mentioned - $orders_for_user_13 will have it's DataSet automatically adjusted
 so that you could only access orders for the user with ID=13. The following is
@@ -31,7 +31,7 @@ also possible::
     $m->hasMany('Orders', ['model' => [Model_Order::class]]);
     $m->addCondition('is_vip', true);
 
-    $orders_for_vips = $m->ref('Orders');
+    $orders_for_vips = $m->getTheirEntity('Orders');
     $orders_for_vips->loadAny();
 
 Condition on the base model will be carried over to the orders and you will
@@ -61,7 +61,7 @@ You can specify it like this::
     $m->hasMany('Orders', ['model' => [Model_Order::class, $db_sql]]);
     $m->addCondition('is_vip', true);
 
-    $orders_for_vips = $m->ref('Orders');
+    $orders_for_vips = $m->getTheirEntity('Orders');
 
 Now that a different databases are used, the queries can no longer be
 joined so Agile Data will carry over list of IDs instead:
@@ -79,8 +79,8 @@ be retrieved from memory.
 Safety and Performance
 ----------------------
 
-When using ref() on hasMany reference, it will always return a fresh clone of
-the model. You can perform actions on the clone and next time you execute ref()
+When using getTheirEntity() on hasMany reference, it will always return a fresh clone of
+the model. You can perform actions on the clone and next time you execute getTheirEntity()
 you will get a fresh copy.
 
 If you are worried about performance you can keep 2 models in memory::
@@ -94,7 +94,7 @@ If you are worried about performance you can keep 2 models in memory::
 
 .. warning:: This code is seriously flawed and is called "N+1 Problem".
     Agile Data discourages you from using this and instead offers you many
-    other tools: field importing, model joins, field actions and refLink().
+    other tools: field importing, model joins, field actions and createTheirModelLinked().
 
 
 hasMany Reference
@@ -129,7 +129,7 @@ It is possible to perform reference through an 3rd party table::
 
 Now you can fetch all the payments associated with the invoice through::
 
-    $payments_for_invoice_1 = $i->load(1)->ref('Payments');
+    $payments_for_invoice_1 = $i->load(1)->getTheirEntity('Payments');
 
 Dealing with NON-ID fields
 --------------------------
@@ -144,7 +144,7 @@ available. Both models will relate through ``currency.code = exchange.currency_c
     $c->hasMany('Exchanges', ['model' => $e, 'theirFieldName'=>'currency_code', 'ourFieldName'=>'code']);
 
     $c->addCondition('is_convertable',true);
-    $e = $c->ref('Exchanges');
+    $e = $c->getTheirEntity('Exchanges');
 
 This will produce the following query:
 
@@ -249,23 +249,23 @@ or 'field'::
 
 .. note:: as of 1.3.4 count's field defaults to `*` - no need to specify explicitly.
 
-hasMany / refLink / refModel
+hasMany / createTheirModelLinked / refModel
 ============================
 
-.. php:method:: refLink($link)
+.. php:method:: createTheirModelLinked($link)
 
-Normally ref() will return a usable model back to you, however if you use refLink then
-the conditioning will be done differently. refLink is useful when defining
+Normally getTheirEntity() will return a usable model back to you, however if you use createTheirModelLinked then
+the conditioning will be done differently. createTheirModelLinked is useful when defining
 sub-queries::
 
     $m = new Model_User($db_array_cache, 'user');
     $m->hasMany('Orders', ['model' => [Model_Order::class]]);
     $m->addCondition('is_vip', true);
 
-    $sum = $m->refLink('Orders')->action('fx0', ['sum', 'amount']);
+    $sum = $m->createTheirModelLinked('Orders')->action('fx0', ['sum', 'amount']);
     $m->addExpression('sum_amount')->set($sum);
 
-The refLink would define a condition on a query like this:
+The createTheirModelLinked would define a condition on a query like this:
 
 .. code-block:: sql
 
@@ -285,7 +285,7 @@ then it now makes sense for generating expression:
 
 There are many situations when you need to get referenced model instead of
 reference itself. In such case refModel() comes in as handy shortcut of doing
-`$model->refLink($link)->getModel()`.
+`$model->createTheirModelLinked($link)->getModel()`.
 
 hasOne reference
 ================
@@ -313,17 +313,17 @@ Traversing loaded model
 If your ``$o`` model is loaded, then traversing into user will also load the user,
 because we specifically know the ID of that user. No conditions will be set::
 
-    echo $o->load(3)->ref('user_id')['name']; // will show name of the user, of order #3
+    echo $o->load(3)->getTheirEntity('user_id')['name']; // will show name of the user, of order #3
 
 Traversing DataSet
 ------------------
 
-If your model is not loaded then using ref() will traverse by conditioning
+If your model is not loaded then using getTheirEntity() will traverse by conditioning
 DataSet of the user model::
 
     $o->unload(); // just to be sure!
     $o->addCondition('status', 'failed');
-    $u = $o->ref('user_id');
+    $u = $o->getTheirEntity('user_id');
 
 
     $u->loadAny();  // will load some user who has at least one failed order
@@ -341,7 +341,7 @@ By passing options to hasOne() you can also differentiate field name::
     $o->addField('user_id');
     $o->hasOne('User', ['model' => $u, 'ourFieldName' => 'user_id']);
 
-    $o->load(1)->ref('User')['name'];
+    $o->load(1)->getTheirEntity('User')['name'];
 
 You can also use ``theirFieldName`` if you need non-id matching (see example above
 for hasMany()).
@@ -428,12 +428,12 @@ explicitly::
 User-defined Reference
 ======================
 
-.. php:method:: addRef($link, $callback)
+.. php:method:: addgetTheirEntity($link, $callback)
 
 Sometimes you would want to have a different type of relation between models,
 so with `addRef` you can define whatever reference you want::
 
-    $m->addRef('Archive', ['model' => function($m) {
+    $m->addgetTheirEntity('Archive', ['model' => function($m) {
         return $m->newInstance(null, ['table' => $m->table.'_archive']);
     }]);
 
@@ -441,13 +441,13 @@ The above example will work for a table structure where a main table `user` is
 shadowed by a archive table `user_archive`. Structure of both tables are same,
 and if you wish to look into an archive of a User you would do::
 
-    $user->ref('Archive');
+    $user->getTheirEntity('Archive');
 
 Note that you can create one-to-many or many-to-one relations, by using your
 custom logic.
 No condition will be applied by default so it's all up to you::
 
-    $m->addRef('Archive', ['model' => function($m) {
+    $m->addgetTheirEntity('Archive', ['model' => function($m) {
         $archive = $m->newInstance(null, ['table' => $m->table.'_archive']);
 
         $m->addField('original_id', ['type' => 'int']);
@@ -466,11 +466,11 @@ You can call :php:meth:`Model::getRefs()` to fetch all the references of a model
     $refs = $model->getRefs();
     $ref = $refs['owner_id'];
 
-or if you know the reference you'd like to fetch, you can use :php:meth:`Model::getRef()`::
+or if you know the reference you'd like to fetch, you can use :php:meth:`Model::getTheirEntity()`::
 
-    $ref = $model->getRef('owner_id');
+    $ref = $model->getTheirEntity('owner_id');
 
-While :php:meth:`Model::ref()` returns a related model, :php:meth:`Model::getRef()`
+While :php:meth:`Model::getTheirEntity()` returns a related model, :php:meth:`Model::getTheirEntity()`
 gives you the reference object itself so that you could perform some changes on it,
 such as import more fields with :php:meth:`Model::addField()`.
 
@@ -479,11 +479,11 @@ model and you can do fancy things with it.
 
     $ref_model = $model->refModel('owner_id');
 
-You can also use :php:meth:`Model::hasRef()` to check if particular reference
+You can also use :php:meth:`Model::hasgetTheirEntity()` to check if particular reference
 exists in model::
 
-    if ($model->hasRef('owner_id')) {
-        $ref = $model->getRef('owner_id');
+    if ($model->hasgetTheirEntity('owner_id')) {
+        $ref = $model->getTheirEntity('owner_id');
     }
 
 Deep traversal
@@ -491,13 +491,13 @@ Deep traversal
 
 When operating with data-sets you can define references that use deep traversal::
 
-    echo $o->load(1)->ref('user_id')->ref('address_id')['address_1'];
+    echo $o->load(1)->getTheirEntity('user_id')->getTheirEntity('address_id')['address_1'];
 
 The above example will actually perform 3 load operations, because as I have
-explained above, :php:meth:`Model::ref()` loads related model when called on
+explained above, :php:meth:`Model::getTheirEntity()` loads related model when called on
 a loaded model. To perform a single query instead, you can use::
 
-    echo $o->withId(1)->ref('user_id')->ref('address_id')->loadAny()['address_1'];
+    echo $o->withId(1)->getTheirEntity('user_id')->getTheirEntity('address_id')->loadAny()['address_1'];
 
 Here ``withId()`` will only set a condition without actually loading the record
 and traversal will encapsulate sub-queries resulting in a query like this:
@@ -532,8 +532,8 @@ specify a custom table alias if you want::
     $item->hasMany('parent_item_id', ['model' => [Model_Item::class], 'table_alias' => 'mypi'])
         ->addField('parent', 'name');
 
-Additionally you can pass table_alias as second argument into :php:meth:`Model::ref()`
-or :php:meth:`Model::refLink()`. This can help you in creating a recursive models
+Additionally you can pass table_alias as second argument into :php:meth:`Model::getTheirEntity()`
+or :php:meth:`Model::createTheirModelLinked()`. This can help you in creating a recursive models
 that relate to itself. Here is example::
 
     class Model_Item3 extends \Phlex\Data\Model {
@@ -632,10 +632,10 @@ to null. The next example will traverse into the contact to set it up::
     $m = new Model_User($db);
 
     $m->set('name', 'John');
-    $m->ref('address_id')->save(['address'=>'street']);
+    $m->getTheirEntity('address_id')->save(['address'=>'street']);
     $m->save();
 
-When entity which you have referenced through ref() is saved, it will automatically
+When entity which you have referenced through getTheirEntity() is saved, it will automatically
 populate $m->get('contact_id') field and the final $m->save() will also store the reference.
 
 ID setting is implemented through a basic hook. Related model will have afterSave
@@ -659,7 +659,7 @@ References are implemented through several classes:
 
 .. php:attr:: link
 
-    What should we pass into owner->ref() to get through to this reference.
+    What should we pass into owner->getTheirEntity() to get through to this reference.
     Each reference has a unique identifier, although it's stored
     in Model's elements as '#ref-xx'.
 

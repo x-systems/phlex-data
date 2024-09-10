@@ -59,7 +59,7 @@ class ModelUnionTest extends Sql\TestCase
         $this->assertSame(2, $client->getCount());
 
         // Client with ID=1 has invoices for 19
-        $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->getSum('amount'));
+        $this->assertSame(19.0, (float) $client->load(1)->getTheirEntity('Invoice')->getSum('amount'));
 
         $transaction = $this->createTransaction();
 
@@ -78,7 +78,7 @@ class ModelUnionTest extends Sql\TestCase
             ['id' => 'invoice/1', 'client_id' => 1, 'name' => 'chair purchase', 'amount' => 4.0],
             ['id' => 'invoice/2', 'client_id' => 1, 'name' => 'table purchase', 'amount' => 15.0],
             ['id' => 'payment/1', 'client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
-        ], $client->load(1)->ref('Transaction')->export());
+        ], $client->load(1)->getTheirEntity('Transaction')->export());
 
         $client = $this->createClient();
 
@@ -99,7 +99,7 @@ class ModelUnionTest extends Sql\TestCase
             ['id' => 'invoice/1', 'client_id' => 1, 'name' => 'chair purchase', 'amount' => -4.0],
             ['id' => 'invoice/2', 'client_id' => 1, 'name' => 'table purchase', 'amount' => -15.0],
             ['id' => 'payment/1', 'client_id' => 1, 'name' => 'prepay', 'amount' => 10.0],
-        ], $client->load(1)->ref('Transaction')->export());
+        ], $client->load(1)->getTheirEntity('Transaction')->export());
     }
 
     public function testReference(): void
@@ -107,8 +107,8 @@ class ModelUnionTest extends Sql\TestCase
         $client = $this->createClient();
         $client->withMany('transactions', ['theirModel' => $this->createTransaction()]);
 
-        $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->getSum('amount'));
-        $this->assertSame(10.0, (float) $client->load(1)->ref('Payment')->getSum('amount'));
+        $this->assertSame(19.0, (float) $client->load(1)->getTheirEntity('Invoice')->getSum('amount'));
+        $this->assertSame(10.0, (float) $client->load(1)->getTheirEntity('Payment')->getSum('amount'));
 
         // TODO aggregated fields are pushdown, but where condition is not
         // I belive the fields pushdown is even wrong as not every aggregated result produces same result when aggregated again
@@ -117,23 +117,23 @@ class ModelUnionTest extends Sql\TestCase
 
         return;
         // @phpstan-ignore-next-line
-        $this->assertSame(29.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
+        $this->assertSame(29.0, (float) $client->load(1)->getTheirEntity('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
             'select sum("val") from (select sum("amount") "val" from "invoice" where "client_id" = :a UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b)',
-            $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()[0]
+            $client->load(1)->getTheirEntity('tr')->action('fx', ['sum', 'amount'])->render()[0]
         );
 
         $client = $this->createClient();
         $client->withMany('tr', ['model' => $this->createSubtractInvoiceTransaction()]);
 
-        $this->assertSame(19.0, (float) $client->load(1)->ref('Invoice')->action('fx', ['sum', 'amount'])->getOne());
-        $this->assertSame(10.0, (float) $client->load(1)->ref('Payment')->action('fx', ['sum', 'amount'])->getOne());
-        $this->assertSame(-9.0, (float) $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->getOne());
+        $this->assertSame(19.0, (float) $client->load(1)->getTheirEntity('Invoice')->action('fx', ['sum', 'amount'])->getOne());
+        $this->assertSame(10.0, (float) $client->load(1)->getTheirEntity('Payment')->action('fx', ['sum', 'amount'])->getOne());
+        $this->assertSame(-9.0, (float) $client->load(1)->getTheirEntity('tr')->action('fx', ['sum', 'amount'])->getOne());
 
         $this->assertSameSql(
             'select sum("val") from (select sum(-"amount") "val" from "invoice" where "client_id" = :a UNION ALL select sum("amount") "val" from "payment" where "client_id" = :b)',
-            $client->load(1)->ref('tr')->action('fx', ['sum', 'amount'])->render()[0]
+            $client->load(1)->getTheirEntity('tr')->action('fx', ['sum', 'amount'])->render()[0]
         );
     }
 

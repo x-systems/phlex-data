@@ -116,9 +116,9 @@ class ContainsManyTest extends Sql\TestCase
         }
 
         // reload invoice just in case
-        $this->assertEquals($rows, $i->ref('lines')->export());
+        $this->assertEquals($rows, $i->getTheirEntity('lines')->export());
         $i->reload();
-        $this->assertEquals($rows, $i->ref('lines')->export());
+        $this->assertEquals($rows, $i->getTheirEntity('lines')->export());
 
         // now let's delete line with id=2 and add one more line
         $i->lines

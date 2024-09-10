@@ -802,10 +802,10 @@ class PersistentArrayTest extends TestCase
         $user->hasOne('country', ['theirModel' => $country]);
 
         $uu = $user->load(1);
-        $this->assertSame('Latvia', $uu->ref('country')->get('name'));
+        $this->assertSame('Latvia', $uu->getTheirEntity('country')->get('name'));
 
         $uu = $user->load(2);
-        $this->assertSame('UK', $uu->ref('country')->get('name'));
+        $this->assertSame('UK', $uu->getTheirEntity('country')->get('name'));
     }
 
     /**
@@ -837,10 +837,10 @@ class PersistentArrayTest extends TestCase
         $user->hasOne('country', ['theirModel' => $country]);
 
         $cc = $country->load(1);
-        $this->assertSame(2, $cc->ref('Users')->getCount());
+        $this->assertSame(2, $cc->getTheirEntity('Users')->getCount());
 
         $cc = $country->load(2);
-        $this->assertSame(1, $cc->ref('Users')->getCount());
+        $this->assertSame(1, $cc->getTheirEntity('Users')->getCount());
     }
 
     public function testLoadAnyThrowsExceptionOnRecordNotFound(): void

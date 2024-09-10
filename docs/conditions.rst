@@ -249,7 +249,7 @@ it sets condition for ID to match. Technically that saves you one query if you
 do not need actual record by are only looking to traverse::
 
     $u = new Model_User($db);
-    $books = $u->withId(20)->ref('Books');
+    $books = $u->withId(20)->getTheirEntity('Books');
 
 Advanced Usage
 ==============
@@ -384,7 +384,7 @@ Conditions on Referenced Models
 
 Agile Data allows for adding conditions on related models for retrieval of type 'model has references where'.
 
-Setting conditions on references can be done utilizing the Model::refLink method but there is a shorthand format 
+Setting conditions on references can be done utilizing the Model::createTheirModelLinked method but there is a shorthand format 
 directly integrated with addCondition method using "/" to chain the reference names::
 
 	$contact->addCondition('company/country', 'US');

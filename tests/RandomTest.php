@@ -225,8 +225,8 @@ class RandomTest extends Sql\TestCase
             $m->load(2)->get()
         );
 
-        $this->assertEquals(1, $m->load(2)->ref('Child', ['table_alias' => 'pp'])->getCount());
-        $this->assertSame('John', $m->load(2)->ref('parent_item', ['table_alias' => 'pp'])->get('name'));
+        $this->assertEquals(1, $m->load(2)->getTheirEntity('Child', ['table_alias' => 'pp'])->getCount());
+        $this->assertSame('John', $m->load(2)->getTheirEntity('parent_item', ['table_alias' => 'pp'])->get('name'));
     }
 
     public function testUpdateCondition(): void

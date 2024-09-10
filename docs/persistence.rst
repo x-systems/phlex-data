@@ -484,7 +484,7 @@ We have a model 'Order' with a field 'ref', which must be unique within
 the context of a client. However, orders are also stored in a 'Basket'.
 Consider the following code::
 
-    $basket->ref('Order')->insert(['ref'=>123]);
+    $basket->getTheirEntity('Order')->insert(['ref'=>123]);
 
 You need to verify that the specific client wouldn't have another order with
 this ref, how do you do it?
@@ -926,7 +926,7 @@ and finally you can also use count::
 SQL Actions on Linked Records
 -----------------------------
 
-In conjunction with Model::refLink() you can produce expressions for creating
+In conjunction with Model::createTheirModelLinked() you can produce expressions for creating
 sub-selects. The functionality is nicely wrapped inside FieldSql_Many::addField()::
 
     $client->hasMany('Invoice')
@@ -934,7 +934,7 @@ sub-selects. The functionality is nicely wrapped inside FieldSql_Many::addField(
 
 This operation is actually consisting of 3 following operations::
 
-1. Related model is created and linked up using refLink that essentially places
+1. Related model is created and linked up using createTheirModelLinked that essentially places
    a condition between $client and $invoice assuming they will appear inside
    same query.
 
@@ -946,14 +946,14 @@ Here is a way how to intervene with the process::
 
     $client->hasMany('Invoice');
     $client->addExpression('last_sale', function($m) {
-        return $m->refLink('Invoice')
+        return $m->createTheirModelLinked('Invoice')
             ->setOrder('date desc')
             ->setLimit(1)
             ->action('field', ['total_gross'], 'getOne');
 
     });
 
-The code above uses refLink and also creates expression, but it tweaks
+The code above uses createTheirModelLinked and also creates expression, but it tweaks
 the action used.
 
 

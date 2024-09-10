@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model;
 
+use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Model\Field\Reference;
 
@@ -125,7 +126,7 @@ trait ReferencesTrait
      *
      * @return Model
      */
-    public function ref(string $key, array $defaults = []): self
+    public function getTheirEntity(string $key, array $defaults = []): self
     {
         return $this->getReference($key)->getTheirEntity($defaults);
     }
@@ -135,9 +136,16 @@ trait ReferencesTrait
      *
      * @return Model
      */
-    public function refLink(string $key, array $defaults = []): self
+    public function createTheirModelLinked(string $key, array $defaults = []): self
     {
-        return $this->getReference($key)->refLink($defaults);
+        $reference = $this->getReference($key);
+
+        if (!$reference instanceof Reference\LinkInterface) {
+            throw (new Exception('The reference field does not support createTheirModelLinked method'))
+                ->addMoreInfo('fieldKey', $key);
+        }
+
+        return $reference->createTheirModelLinked($defaults);
     }
 
     /**

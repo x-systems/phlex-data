@@ -450,17 +450,17 @@ Agile Data implements traversal as a simple operation that converts one DataSet
 into another::
 
     $user_dataset->addCondition('is_vip', true);
-    $vip_orders = $user_dataset->ref('Order');
+    $vip_orders = $user_dataset->getTheirEntity('Order');
 
     $sum = $vip_orders->fx0(['sum','amount'])->getOne();
 
-The implementation of `ref()` is pretty powerful - $user_dataset can address 3
+The implementation of `getTheirEntity()` is pretty powerful - $user_dataset can address 3
 users in the database and only 2 of those users are VIP. Typical ORM would
 require you to fetch all VIP records and then perform additional queries to find
 their orders.
 
 Agile Data, however, perform traversal without accessing database at all.
-After `ref()` is executed, you have a new DataSet with a condition based on
+After `getTheirEntity()` is executed, you have a new DataSet with a condition based on
 user sub-query. The actual implementation may be different depending on vendor,
 but Agile Data will prefer not to fetch list of "user_id"s without need.
 

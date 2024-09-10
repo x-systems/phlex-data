@@ -254,7 +254,7 @@ class DeepCopy
                             $destination->set(
                                 $ourKey,
                                 $this->doCopy(
-                                    $source->ref($refLink),
+                                    $source->getTheirEntity($refLink),
                                     $destination->getReference($refLink)->createTheirModel(),
                                     $ref_val,
                                     $exclusions[$refLink] ?? [],
@@ -283,10 +283,10 @@ class DeepCopy
             foreach ($this->extractKeys($references) as $refLink => $ref_val) {
                 if ($source->hasReference($refLink) && ($ref = $source->getReference($refLink)) instanceof Model\Field\Reference\WithMany) {
                     // No mapping, will always copy
-                    foreach ($source->ref($refLink) as $ref_model) {
+                    foreach ($source->getTheirEntity($refLink) as $ref_model) {
                         $this->doCopy(
                             $ref_model,
-                            $destination->ref($refLink),
+                            $destination->getTheirEntity($refLink),
                             $ref_val,
                             $exclusions[$refLink] ?? [],
                             $transforms[$refLink] ?? []

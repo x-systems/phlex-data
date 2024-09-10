@@ -136,9 +136,9 @@ using::
     $user->load(20);            // load specific user record into PHP
     echo $user->get('name').': ';    // access field values
 
-    $gross = $user->ref('Invoice')
+    $gross = $user->getTheirEntity('Invoice')
         ->addCondition('status', 'due')
-        ->ref('Lines')
+        ->getTheirEntity('Lines')
         ->action('sum', 'gross')
         ->getOne();
                                 // get sum of all gross fields for due invoices

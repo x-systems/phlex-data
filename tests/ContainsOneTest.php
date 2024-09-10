@@ -100,7 +100,7 @@ class ContainsOneTest extends Sql\TestCase
         $this->assertEquals($row, array_intersect_key($i->addr->get(), $row));
 
         // now try to change some field in address
-        $i->ref('addr')->set($i->addr->key()->address, 'bar')->save();
+        $i->getTheirEntity('addr')->set($i->addr->key()->address, 'bar')->save();
         $this->assertSame('bar', $i->addr->address);
 
         // now add nested containsOne - DoorCode
@@ -187,7 +187,7 @@ class ContainsOneTest extends Sql\TestCase
         $this->assertEquals($rowWithField, array_intersect_key($a->get(), $rowWithField));
 
         // now this one is a bit tricky
-        // each time you call ref() it returns you new model object so it will not have post_index field
+        // each time you call getTheirEntity() it returns you new model object so it will not have post_index field
         $this->assertFalse($i->addr->hasField('post_index'));
 
         // now reload invoice just in case

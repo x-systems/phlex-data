@@ -60,20 +60,20 @@ class SmboTransferTest extends Sql\TestCase
         ], $data);
     }
 
-    public function testRef(): void
+    public function testgetTheirEntity(): void
     {
         // create accounts and payments
         $a = new Account($this->db);
 
         $aa = $a->createEntity();
         $aa->save(['name' => 'AIB']);
-        $aa->ref('Payment')->save(['amount' => 10]);
-        $aa->ref('Payment')->save(['amount' => 20]);
+        $aa->getTheirEntity('Payment')->save(['amount' => 10]);
+        $aa->getTheirEntity('Payment')->save(['amount' => 20]);
         $aa->unload();
 
         $aa = $a->createEntity();
         $aa->save(['name' => 'BOI']);
-        $aa->ref('Payment')->save(['amount' => 30]);
+        $aa->getTheirEntity('Payment')->save(['amount' => 30]);
         $aa->unload();
 
         // create payment without link to account
@@ -81,7 +81,7 @@ class SmboTransferTest extends Sql\TestCase
         $p->saveWithoutReloading(['amount' => 40])->unload();
 
         // Account is not loaded, will dump all Payments related to ANY Account
-        $data = $a->ref('Payment')->export(['amount']);
+        $data = $a->getTheirEntity('Payment')->export(['amount']);
         $this->assertEquals([
             ['amount' => 10],
             ['amount' => 20],
@@ -91,7 +91,7 @@ class SmboTransferTest extends Sql\TestCase
 
         // Account is loaded, will dump all Payments related to that particular Account
         $a = $a->load(1);
-        $data = $a->ref('Payment')->export(['amount']);
+        $data = $a->getTheirEntity('Payment')->export(['amount']);
         $this->assertEquals([
             ['amount' => 10],
             ['amount' => 20],
@@ -116,7 +116,7 @@ class SmboTransferTest extends Sql\TestCase
         return;
 
         // Create two new clients, one is sole trader, other is limited company
-        $client = $company->ref('Client');
+        $client = $company->getTheirEntity('Client');
         list($john_id, $agile_id) = $m->insert([
             ['name' => 'John Smith Consulting', 'vat_registered' => false],
             'Agile Software Limited',
@@ -124,7 +124,7 @@ class SmboTransferTest extends Sql\TestCase
 
         // Insert a first, default invoice for our sole-trader
         $john = $company->load($john_id);
-        $john_invoices = $john->ref('Invoice');
+        $john_invoices = $john->getTheirEntity('Invoice');
         $john_invoices->insertInvoice([
             'ref_no'   => 'INV1',
             'due_date' => (new Date())->add(new DateInterval('2w')), // due in 2 weeks
@@ -135,20 +135,20 @@ class SmboTransferTest extends Sql\TestCase
         ]);
 
         // Use custom method to create a sub-nominal
-        $company->ref('Nominal')->insertSubNominal('Sales', 'Discounted');
+        $company->getTheirEntity('Nominal')->insertSubNominal('Sales', 'Discounted');
 
         // Insert our second invoice using set referencing
-        $company->ref('Client')->load($agile_id)->refSet('Invoice')->insertInvoice([
+        $company->getTheirEntity('Client')->load($agile_id)->refSet('Invoice')->insertInvoice([
             'lines' => [
                 [
-                    'item_id'   => $john->ref('Product')->insert('Cat Food'),
+                    'item_id'   => $john->getTheirEntity('Product')->insert('Cat Food'),
                     'nominal'   => 'Sales:Discounted',
                     'total_net' => 50.00,
                     'vat_rate'  => 23,
                     // calculates total_gross at 61.50.
                 ],
                 [
-                    'item_id'   => $john->ref('Service')->insert('Delivery'),
+                    'item_id'   => $john->getTheirEntity('Service')->insert('Delivery'),
                     'total_net' => 10.00,
                     'vat_rate'  => '23%',
                     // calculates total_gross at 12.30
@@ -157,11 +157,11 @@ class SmboTransferTest extends Sql\TestCase
         ]);
 
         // Next we create bank account
-        $hsbc = $john->ref('Account')->set('name', 'HSBC')->save();
+        $hsbc = $john->getTheirEntity('Account')->set('name', 'HSBC')->save();
 
         // And each of our invoices will have one new payment
         foreach ($john_invoices as $invoice) {
-            $invoice->ref('Payment')->insert(['amount' => 10.20, 'bank_account_id' => $hsbc]);
+            $invoice->getTheirEntity('Payment')->insert(['amount' => 10.20, 'bank_account_id' => $hsbc]);
         }
 
         // Now let's execute report

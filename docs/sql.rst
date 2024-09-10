@@ -106,9 +106,9 @@ SQL Reference
     implements deep traversal::
 
         $country_model = $customer_model->addCondition('is_vip', true)
-            ->ref('country_id');           // $model was not loaded!
+            ->getTheirEntity('country_id');           // $model was not loaded!
 
-.. php:method:: refLink
+.. php:method:: createTheirModelLinked
 
     Creates a model for related entity with applied condition referencing field
     of a current model through SQL expression rather then value. This is usable

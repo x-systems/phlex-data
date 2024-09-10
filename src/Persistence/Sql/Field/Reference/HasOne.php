@@ -8,7 +8,7 @@ use Phlex\Data\Exception;
 use Phlex\Data\Model;
 use Phlex\Data\Persistence;
 
-class HasOne extends Model\Field\Reference\HasOne
+class HasOne extends Model\Field\Reference\HasOne implements Model\Field\Reference\LinkInterface
 {
     /**
      * Creates expression which sub-selects a field inside related model.
@@ -46,7 +46,7 @@ class HasOne extends Model\Field\Reference\HasOne
                 function (Model $ourModel) use ($theirKey) {
                     // remove order if we just select one field from hasOne model
                     // that is mandatory for Oracle
-                    return $ourModel->refLink($this->elementId)->toQuery()->field($theirKey)->reset('order');
+                    return $ourModel->createTheirModelLinked($this->getKey())->toQuery()->field($theirKey)->reset('order');
                 },
             ],
             $defaults,
@@ -116,7 +116,7 @@ class HasOne extends Model\Field\Reference\HasOne
     /**
      * Creates model that can be used for generating sub-query actions.
      */
-    public function refLink(array $defaults = []): Model
+    public function createTheirModelLinked(array $defaults = []): Model
     {
         $this->getOurModel()->setOption(Persistence\Sql\Query::OPTION_FIELD_PREFIX);
 
@@ -146,7 +146,7 @@ class HasOne extends Model\Field\Reference\HasOne
         // At this point the reference
         // if ourKey is the primaryKey and is being used in the reference
         // we should persist the relation in condition
-        // example - $model->load(1)->ref('refLink')->import($rows);
+        // example - $model->load(1)->getTheirEntity('refLink')->import($rows);
         if ($ourModel->isLoaded() && !$theirModel->isLoaded()) {
             if ($ourField->isPrimaryKey()) {
                 return $theirModel->addCondition($theirKey, $this->getOurFieldValue());
@@ -162,7 +162,7 @@ class HasOne extends Model\Field\Reference\HasOne
      *
      * $order->hasOne('user_id', 'User')->addTitle();
      *
-     * This will add expression 'user' equal to ref('user_id')['name'];
+     * This will add expression 'user' equal to getTheirEntity('user_id')['name'];
      *
      * This method returns newly created expression field.
      */
@@ -183,7 +183,7 @@ class HasOne extends Model\Field\Reference\HasOne
         $fieldExpression = $ourModel->addExpression($key, array_replace_recursive(
             [
                 function (Model $ourModel) {
-                    $theirModel = $ourModel->refLink($this->getKey());
+                    $theirModel = $ourModel->createTheirModelLinked($this->getKey());
 
                     return $theirModel->toQuery()->field($theirModel->titleKey)->reset('order');
                 },
@@ -223,7 +223,7 @@ class HasOne extends Model\Field\Reference\HasOne
      *
      * $order->hasOne('user_id', 'User')->addTitle();
      *
-     * This will add expression 'user' equal to ref('user_id')['name'];
+     * This will add expression 'user' equal to getTheirEntity('user_id')['name'];
      *
      * @return $this
      */

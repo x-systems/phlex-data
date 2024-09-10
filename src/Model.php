@@ -1440,7 +1440,7 @@ class Model implements \IteratorAggregate
 
         // if there was referenced data, then import it
         foreach ($refs as $key => $value) {
-            $model->ref($key)->import($value);
+            $model->getTheirEntity($key)->import($value);
         }
 
         return $ret;

@@ -568,7 +568,7 @@ class JoinSqlTest extends Sql\TestCase
         $this->assertEquals([
             ['id' => 30, 'user_id' => 1, 'token' => 'ABC'],
             ['id' => 31, 'user_id' => 1, 'token' => 'DEF'],
-        ], $m_u2->ref('Token')->export());
+        ], $m_u2->getTheirEntity('Token')->export());
 
         // withMany email model (uses custom ourKey, theirKey)
         $m_e = new Model($this->db, ['table' => 'email']);
@@ -580,7 +580,7 @@ class JoinSqlTest extends Sql\TestCase
         $this->assertEquals([
             ['id' => 40, 'contact_id' => 10, 'address' => 'john@foo.net'],
             ['id' => 41, 'contact_id' => 10, 'address' => 'johnny@foo.net'],
-        ], $m_u2->ref('Email')->export());
+        ], $m_u2->getTheirEntity('Email')->export());
     }
 
     public function testJoinReverseOneOnOne(): void

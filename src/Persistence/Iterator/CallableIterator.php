@@ -18,7 +18,7 @@ class CallableIterator implements \Iterator
         $this->callback = $callback;
     }
 
-    public function current()
+    public function current(): mixed
     {
         return \call_user_func($this->callback, $this->innerIterator->current(), $this->innerIterator->key());
     }
@@ -28,7 +28,7 @@ class CallableIterator implements \Iterator
         $this->innerIterator->next();
     }
 
-    public function key()
+    public function key(): mixed
     {
         return $this->innerIterator->key();
     }

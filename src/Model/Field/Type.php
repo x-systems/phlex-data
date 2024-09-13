@@ -104,13 +104,16 @@ abstract class Type
 
         if (!$codecSeed/*  || (is_object($codecSeed) && $codecSeed->getField() !== $field) */) {
             // resolve codec declared with the Data\Model\Field\Type::$codecs
-            $codecSeedFieldType = self::resolveFromRegistry((array) $this->codecs, $mutatorClass);
-
+            if ($codecSeedFieldType = self::resolveFromRegistry((array) $this->codecs, $mutatorClass)) {
+                $codecSeed = $codecSeedFieldType;
+            }
             // resolve codec declared with the Mutator
-            $codecSeedMutator = static::resolveFromRegistry($mutator->getCodecs());
+            elseif ($codecSeedMutator = static::resolveFromRegistry($mutator->getCodecs())) {
+                $codecSeed = $codecSeedMutator;
+            }
 
-            // cache resolved codec
-            $codecSeed = $this->codecs[$mutatorClass] = Core\Factory::factory(Core\Factory::mergeSeeds((array) $this->codec, $codecSeedFieldType, $codecSeedMutator), [$mutator, $field]);
+            // merge seed with defaults, create and cache resolved codec
+            $codecSeed = $this->codecs[$mutatorClass] = Core\Factory::factory(Core\Factory::mergeSeeds($this->codec, $codecSeed), [$mutator, $field]);
         }
 
         return Core\Factory::factory($codecSeed, [$mutator, $field] + (array) $this->codec);
@@ -180,9 +183,7 @@ abstract class Type
      */
     public function setSerialize($serializerPresets)
     {
-        foreach ((array) $serializerPresets as $mutatorClass => $serializerPreset) {
-            $this->codecs[$mutatorClass] = array_merge($this->codecs[$mutatorClass] ?? [], ['serialize' => $serializerPreset]);
-        }
+        $this->codec = array_merge($this->codec ?? [], ['serialize' => (array) $serializerPresets]);
 
         return $this;
     }

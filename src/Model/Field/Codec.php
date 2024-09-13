@@ -67,7 +67,7 @@ class Codec implements CodecInterface
     public function getSerializer(): ?Serializer
     {
         if ($this->serialize && !is_object($this->serialize)) {
-            $this->serialize = Serializer::resolve($this->serialize);
+            $this->serialize = Serializer::resolve($this->serialize, $this->mutator);
         }
 
         return $this->serialize;

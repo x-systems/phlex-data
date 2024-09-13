@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Phlex\Data\Model\Field;
 
-use Phlex\Core\Factory;
-use Phlex\Core\InjectableTrait;
+use Phlex\Core;
+use Phlex\Data\MutatorInterface;
 
 class Serializer
 {
-    use InjectableTrait;
+    use Core\InjectableTrait;
 
     protected static $presets = [
         'serialize' => ['encodeFx' => 'serialize', 'decodeFx' => 'unserialize'],
@@ -24,14 +24,14 @@ class Serializer
     /** @var \Closure|null */
     protected $decodeFx;
 
-    public static function resolve($preset)
+    public static function resolve($presets, MutatorInterface $mutator = null)
     {
-        $serializerSeed = $preset;
-        if (is_string($preset)) {
-            $serializerSeed = self::$presets[$preset] ?? [];
+        $serializerSeed = Core\Utils::resolveFromRegistry($presets, $mutator ? get_class($mutator) : '');
+        if (is_string($serializerSeed)) {
+            $serializerSeed = self::$presets[$serializerSeed] ?? [];
         }
 
-        return Factory::factory(Factory::mergeSeeds([self::class], $serializerSeed));
+        return Core\Factory::factory(Core\Factory::mergeSeeds([self::class], $serializerSeed));
     }
 
     public function encode($value): string

@@ -11,7 +11,7 @@ class SerializeTest extends Sql\TestCase
 {
     public function testSerializerResolution()
     {
-        $serializer = Model\Field\Serializer::resolve('json');
+        $serializer = Model\Field\Serializer::resolve(['json']);
 
         $this->assertSame(Model\Field\Serializer::class, get_class($serializer));
         $this->assertSame([Model\Field\Codec::class, 'jsonEncode'], $this->getProtected($serializer, 'encodeFx'));

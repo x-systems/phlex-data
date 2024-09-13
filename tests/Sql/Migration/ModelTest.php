@@ -137,7 +137,7 @@ class ModelTest extends TestCase
         $model = new Model($this->db, ['table' => 'user']);
         $model->addField('string');
         $model->addField('text', ['type' => 'text']);
-        $model->addField('blob', ['type' => ['text', 'codec' => Blob::class]]);
+        $model->addField('blob', ['type' => ['text', 'codec' => [Blob::class]]]);
         $model->setOrder('id');
 
         $model->migrate();

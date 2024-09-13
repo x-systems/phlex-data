@@ -545,7 +545,7 @@ of fields.
 
 (In Phlex4.3 we call those fields "Actual Fields")
 
-.. php:method:: onlyFields($fields)
+.. php:method:: setActiveFields($fields)
 
     Specify array of fields. Only those fields will be accessible and will be
     loaded / saved. Attempt to access any other field will result in exception.
@@ -554,7 +554,7 @@ of fields.
 
     Restore to full set of fields. This will also unload active record.
 
-.. php:attr:: only_fields
+.. php:attr:: activeFields
 
     Contains list of fields to be loaded / accessed.
 

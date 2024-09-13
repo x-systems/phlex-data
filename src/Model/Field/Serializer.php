@@ -34,7 +34,7 @@ class Serializer
         return Core\Factory::factory(Core\Factory::mergeSeeds([self::class], $serializerSeed));
     }
 
-    public function encode($value): string
+    public function encode($value)
     {
         return $this->encodeFx ? ($this->encodeFx)($value) : $value;
     }

@@ -394,9 +394,9 @@ class TypecastingTest extends Sql\TestCase
     public function testTypecastTimezone()
     {
         $m = new Model($this->db, ['table' => 'event']);
-        $dt = $m->addField('dt', ['type' => ['datetime', 'codec' => ['timezone' => 'Europe/Vilnius']]]);
-        $d = $m->addField('d', ['type' => ['date', 'codec' => ['timezone' => 'Europe/Vilnius']]]);
-        $t = $m->addField('t', ['type' => ['time', 'codec' => ['timezone' => 'Europe/Vilnius']]]);
+        $dt = $m->addField('dt', ['type' => ['datetime', 'codecDefaults' => ['timezone' => 'Europe/Vilnius']]]);
+        $d = $m->addField('d', ['type' => ['date', 'codecDefaults' => ['timezone' => 'Europe/Vilnius']]]);
+        $t = $m->addField('t', ['type' => ['time', 'codecDefaults' => ['timezone' => 'Europe/Vilnius']]]);
 
         date_default_timezone_set('UTC');
         $s = new \DateTime('Monday, 15-Aug-05 22:52:01 UTC');

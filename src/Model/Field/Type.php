@@ -48,11 +48,18 @@ abstract class Type
     public $codecs = [];
 
     /**
-     * Defaults to be set to the codec.
+     * Codec to be used for this instance.
      *
      * @var array<string, mixed>
      */
     public $codec = [];
+
+    /**
+     * Defaults to be set to the codec.
+     *
+     * @var array<string, mixed>
+     */
+    public $codecDefaults = [];
 
     /**
      * Register custom field type to be resolved.
@@ -103,8 +110,11 @@ abstract class Type
         $codecSeed = $this->codecs[$mutatorClass] ?? null;
 
         if (!$codecSeed/*  || (is_object($codecSeed) && $codecSeed->getField() !== $field) */) {
+            if ($this->codec) {
+                $codecSeed = $this->codec;
+            }
             // resolve codec declared with the Data\Model\Field\Type::$codecs
-            if ($codecSeedFieldType = self::resolveFromRegistry((array) $this->codecs, $mutatorClass)) {
+            elseif ($codecSeedFieldType = self::resolveFromRegistry((array) $this->codecs, $mutatorClass)) {
                 $codecSeed = $codecSeedFieldType;
             }
             // resolve codec declared with the Mutator
@@ -113,10 +123,10 @@ abstract class Type
             }
 
             // merge seed with defaults, create and cache resolved codec
-            $codecSeed = $this->codecs[$mutatorClass] = Core\Factory::factory(Core\Factory::mergeSeeds($this->codec, $codecSeed), [$mutator, $field]);
+            $codecSeed = $this->codecs[$mutatorClass] = Core\Factory::factory(Core\Factory::mergeSeeds($this->codec, $codecSeed), [$mutator, $field] + (array) $this->codecDefaults);
         }
 
-        return Core\Factory::factory($codecSeed, [$mutator, $field] + (array) $this->codec);
+        return Core\Factory::factory($codecSeed, [$mutator, $field] + (array) $this->codecDefaults);
     }
 
     public static function resolveFromRegistry(array $registry, string $searchClass = null)
@@ -183,7 +193,7 @@ abstract class Type
      */
     public function setSerialize($serializerPresets)
     {
-        $this->codec = array_merge($this->codec ?? [], ['serialize' => (array) $serializerPresets]);
+        $this->codecDefaults = array_merge($this->codecDefaults ?? [], ['serialize' => (array) $serializerPresets]);
 
         return $this;
     }

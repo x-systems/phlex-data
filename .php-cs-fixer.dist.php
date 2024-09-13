@@ -18,6 +18,12 @@ return (new PhpCsFixer\Config())
 
         'static_lambda' => false,
 
+        'global_namespace_import' => [
+            'import_classes' => false,
+            'import_constants' => false,
+            'import_functions' => false
+        ],
+
         // required by PSR-12
         'concat_space' => [
             'spacing' => 'one',
